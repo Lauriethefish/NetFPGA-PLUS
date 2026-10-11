@@ -43,7 +43,7 @@ set_param board.repoPaths $::env(BOARD_FILE_PATH)
 # Design Parameters on NF_DATAPATH
 #####################################
 set datapath_width_bit    1024
-set datapath_freq_mhz     250
+set datapath_freq_mhz     200
 #####################################
 # Project Settings
 #####################################
@@ -411,7 +411,10 @@ set_property generate_synth_checkpoint false [get_files clk_wiz_1.xci]
 reset_target all [get_ips clk_wiz_1]
 generate_target all [get_ips clk_wiz_1]
 
-read_verilog     "./hdl/nf_datapath.v"
+read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/inter_structs.sv"
+read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/udp_checksum_calculator.sv"
+read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/udp_set_checksum.sv"
+read_verilog "$::env(NF_DESIGN_DIR)/hw/hdl/nf_datapath.v"
 read_verilog -sv "${public_repo_dir}/common/hdl/top_wrapper.sv"
 read_verilog -sv "${public_repo_dir}/common/hdl/nf_attachment.sv"
 read_verilog     "${public_repo_dir}/common/hdl/top.v"

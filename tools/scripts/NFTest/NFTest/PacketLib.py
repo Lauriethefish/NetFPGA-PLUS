@@ -47,6 +47,7 @@ def make_MAC_hdr(src_MAC = None, dst_MAC = None, EtherType = None, **kwargs):
         hdr.dst = dst_MAC
     if EtherType:
         hdr.type = EtherType
+    
     return hdr
 
 ############################
@@ -63,6 +64,16 @@ def make_IP_hdr(src_IP = None, dst_IP = None, TTL = None, **kwargs):
         hdr[scapy.IP].dst = dst_IP
     if TTL:
         hdr[scapy.IP].ttl = TTL
+    return hdr
+
+def make_UDP_hdr(src_port = None, dst_port = None, ignore_checksum=False, **kwargs):
+    hdr = scapy.UDP()
+    if(ignore_checksum):
+        hdr[scapy.UDP].chksum = 0
+    if src_port:
+        hdr[scapy.UDP].sport = src_port
+    if dst_port:
+        hdr[scapy.UDP].dport = dst_port
     return hdr
 
 ############################
@@ -115,6 +126,14 @@ def make_IP_pkt(pkt_len = 60, **kwargs):
     if pkt_len < 60:
         pkt_len = 60
     pkt = make_MAC_hdr(**kwargs)/make_IP_hdr(**kwargs)/generate_load(pkt_len - 34)
+    return pkt
+
+def make_UDP_pkt(pkt_len = 66, **kwargs):
+    if pkt_len < 66:
+        pkt_len = 66
+
+    # Account for size of MAC/IP/UDP headers in the payload
+    pkt = make_MAC_hdr(**kwargs)/make_IP_hdr(**kwargs)/make_UDP_hdr(**kwargs)/generate_load(pkt_len - 34 - 32)
     return pkt
 
 ############################

@@ -40,8 +40,6 @@
 //
 // @NETFPGA_LICENSE_HEADER_END@
 //
-
-
 module nf_datapath #(
     //Slave AXI parameters
     parameter C_S_AXI_DATA_WIDTH    = 32,          
@@ -162,14 +160,14 @@ module nf_datapath #(
     );
     
     //internal connectivity
-  
-    wire [C_M_AXIS_DATA_WIDTH - 1:0]         m_axis_opl_tdata;
-    wire [((C_M_AXIS_DATA_WIDTH / 8)) - 1:0] m_axis_opl_tkeep;
-    wire [C_M_AXIS_TUSER_WIDTH-1:0]          m_axis_opl_tuser;
-    wire                                     m_axis_opl_tvalid;
-    wire                                     m_axis_opl_tready;
-    wire                                     m_axis_opl_tlast;
      
+    wire [C_M_AXIS_DATA_WIDTH - 1:0]         s_axis_pc_tdata;
+    wire [((C_M_AXIS_DATA_WIDTH / 8)) - 1:0] s_axis_pc_tkeep;
+    wire [C_M_AXIS_TUSER_WIDTH-1:0]          s_axis_pc_tuser;
+    wire                                     s_axis_pc_tvalid;
+    wire                                     s_axis_pc_tready;
+    wire                                     s_axis_pc_tlast;
+
     wire [C_M_AXIS_DATA_WIDTH - 1:0]         s_axis_opl_tdata;
     wire [((C_M_AXIS_DATA_WIDTH / 8)) - 1:0] s_axis_opl_tkeep;
     wire [C_M_AXIS_TUSER_WIDTH-1:0]          s_axis_opl_tuser;
@@ -177,16 +175,23 @@ module nf_datapath #(
     wire                                     s_axis_opl_tready;
     wire                                     s_axis_opl_tlast;
    
+    wire [C_M_AXIS_DATA_WIDTH - 1:0]         m_axis_opl_tdata;
+    wire [((C_M_AXIS_DATA_WIDTH / 8)) - 1:0] m_axis_opl_tkeep;
+    wire [C_M_AXIS_TUSER_WIDTH-1:0]          m_axis_opl_tuser;
+    wire                                     m_axis_opl_tvalid;
+    wire                                     m_axis_opl_tready;
+    wire                                     m_axis_opl_tlast;
+   
   //Input Arbiter
   input_arbiter_ip  input_arbiter_v1_0 (
       .axis_aclk(axis_aclk), 
       .axis_resetn(axis_resetn), 
-      .m_axis_tdata (s_axis_opl_tdata), 
-      .m_axis_tkeep (s_axis_opl_tkeep), 
-      .m_axis_tuser (s_axis_opl_tuser), 
-      .m_axis_tvalid(s_axis_opl_tvalid), 
-      .m_axis_tready(s_axis_opl_tready), 
-      .m_axis_tlast (s_axis_opl_tlast), 
+      .m_axis_tdata (s_axis_pc_tdata), 
+      .m_axis_tkeep (s_axis_pc_tkeep), 
+      .m_axis_tuser (s_axis_pc_tuser), 
+      .m_axis_tvalid(s_axis_pc_tvalid), 
+      .m_axis_tready(s_axis_pc_tready), 
+      .m_axis_tlast (s_axis_pc_tlast), 
       .s_axis_0_tdata (s_axis_0_tdata), 
       .s_axis_0_tkeep (s_axis_0_tkeep), 
       .s_axis_0_tuser (s_axis_0_tuser), 
@@ -225,11 +230,36 @@ module nf_datapath #(
       .S_AXI_ACLK (axi_aclk), 
       .S_AXI_ARESETN(axi_resetn)
     );
-    
-    
+
+    udp_set_checksum
+    #(
+      .C_M_AXIS_DATA_WIDTH (C_M_AXIS_DATA_WIDTH),
+      .C_S_AXIS_DATA_WIDTH (C_S_AXIS_DATA_WIDTH),
+      .C_M_AXIS_TUSER_WIDTH (C_M_AXIS_TUSER_WIDTH),
+      .C_S_AXIS_TUSER_WIDTH (C_M_AXIS_TUSER_WIDTH)
+    )
+    set_checksum
+    (
+      .axis_aclk(axis_aclk), 
+      .axis_resetn(axis_resetn), 
+      
+      .s_axis_tdata (s_axis_pc_tdata), 
+      .s_axis_tkeep (s_axis_pc_tkeep), 
+      .s_axis_tuser (s_axis_pc_tuser), 
+      .s_axis_tvalid(s_axis_pc_tvalid),
+      .s_axis_tready(s_axis_pc_tready), 
+      .s_axis_tlast (s_axis_pc_tlast),
+
+      .m_axis_tdata (s_axis_opl_tdata), 
+      .m_axis_tkeep (s_axis_opl_tkeep), 
+      .m_axis_tuser (s_axis_opl_tuser), 
+      .m_axis_tvalid(s_axis_opl_tvalid), 
+      .m_axis_tready(s_axis_opl_tready), 
+      .m_axis_tlast (s_axis_opl_tlast)
+    );
     
      //Output Port Lookup  
-       nic_output_port_lookup_ip  output_port_lookup_1  (
+    nic_output_port_lookup_ip  output_port_lookup_1  (
       .axis_aclk(axis_aclk), 
       .axis_resetn(axis_resetn), 
       .m_axis_tdata (m_axis_opl_tdata), 
