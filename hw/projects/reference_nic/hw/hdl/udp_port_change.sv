@@ -59,9 +59,6 @@ module udp_port_change
 );
     wire should_modify_headers;
 
-    wire [IPV4_HEADER_SIZE-1:0] ipv4_header;
-    wire [7:0] ipv4_protocol;
-
     wire udp_header s_udp_header;
     wire udp_header port_fixed_udp_header;
     wire [C_M_AXIS_DATA_WIDTH - 1:0] s_data_modified;
@@ -76,7 +73,7 @@ module udp_port_change
     // Starting a new packet if the last packet was terminating
     // Note we set tlast on reset.
     // Then should only modify the headers if this is a UDP packet
-    assign should_use_modified_packet = m_axis_tlast && ipv4_header.protocol == 17;
+    assign should_use_modified_packet = m_axis_tlast && s_udp_header.ipv4.protocol == 17;
 
     // Extract UDP header from the data
     assign s_udp_header = s_axis_tdata[C_S_AXIS_DATA_WIDTH - 1:C_S_AXIS_DATA_WIDTH-$bits(udp_header)];
