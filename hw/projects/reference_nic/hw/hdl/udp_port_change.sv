@@ -62,7 +62,7 @@ module udp_port_change
     
 
     always_ff @(posedge axis_aclk) begin
-        if(m_axis_tready && s_axis_tvalid) begin
+        if(m_axis_tready && s_axis_tvalid && !axis_resetn) begin
             // Data transfer occurs assuming both ready and valid.
             m_axis_tdata <= s_axis_tdata;
             m_axis_tuser <= s_axis_tuser;
