@@ -79,7 +79,7 @@ module udp_port_change
     assign s_udp_header = s_axis_tdata[C_S_AXIS_DATA_WIDTH - 1:C_S_AXIS_DATA_WIDTH-$bits(udp_header)];
     assign port_fixed_udp_header = '{s_udp_header.ipv4,
         s_udp_header.src_port,
-        s_udp_header.dst_port,
+        100,
         s_udp_header.length,
         s_udp_header.checksum};
 
