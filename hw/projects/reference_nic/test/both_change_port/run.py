@@ -64,7 +64,8 @@ else:
     NUM_PKTS = 1454
 num_ports = 2
 
-pkts = []
+pkts_expected = []
+pkts_sent = []
 
 print("Sending now: ")
 totalPktLengths = [0,0]
@@ -76,21 +77,28 @@ for i in range(NUM_PKTS):
             pkt = make_UDP_pkt(dst_MAC=DA, src_MAC=SA, dst_IP=DST_IP,
                              src_IP=SRC_IP, TTL=TTL, src_port=8080, dst_port = 4040,
                              pkt_len=80+i) 
+            pkt_expect = make_UDP_pkt(dst_MAC=DA, src_MAC=SA, dst_IP=DST_IP,
+                                         src_IP=SRC_IP, TTL=TTL, src_port=8080, dst_port = 100,
+                                         pkt_len=80+i)
             totalPktLengths[port] += len(pkt)
 
             nftest_send_dma('nf' + str(port), pkt)
-            nftest_expect_dma('nf' + str(port), pkt)
+            nftest_expect_dma('nf' + str(port), pkt_expect)
     else:
         DA = "00:ca:fe:00:00:00"
         pkt = make_UDP_pkt(dst_MAC=DA, src_MAC=SA, dst_IP=DST_IP,
                              src_IP=SRC_IP, TTL=TTL, src_port=8080, dst_port = 4040,
-                             pkt_len=80+i) 
+                             pkt_len=80+i)
+        pkt_expect = make_UDP_pkt(dst_MAC=DA, src_MAC=SA, dst_IP=DST_IP,
+                                        src_IP=SRC_IP, TTL=TTL, src_port=8080, dst_port = 100,
+                                        pkt_len=80+i)
         pkt.time = ((i*(1e-8)) + (1e-6)) 
-        pkts.append(pkt)
+        pkts_sent.append(pkt)
+        pkts_expected.append(pkt_expect)
 
 if not isHW():  
-    nftest_send_phy('nf0', pkts) 
-    nftest_expect_dma('nf0', pkts) 
+    nftest_send_phy('nf0', pkts_sent) 
+    nftest_expect_dma('nf0', pkts_expected) 
 
 print("")
 
