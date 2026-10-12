@@ -1,27 +1,27 @@
 
 
 typedef struct packed {
-  bit [3:0] version;
-  bit [3:0] ihl;
-  bit [5:0] dscp;
-  bit [1:0] ecn;
-  bit [15:0] total_length;
-  bit [15:0] identification;
-  bit [2:0] flags;
-  bit [13:0] frag_offset;
-  bit [7:0] ttl;
-  bit [7:0] protocol;
-  bit [15:0] header_checksum;
-  bit [31:0] src_addr;
-  bit [31:0] dst_addr;
+  logic [3:0] version;
+  logic [3:0] ihl;
+  logic [5:0] dscp;
+  logic [1:0] ecn;
+  logic [15:0] total_length;
+  logic [15:0] identification;
+  logic [2:0] flags;
+  logic [13:0] frag_offset;
+  logic [7:0] ttl;
+  logic [7:0] protocol;
+  logic [15:0] header_checksum;
+  logic [31:0] src_addr;
+  logic [31:0] dst_addr;
 } ipv4_header;
 
 typedef struct packed {
     ipv4_header ipv4;
-    bit [15:0] src_port;
-    bit [15:0] dst_port;
-    bit [15:0] length;
-    bit [15:0] checksum;
+    logic [15:0] src_port;
+    logic [15:0] dst_port;
+    logic [15:0] length;
+    logic [15:0] checksum;
 } udp_header;
 
 module udp_port_change
@@ -57,12 +57,15 @@ module udp_port_change
     output s_axis_tready,
     input  s_axis_tlast
 );
-    wire is_new_packet;
+    wire should_modify_headers;
 
     wire [IPV4_HEADER_SIZE-1:0] ipv4_header;
     wire [7:0] ipv4_protocol;
 
-    wire udp_header udp_header;
+    wire udp_header s_udp_header;
+    wire udp_header port_fixed_udp_header;
+    wire [C_M_AXIS_DATA_WIDTH - 1:0] s_data_modified;
+
     wire [15:0] udp_src_port;
     wire [15:0] udp_dest_port;
     wire [15:0] udp_len;
@@ -72,9 +75,21 @@ module udp_port_change
 
     // Starting a new packet if the last packet was terminating
     // Note we set tlast on reset.
-    assign is_new_packet = m_axis_tlast;
+    // Then should only modify the headers if this is a UDP packet
+    assign should_use_modified_packet = m_axis_tlast && ipv4_header.protocol == 17;
 
+    // Extract UDP header from the data
     assign s_udp_header = s_axis_tdata[C_S_AXIS_DATA_WIDTH - 1:C_S_AXIS_DATA_WIDTH-$bits(udp_header)];
+    assign port_fixed_udp_header = '{s_udp_header.ipv4,
+        s_udp_header.src_port,
+        s_udp_header.dst_port,
+        s_udp_header.length,
+        s_udp_header.checksum};
+
+    // Data assuming we make our modifications to the headers
+    assign s_data_modified = {port_fixed_udp_header, s_axis_tdata[C_S_AXIS_DATA_WIDTH-$bits(udp_header) - 1:0]};
+
+    // Change port number
 
     // Ready for more data if:
     // - Downstream ready for more data
@@ -88,7 +103,7 @@ module udp_port_change
             // to be ready, unless this is the first transfer i.e. we're not
             // valid yetm_axis_tready
             if((!m_axis_tvalid || m_axis_tready) && s_axis_tvalid) begin
-                m_axis_tdata <= s_axis_tdata;
+                m_axis_tdata <= should_use_modified_packet ? s_data_modified : s_axis_tdata;
                 m_axis_tuser <= s_axis_tuser;
                 m_axis_tkeep <= s_axis_tkeep;
                 m_axis_tlast <= s_axis_tlast;
