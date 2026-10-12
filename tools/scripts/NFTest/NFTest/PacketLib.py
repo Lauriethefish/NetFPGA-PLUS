@@ -65,6 +65,14 @@ def make_IP_hdr(src_IP = None, dst_IP = None, TTL = None, **kwargs):
         hdr[scapy.IP].ttl = TTL
     return hdr
 
+def make_UDP_hdr(src_port = None, dst_port = None, **kwargs):
+    hdr = scapy.UDP()
+    if src_port:
+        hdr[scapy.UDP].sport = src_port
+    if dst_port:
+        hdr[scapy.UDP].dport = dst_port
+    return hdr
+
 ############################
 # Function: make_ARP_hdr
 # Keyword Arguments: src_IP, dst_IP, TTL
@@ -115,6 +123,14 @@ def make_IP_pkt(pkt_len = 60, **kwargs):
     if pkt_len < 60:
         pkt_len = 60
     pkt = make_MAC_hdr(**kwargs)/make_IP_hdr(**kwargs)/generate_load(pkt_len - 34)
+    return pkt
+
+def make_UDP_pkt(pkt_len = 80, **kwargs):
+    if pkt_len < 80:
+        pkt_len = 80
+
+    # Account for size of MAC/IP/UDP headers in the payload
+    pkt = make_MAC_hdr(**kwargs)/make_IP_hdr(**kwargs)/make_UDP_hdr(**kwargs)/generate_load(pkt_len - 34 - 32)
     return pkt
 
 ############################
