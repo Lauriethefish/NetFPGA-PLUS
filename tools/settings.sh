@@ -25,8 +25,8 @@
 ### User defined
 export NFPLUS_FOLDER=${HOME}/NetFPGA-PLUS
 export BOARD_NAME=au250
-export NF_PROJECT_NAME=reference_switch
-export PYTHON_BNRY=/usr/bin/python3
+export NF_PROJECT_NAME=reference_nic
+export PYTHON_BNRY=/home/lf540/NetFPGA-PLUS/.venv/bin/python3
 
 ### Don't change
 export VERSION=2023.2
@@ -86,6 +86,8 @@ if [ ${VERSION} != ${vivado_version} -a \
 	echo "Error: you don't have proper Vivado version (${VERSION})."
 	return -1
 fi
+
+source $NFPLUS_FOLDER/.venv/bin/activate
 
 echo "[ok]    Vivado Version (${VERSION}) has been checked."
 echo "     NFPLUS_FOLDER  :   ${NFPLUS_FOLDER}"
