@@ -1,6 +1,14 @@
 
 
 typedef struct packed {
+  logic [7*8-1:0] preamble;
+  logic [7:0] sfd;
+  logic [6*8-1:0] dst_addr;
+  logic [6*8-1:0] src_addr;
+  logic [15:0] length;
+} ether_header;
+
+typedef struct packed {
   logic [3:0] version;
   logic [3:0] ihl;
   logic [5:0] dscp;
@@ -17,6 +25,7 @@ typedef struct packed {
 } ipv4_header;
 
 typedef struct packed {
+    ether_header ether;
     ipv4_header ipv4;
     logic [15:0] src_port;
     logic [15:0] dst_port;
@@ -77,7 +86,9 @@ module udp_port_change
 
     // Extract UDP header from the data
     assign s_udp_header = s_axis_tdata[C_S_AXIS_DATA_WIDTH - 1:C_S_AXIS_DATA_WIDTH-$bits(udp_header)];
-    assign port_fixed_udp_header = '{s_udp_header.ipv4,
+    assign port_fixed_udp_header = '{
+        s_udp_header.ether,
+        s_udp_header.ipv4,
         s_udp_header.src_port,
         100,
         s_udp_header.length,
