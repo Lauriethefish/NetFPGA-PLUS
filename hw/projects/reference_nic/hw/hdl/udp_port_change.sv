@@ -1,5 +1,29 @@
 
 
+typedef struct packed {
+  bit [3:0] version;
+  bit [3:0] ihl;
+  bit [5:0] dscp;
+  bit [1:0] ecn;
+  bit [15:0] total_length;
+  bit [15:0] identification;
+  bit [2:0] flags;
+  bit [13:0] frag_offset;
+  bit [7:0] ttl;
+  bit [7:0] protocol;
+  bit [15:0] header_checksum;
+  bit [31:0] src_addr;
+  bit [31:0] dst_addr;
+} ipv4_header;
+
+typedef struct packed {
+    ipv4_header ipv4;
+    bit [15:0] src_port;
+    bit [15:0] dst_port;
+    bit [15:0] length;
+    bit [15:0] checksum;
+} udp_header;
+
 module udp_port_change
 #(
     // Master/slave AXI Stream Data Width
@@ -33,13 +57,12 @@ module udp_port_change
     output s_axis_tready,
     input  s_axis_tlast
 );
-    // Records if this is the first transfer in the packet
-    reg is_first_in_packet;
+    wire is_new_packet;
 
     wire [IPV4_HEADER_SIZE-1:0] ipv4_header;
     wire [7:0] ipv4_protocol;
 
-    wire [UDP_HEADER_SIZE:0] udp_header;
+    wire udp_header udp_header;
     wire [15:0] udp_src_port;
     wire [15:0] udp_dest_port;
     wire [15:0] udp_len;
@@ -47,15 +70,11 @@ module udp_port_change
 
     wire [512-IPV4_HEADER_SIZE-UDP_HEADER_SIZE-1:0] payload;
 
-    // Extract IPv4 header and protocol
-    assign ipv4_header = m_axis_tdata[C_M_AXIS_DATA_WIDTH-1:C_M_AXIS_DATA_WIDTH-IPV4_HEADER_SIZE];
-    assign ipv4_protocol = ipv4_header[87:80];
+    // Starting a new packet if the last packet was terminating
+    // Note we set tlast on reset.
+    assign is_new_packet = m_axis_tlast;
 
-    // Extract the UDP header
-    assign udp_header = m_axis_tdata[C_M_AXIS_DATA_WIDTH-IPV4_HEADER_SIZE-1:C_M_AXIS_DATA_WIDTH-IPV4_HEADER_SIZE-UDP_HEADER_SIZE];
-    assign {udp_src_port, udp_dest_port, udp_len, udp_checksum} = udp_header;
-
-    assign payload = m_axis_tdata[C_M_AXIS_DATA_WIDTH-IPV4_HEADER_SIZE-UDP_HEADER_SIZE-1:0];
+    assign s_udp_header = s_axis_tdata[C_S_AXIS_DATA_WIDTH - 1:C_S_AXIS_DATA_WIDTH-$bits(udp_header)];
 
     // Ready for more data if:
     // - Downstream ready for more data
@@ -67,7 +86,7 @@ module udp_port_change
         if(axis_resetn) begin // Check not resetting
             // In order to change the data going out, downstream needs
             // to be ready, unless this is the first transfer i.e. we're not
-            // valid yet
+            // valid yetm_axis_tready
             if((!m_axis_tvalid || m_axis_tready) && s_axis_tvalid) begin
                 m_axis_tdata <= s_axis_tdata;
                 m_axis_tuser <= s_axis_tuser;
@@ -82,11 +101,9 @@ module udp_port_change
         end else begin
             // Output data not valid if we're resetting.
             m_axis_tvalid <= 0;
+            // Next transfer is the first transfer within a packet.
+            m_axis_tlast <= 1;
         end
-
-
-
-        is_first_in_packet <= s_axis_tvalid && s_axis_tlast;        
     end
 
 endmodule
