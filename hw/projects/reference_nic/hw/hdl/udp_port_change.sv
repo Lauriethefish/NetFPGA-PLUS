@@ -8,7 +8,7 @@ typedef struct packed {
   logic [15:0] total_length;
   logic [15:0] identification;
   logic [2:0] flags;
-  logic [13:0] frag_offset;
+  logic [12:0] frag_offset;
   logic [7:0] ttl;
   logic [7:0] protocol;
   logic [15:0] header_checksum;
