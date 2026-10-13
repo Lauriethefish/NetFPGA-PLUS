@@ -95,7 +95,7 @@ module udp_port_change
     assign port_fixed_udp_header_bits = port_fixed_udp_header;
 
     // Data assuming we make our modifications to the headers
-    assign s_data_modified = {s_axis_tdata[C_S_AXIS_DATA_WIDTH-1:$bits(udp_header)], {<<8{port_fixed_udp_header_bits}}};
+    assign s_data_modified = {s_axis_tdata[C_S_AXIS_DATA_WIDTH-1:$bits(udp_header)], port_fixed_udp_header_bits};
 
     // Change port number
 
