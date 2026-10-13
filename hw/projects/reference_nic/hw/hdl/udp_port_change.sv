@@ -82,7 +82,7 @@ module udp_port_change
     assign should_use_modified_packet = m_axis_tlast && s_udp_header.ipv4.protocol == 17;
 
     // Extract UDP header from the data
-    assign s_udp_header = {<<($bits(udp_header)){s_axis_tdata[$bits(udp_header)-1:0]}};
+    assign s_udp_header = {<<8{s_axis_tdata[$bits(udp_header)-1:0]}};
     assign port_fixed_udp_header = '{
         s_udp_header.ether,
         s_udp_header.ipv4,
@@ -92,7 +92,7 @@ module udp_port_change
         s_udp_header.checksum};
 
     // Data assuming we make our modifications to the headers
-    assign s_data_modified = {s_axis_tdata[C_S_AXIS_DATA_WIDTH-1:$bits(udp_header)], {<<($bits(udp_header)){s_udp_header}}};
+    assign s_data_modified = {s_axis_tdata[C_S_AXIS_DATA_WIDTH-1:$bits(udp_header)], {>>8{s_udp_header}}};
 
     // Change port number
 
