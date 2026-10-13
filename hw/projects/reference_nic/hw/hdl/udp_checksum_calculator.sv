@@ -54,6 +54,7 @@ module udp_checksum_calculator
         buffered_stream[BUFFER_SIZE-1:0];
 
     wire [C_M_AXIS_DATA_WIDTH - 1:0] masked_tdata;
+    genvar i;
     generate
         for(i = 0; i < C_M_AXIS_DATA_WIDTH/8; i++) begin
             assign masked_tdata[i*8+7:i*8] = s_axis_tkeep[i] ? s_axis_tdata[i*8+7:i*8] : 0;
