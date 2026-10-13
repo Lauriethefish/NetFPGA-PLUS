@@ -78,7 +78,7 @@ for i in range(NUM_PKTS):
                              src_IP=SRC_IP, TTL=TTL, src_port=8080, dst_port = 4040,
                              pkt_len=80+i) 
             pkt_expect = pkt.copy()
-            pkt_expect.getLayer(2)[scapy.UDP].dport = 100
+            pkt_expect.getlayer(2)[scapy.UDP].dport = 100
             totalPktLengths[port] += len(pkt)
 
             nftest_send_dma('nf' + str(port), pkt)
@@ -89,7 +89,7 @@ for i in range(NUM_PKTS):
                              src_IP=SRC_IP, TTL=TTL, src_port=8080, dst_port = 4040,
                              pkt_len=80+i)
         pkt_expect = pkt.copy()
-        pkt_expect.getLayer(2)[scapy.UDP].dport = 100
+        pkt_expect.getlayer(2)[scapy.UDP].dport = 100
         pkt.time = ((i*(1e-8)) + (1e-6)) 
         pkts_sent.append(pkt)
         pkts_expected.append(pkt_expect)
