@@ -92,7 +92,7 @@ module udp_port_change
         s_udp_header.checksum};
 
     // Data assuming we make our modifications to the headers
-    assign s_data_modified = {s_axis_tdata[C_S_AXIS_DATA_WIDTH-1:$bits(udp_header)]}, {<<($bits(udp_header)){s_udp_header}};
+    assign s_data_modified = {s_axis_tdata[C_S_AXIS_DATA_WIDTH-1:$bits(udp_header)], {<<($bits(udp_header)){s_udp_header}}};
 
     // Change port number
 
