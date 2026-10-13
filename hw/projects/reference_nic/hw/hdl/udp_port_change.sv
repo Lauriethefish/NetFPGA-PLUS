@@ -89,7 +89,7 @@ module udp_port_change
         s_udp_header.ether,
         s_udp_header.ipv4,
         s_udp_header.src_port,
-        100,
+        16'd100,
         s_udp_header.length,
         s_udp_header.checksum};
     assign port_fixed_udp_header_bits = port_fixed_udp_header;
