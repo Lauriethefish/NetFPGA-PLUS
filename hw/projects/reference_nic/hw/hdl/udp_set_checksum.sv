@@ -4,7 +4,7 @@ module udp_set_checksum
     parameter C_M_AXIS_DATA_WIDTH=512,
     parameter C_S_AXIS_DATA_WIDTH=512,
     parameter C_M_AXIS_TUSER_WIDTH=128,
-    parameter C_S_AXIS_TUSER_WIDTH=128,
+    parameter C_S_AXIS_TUSER_WIDTH=128
 )
 (
     // Global clock/reset
