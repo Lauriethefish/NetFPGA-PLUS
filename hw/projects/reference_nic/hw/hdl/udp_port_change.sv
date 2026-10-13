@@ -92,7 +92,7 @@ module udp_port_change
         16'd100,
         s_udp_header.length,
         s_udp_header.checksum};
-    assign port_fixed_udp_header_bits = port_fixed_udp_header;
+    assign port_fixed_udp_header_bits = {<<8{port_fixed_udp_header}};
 
     // Data assuming we make our modifications to the headers
     assign s_data_modified = {s_axis_tdata[C_S_AXIS_DATA_WIDTH-1:$bits(udp_header)], port_fixed_udp_header_bits};
