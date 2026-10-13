@@ -55,14 +55,6 @@ module udp_set_checksum
     assign s_axis_tvalid_c0 = (current_acceptor == 0) && s_axis_tvalid;
     assign s_axis_tvalid_c1 = (current_acceptor == 1) && s_axis_tvalid;
 
-    // Now need to deal with the output data
-    output [C_M_AXIS_DATA_WIDTH - 1:0] m_axis_tdata,
-    output [((C_M_AXIS_DATA_WIDTH / 8)) - 1:0] m_axis_tkeep,
-    output [C_M_AXIS_TUSER_WIDTH-1:0] m_axis_tuser,
-    output m_axis_tvalid,
-    input  m_axis_tready,
-    output m_axis_tlast,
-
     
     assign m_axis_tdata = current_dumper ? m_axis_tdata_c1 : m_axis_tdata_c0;
     assign m_axis_tuser = current_dumper ? m_axis_tuser_c1 : m_axis_tuser_c0;
@@ -90,7 +82,7 @@ module udp_set_checksum
         .s_axis_tvalid(s_axis_tvalid_c0),
         .s_axis_tready(s_axis_tready_c0),
         .s_axis_tlast(s_axis_tlast)
-    )
+    );
 
     udp_checksum_calculator c1 (
         .axis_aclk(axis_aclk),
@@ -109,7 +101,7 @@ module udp_set_checksum
         .s_axis_tvalid(s_axis_tvalid_c1),
         .s_axis_tready(s_axis_tready_c1),
         .s_axis_tlast(s_axis_tlast)
-    )
+    );
 
     always_ff @(posedge axis_aclk) begin
         // Alternate the acceptor and dumper
