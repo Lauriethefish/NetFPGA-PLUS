@@ -72,6 +72,9 @@ module udp_checksum_calculator
     assign {buffered_tdata, buffered_tkeep, buffered_tuser} = buffered_stream[buffer_pos];
     assign buffered_header = {<<8{buffered_tdata[$bits(udp_header)-1:0]}};
 
+    wire udp_header checksum_set_header;
+    wire [$bits(udp_header) - 1:0] checksum_set_header_bits;
+
     assign checksum_set_header = '{
         buffered_header.ether,
         buffered_header.ipv4,
@@ -104,14 +107,14 @@ module udp_checksum_calculator
         for(i = 0; i < C_M_AXIS_DATA_WIDTH/128; i++) begin
             // Select each of the 16 bit blocks and sum them up
             // Noting that the 8 bit blocks need to be reshuffled due to bit order.
-            assign segment_sums[i] =  {<<8{masked_tdata[i*128+16*1-1: i*128+16*0]}} +
-                + {<<8{masked_tdata[i*128+16*2-1: i*128+16*1]}}
-                + {<<8{masked_tdata[i*128+16*3-1: i*128+16*2]}}
-                + {<<8{masked_tdata[i*128+16*4-1: i*128+16*3]}}
-                + {<<8{masked_tdata[i*128+16*5-1: i*128+16*4]}}
-                + {<<8{masked_tdata[i*128+16*6-1: i*128+16*5]}}
-                + {<<8{masked_tdata[i*128+16*7-1: i*128+16*6]}}
-                + {<<8{masked_tdata[i*128+16*8-1: i*128+16*7]}};
+            assign segment_sums[i] =  16'{<<8{masked_tdata[i*128+16*1-1: i*128+16*0]}} +
+                + 16'{<<8{masked_tdata[i*128+16*2-1: i*128+16*1]}}
+                + 16'{<<8{masked_tdata[i*128+16*3-1: i*128+16*2]}}
+                + 16'{<<8{masked_tdata[i*128+16*4-1: i*128+16*3]}}
+                + 16'{<<8{masked_tdata[i*128+16*5-1: i*128+16*4]}}
+                + 16'{<<8{masked_tdata[i*128+16*6-1: i*128+16*5]}}
+                + 16'{<<8{masked_tdata[i*128+16*7-1: i*128+16*6]}}
+                + 16'{<<8{masked_tdata[i*128+16*8-1: i*128+16*7]}};
         end
     endgenerate
 
