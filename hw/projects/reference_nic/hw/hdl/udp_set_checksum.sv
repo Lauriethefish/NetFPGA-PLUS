@@ -67,7 +67,14 @@ module udp_set_checksum
     assign m_axis_tready_c0 = m_axis_tready && !current_dumper;
     assign m_axis_tready_c1 = m_axis_tready && current_dumper;
 
-    udp_checksum_calculator c0 (
+    udp_checksum_calculator c0
+    #(
+      .C_M_AXIS_DATA_WIDTH (C_M_AXIS_DATA_WIDTH),
+      .C_S_AXIS_DATA_WIDTH (C_S_AXIS_DATA_WIDTH),
+      .C_M_AXIS_TUSER_WIDTH (C_M_AXIS_TUSER_WIDTH),
+      .C_S_AXIS_TUSER_WIDTH (C_M_AXIS_TUSER_WIDTH)
+    )
+    (
         .axis_aclk(axis_aclk),
         .axis_resetn(axis_resetn),
 
@@ -86,7 +93,14 @@ module udp_set_checksum
         .s_axis_tlast(s_axis_tlast)
     );
 
-    udp_checksum_calculator c1 (
+    udp_checksum_calculator c1
+    #(
+      .C_M_AXIS_DATA_WIDTH (C_M_AXIS_DATA_WIDTH),
+      .C_S_AXIS_DATA_WIDTH (C_S_AXIS_DATA_WIDTH),
+      .C_M_AXIS_TUSER_WIDTH (C_M_AXIS_TUSER_WIDTH),
+      .C_S_AXIS_TUSER_WIDTH (C_M_AXIS_TUSER_WIDTH)
+    )
+    (
         .axis_aclk(axis_aclk),
         .axis_resetn(axis_resetn),
 
@@ -107,15 +121,19 @@ module udp_set_checksum
 
     always_ff @(posedge axis_aclk) begin
         // Alternate the acceptor and dumper
+        if(axis_resetn) begin
+            // If we're finishing a packet from the dumper
+            if(m_axis_tlast) begin
+                current_dumper <= ~current_dumper;
+            end
 
-        // If we're finishing a packet from the dumper
-        if(m_axis_tlast) begin
-            current_dumper <= ~current_dumper;
-        end
-
-        // If we're finishing a packet from the input
-        if(s_axis_tlast) begin
-            current_acceptor <= ~current_acceptor;
+            // If we're finishing a packet from the input
+            if(s_axis_tlast) begin
+                current_acceptor <= ~current_acceptor;
+            end
+        end else begin
+            current_dumper <= 0;
+            current_acceptor <= 0;
         end
     end
 endmodule
