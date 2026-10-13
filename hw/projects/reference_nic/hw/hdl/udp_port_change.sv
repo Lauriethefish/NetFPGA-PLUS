@@ -1,11 +1,9 @@
 
 
 typedef struct packed {
-  logic [7*8-1:0] preamble;
-  logic [7:0] sfd;
   logic [6*8-1:0] dst_addr;
   logic [6*8-1:0] src_addr;
-  logic [15:0] length;
+  logic [15:0] ethertype;
 } ether_header;
 
 typedef struct packed {
