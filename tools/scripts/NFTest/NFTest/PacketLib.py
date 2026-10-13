@@ -39,7 +39,7 @@ import scapy.all as scapy
 # Description: creates and returns a scapy Ether layer
 #              if keyword arguments are not specified, scapy defaults are used
 ############################
-def make_MAC_hdr(src_MAC = None, dst_MAC = None, EtherType = None, **kwargs):
+def make_MAC_hdr(src_MAC = None, dst_MAC = None, EtherType = None, ignore_checksum = False, **kwargs):
     hdr = scapy.Ether()
     if src_MAC:
         hdr.src = src_MAC
@@ -47,6 +47,7 @@ def make_MAC_hdr(src_MAC = None, dst_MAC = None, EtherType = None, **kwargs):
         hdr.dst = dst_MAC
     if EtherType:
         hdr.type = EtherType
+    
     return hdr
 
 ############################
@@ -218,6 +219,8 @@ def make_ARP_reply_pkt(**kwargs):
 # Description: creates and returns a payload of the specified length
 ############################
 def generate_load(length):
+    # Temporary hack
+    seed(length)
     return Raw(RandString(length))
 
 ############################
