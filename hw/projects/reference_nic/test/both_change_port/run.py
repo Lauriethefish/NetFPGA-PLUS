@@ -76,7 +76,7 @@ for i in range(NUM_PKTS):
             DA = "00:0a:35:03:00:%02x"%port
             pkt = make_UDP_pkt(dst_MAC=DA, src_MAC=SA, dst_IP=DST_IP,
                              src_IP=SRC_IP, TTL=TTL, src_port=8080, dst_port = 4040,
-                             pkt_len=80+i) 
+                             pkt_len=80+i, ignore_checksum=True) 
             pkt_expect = pkt.copy()
             pkt_expect.getlayer(2)[scapy.UDP].dport = 100
             totalPktLengths[port] += len(pkt)
@@ -87,7 +87,7 @@ for i in range(NUM_PKTS):
         DA = "00:ca:fe:00:00:00"
         pkt = make_UDP_pkt(dst_MAC=DA, src_MAC=SA, dst_IP=DST_IP,
                              src_IP=SRC_IP, TTL=TTL, src_port=8080, dst_port = 4040,
-                             pkt_len=80+i)
+                             pkt_len=80+i, ignore_checksum=True)
         pkt_expect = pkt.copy()
         pkt_expect.getlayer(2)[scapy.UDP].dport = 100
         pkt.time = ((i*(1e-8)) + (1e-6)) 

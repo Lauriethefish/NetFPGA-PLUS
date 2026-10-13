@@ -39,7 +39,7 @@ import scapy.all as scapy
 # Description: creates and returns a scapy Ether layer
 #              if keyword arguments are not specified, scapy defaults are used
 ############################
-def make_MAC_hdr(src_MAC = None, dst_MAC = None, EtherType = None, ignore_checksum = False, **kwargs):
+def make_MAC_hdr(src_MAC = None, dst_MAC = None, EtherType = None, **kwargs):
     hdr = scapy.Ether()
     if src_MAC:
         hdr.src = src_MAC
