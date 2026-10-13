@@ -66,7 +66,7 @@ def make_IP_hdr(src_IP = None, dst_IP = None, TTL = None, **kwargs):
     return hdr
 
 def make_UDP_hdr(src_port = None, dst_port = None, **kwargs):
-    hdr = scapy.UDP()
+    hdr = scapy.UDP(chksum=0)
     if src_port:
         hdr[scapy.UDP].sport = src_port
     if dst_port:
