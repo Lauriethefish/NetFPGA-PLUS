@@ -38,7 +38,7 @@ logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
 from NFTest import *
 import sys
 import os
-from scapy.layers.all import Ether, IP, TCP
+from scapy.layers.all import Ether, IP, TCP, UDP
 from reg_defines_reference_nic import *
 
 conn = ('../connections/conn', [])
@@ -77,9 +77,8 @@ for i in range(NUM_PKTS):
             pkt = make_UDP_pkt(dst_MAC=DA, src_MAC=SA, dst_IP=DST_IP,
                              src_IP=SRC_IP, TTL=TTL, src_port=8080, dst_port = 4040,
                              pkt_len=80+i) 
-            pkt_expect = make_UDP_pkt(dst_MAC=DA, src_MAC=SA, dst_IP=DST_IP,
-                                         src_IP=SRC_IP, TTL=TTL, src_port=8080, dst_port = 100,
-                                         pkt_len=80+i)
+            pkt_expect = pkt.copy()
+            pkt_expect[scapy.UDP].dport = 100
             totalPktLengths[port] += len(pkt)
 
             nftest_send_dma('nf' + str(port), pkt)
@@ -89,9 +88,8 @@ for i in range(NUM_PKTS):
         pkt = make_UDP_pkt(dst_MAC=DA, src_MAC=SA, dst_IP=DST_IP,
                              src_IP=SRC_IP, TTL=TTL, src_port=8080, dst_port = 4040,
                              pkt_len=80+i)
-        pkt_expect = make_UDP_pkt(dst_MAC=DA, src_MAC=SA, dst_IP=DST_IP,
-                                        src_IP=SRC_IP, TTL=TTL, src_port=8080, dst_port = 100,
-                                        pkt_len=80+i)
+        pkt_expect = pkt.copy()
+        pkt_expect[scapy.UDP].dport = 100
         pkt.time = ((i*(1e-8)) + (1e-6)) 
         pkts_sent.append(pkt)
         pkts_expected.append(pkt_expect)
