@@ -19,6 +19,7 @@ typedef struct packed {
   logic [7:0] protocol;
   logic [15:0] header_checksum;
   logic [31:0] src_addr;
+  logic [31:0] dst_addr;
 } ipv4_header;
 
 typedef struct packed {
