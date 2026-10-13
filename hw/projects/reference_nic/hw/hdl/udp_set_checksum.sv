@@ -28,6 +28,8 @@ module udp_set_checksum
     output s_axis_tready,
     input  s_axis_tlast
 );
+    import inter_structs::*;
+
     // Essentially need to send to either of the udp checksum calculators,
     // depending on which one is ready.
     wire [C_M_AXIS_DATA_WIDTH - 1:0] m_axis_tdata_c0;

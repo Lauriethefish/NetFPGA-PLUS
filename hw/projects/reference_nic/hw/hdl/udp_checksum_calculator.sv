@@ -30,6 +30,8 @@ module udp_checksum_calculator
     output s_axis_tready,
     input  s_axis_tlast
 );
+    import inter_structs::*;
+
     // 0: waiting for data to form packet
     // 1: outputting packet data
     reg state;
