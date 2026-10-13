@@ -231,14 +231,14 @@ module nf_datapath #(
       .S_AXI_ARESETN(axi_resetn)
     );
 
-    udp_port_change
+    udp_checksum_calculator
     #(
       .C_M_AXIS_DATA_WIDTH (C_M_AXIS_DATA_WIDTH),
       .C_S_AXIS_DATA_WIDTH (C_S_AXIS_DATA_WIDTH),
       .C_M_AXIS_TUSER_WIDTH (C_M_AXIS_TUSER_WIDTH),
       .C_S_AXIS_TUSER_WIDTH (C_M_AXIS_TUSER_WIDTH)
     )
-    udp_port_change_1
+    checksum_calculator
     (
       .axis_aclk(axis_aclk), 
       .axis_resetn(axis_resetn), 
