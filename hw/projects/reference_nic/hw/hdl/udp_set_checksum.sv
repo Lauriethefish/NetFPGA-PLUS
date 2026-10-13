@@ -34,7 +34,7 @@ module udp_set_checksum
     // depending on which one is ready.
     wire [C_M_AXIS_DATA_WIDTH - 1:0] m_axis_tdata_c0;
     wire [((C_M_AXIS_DATA_WIDTH / 8)) - 1:0] m_axis_tkeep_c0;
-    wire [C_M_AXIS_TUSER_WIDTH-1:0] m_axis_tuse_c0;
+    wire [C_M_AXIS_TUSER_WIDTH-1:0] m_axis_tuser_c0;
     wire m_axis_tvalid_c0;
     wire m_axis_tlast_c0;
     wire s_axis_tready_c0;
@@ -67,13 +67,14 @@ module udp_set_checksum
     assign m_axis_tready_c0 = m_axis_tready && !current_dumper;
     assign m_axis_tready_c1 = m_axis_tready && current_dumper;
 
-    udp_checksum_calculator c0
+    udp_checksum_calculator
     #(
       .C_M_AXIS_DATA_WIDTH (C_M_AXIS_DATA_WIDTH),
       .C_S_AXIS_DATA_WIDTH (C_S_AXIS_DATA_WIDTH),
       .C_M_AXIS_TUSER_WIDTH (C_M_AXIS_TUSER_WIDTH),
       .C_S_AXIS_TUSER_WIDTH (C_M_AXIS_TUSER_WIDTH)
     )
+    c0
     (
         .axis_aclk(axis_aclk),
         .axis_resetn(axis_resetn),
@@ -93,13 +94,14 @@ module udp_set_checksum
         .s_axis_tlast(s_axis_tlast)
     );
 
-    udp_checksum_calculator c1
+    udp_checksum_calculator
     #(
       .C_M_AXIS_DATA_WIDTH (C_M_AXIS_DATA_WIDTH),
       .C_S_AXIS_DATA_WIDTH (C_S_AXIS_DATA_WIDTH),
       .C_M_AXIS_TUSER_WIDTH (C_M_AXIS_TUSER_WIDTH),
       .C_S_AXIS_TUSER_WIDTH (C_M_AXIS_TUSER_WIDTH)
     )
+    c1
     (
         .axis_aclk(axis_aclk),
         .axis_resetn(axis_resetn),
