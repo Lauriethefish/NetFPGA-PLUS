@@ -68,6 +68,7 @@ module udp_port_change
 
     wire udp_header s_udp_header;
     wire udp_header port_fixed_udp_header;
+    wire [$bits(udp_header)-1:0] port_fixed_udp_header_bits;
     wire [C_M_AXIS_DATA_WIDTH - 1:0] s_data_modified;
 
     wire [15:0] udp_src_port;
@@ -91,9 +92,10 @@ module udp_port_change
         100,
         s_udp_header.length,
         s_udp_header.checksum};
+    assign port_fixed_udp_header_bits = port_fixed_udp_header;
 
     // Data assuming we make our modifications to the headers
-    assign s_data_modified = {s_axis_tdata[C_S_AXIS_DATA_WIDTH-1:$bits(udp_header)], {<<8{port_fixed_udp_header}}};
+    assign s_data_modified = {s_axis_tdata[C_S_AXIS_DATA_WIDTH-1:$bits(udp_header)], {<<8{port_fixed_udp_header_bits}}};
 
     // Change port number
 
