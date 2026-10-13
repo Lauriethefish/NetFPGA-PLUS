@@ -61,7 +61,7 @@ module udp_set_checksum
     assign m_axis_tkeep = current_dumper ? m_axis_tkeep_c1 : m_axis_tkeep_c0;
     assign m_axis_tlast = current_dumper ? m_axis_tlast_c1 : m_axis_tlast_c0;
     // Ready to put data downstream if either checksum calculator is
-    assign m_axis_tvalid = current_dumper ? m_axis_tvalid_c1 | m_axis_tvalid_c0;
+    assign m_axis_tvalid = current_dumper ? m_axis_tvalid_c1 : m_axis_tvalid_c0;
     assign m_axis_tready_c0 = m_axis_tready && !current_dumper;
     assign m_axis_tready_c1 = m_axis_tready && current_dumper;
 
