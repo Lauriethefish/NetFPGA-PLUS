@@ -1,34 +1,33 @@
 
 
 typedef struct packed {
-  logic [15:0] ethertype;
-  logic [6*8-1:0] src_addr;
   logic [6*8-1:0] dst_addr;
+  logic [6*8-1:0] src_addr;
+  logic [15:0] ethertype;
 } ether_header;
 
 typedef struct packed {
-  logic [31:0] dst_addr;
-  logic [31:0] src_addr;
-  logic [15:0] header_checksum;
-  logic [7:0] protocol;
-  logic [7:0] ttl;
-  logic [12:0] frag_offset;
-  logic [2:0] flags;
-  logic [15:0] identification;
-  logic [15:0] total_length;
-  logic [1:0] ecn;
-  logic [5:0] dscp;
-  logic [3:0] ihl;
   logic [3:0] version;
+  logic [3:0] ihl;
+  logic [5:0] dscp;
+  logic [1:0] ecn;
+  logic [15:0] total_length;
+  logic [15:0] identification;
+  logic [2:0] flags;
+  logic [12:0] frag_offset;
+  logic [7:0] ttl;
+  logic [7:0] protocol;
+  logic [15:0] header_checksum;
+  logic [31:0] src_addr;
 } ipv4_header;
 
 typedef struct packed {
-    logic [15:0] checksum;
-    logic [15:0] length;
-    logic [15:0] dst_port;
-    logic [15:0] src_port;
-    ipv4_header ipv4;
     ether_header ether;
+    ipv4_header ipv4;
+    logic [15:0] src_port;
+    logic [15:0] dst_port;
+    logic [15:0] length;
+    logic [15:0] checksum;
 } udp_header;
 
 module udp_port_change
@@ -83,18 +82,17 @@ module udp_port_change
     assign should_use_modified_packet = m_axis_tlast && s_udp_header.ipv4.protocol == 17;
 
     // Extract UDP header from the data
-    assign s_udp_header = s_axis_tdata[$bits(udp_header)-1:0];
+    assign s_udp_header = {<<($bits(udp_header)){s_axis_tdata[$bits(udp_header)-1:0]}};
     assign port_fixed_udp_header = '{
-        s_udp_header.checksum,
-        s_udp_header.length,
-        100,
-        s_udp_header.src_port,
+        s_udp_header.ether,
         s_udp_header.ipv4,
-        s_udp_header.ether
-        };
+        s_udp_header.src_port,
+        100,
+        s_udp_header.length,
+        s_udp_header.checksum};
 
     // Data assuming we make our modifications to the headers
-    assign s_data_modified = {s_axis_tdata[C_S_AXIS_DATA_WIDTH-1:$bits(udp_header)],port_fixed_udp_header};
+    assign s_data_modified = {s_axis_tdata[C_S_AXIS_DATA_WIDTH-1:$bits(udp_header)]}, {<<($bits(udp_header)){s_udp_header}};
 
     // Change port number
 
