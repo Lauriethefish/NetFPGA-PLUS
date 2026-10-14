@@ -22,11 +22,21 @@ package inter_structs;
   } ipv4_header;
 
   typedef struct packed {
-      ether_header ether;
-      ipv4_header ipv4;
-      logic [15:0] src_port;
-      logic [15:0] dst_port;
-      logic [15:0] length;
-      logic [15:0] checksum;
+    ether_header ether;
+    ipv4_header ipv4;
+    logic [15:0] src_port;
+    logic [15:0] dst_port;
+    logic [15:0] length;
+    logic [15:0] checksum;
   } udp_header;
+
+  // Used for checksum calculation
+  typedef struct packed {
+    logic [31:0] src_addr;
+    logic [31:0] dst_addr;
+    logic [7:0] zeroes;
+    logic [7:0] protocol;
+    logic [15:0] udp_length;
+    udp_header udp;
+  } udp_pseudo_header;
 endpackage

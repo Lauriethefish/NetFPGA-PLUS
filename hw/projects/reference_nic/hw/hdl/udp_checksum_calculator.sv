@@ -63,8 +63,43 @@ module udp_checksum_calculator
         end
     endgenerate
 
+    // NB: Need to use separate set of bits if doing the pseudoheader
+    // calculation.
+    wire udp_header tdata_udp_header;
+    assign tdata_udp_header = {<<8{masked_tdata[$bits(udp_header)-1:0]}};
+
+    wire udp_pseudo_header pseudo_header;
+    assign pseudo_header = '{
+        tdata_udp_header.ipv4.src_addr,
+        tdata_udp_header.ipv4.dst_addr,
+        8'b0,
+        tdata_udp_header.ipv4.protocol,
+        tdata_udp_header.length,
+        '{
+            tdata_udp_header.src_port,
+            tdata_udp_header.dst_port,
+            tdata_udp_header.length,
+            16'b0 // Consider checksum as being 0 for calculation.
+        }
+    };
+
+    wire [$bits(udp_pseudo_header)-1:0] pseudo_header_bits;
+    assign pseudo_header_bits = {<<8{pseudo_header}};
+
+    wire [C_M_AXIS_DATA_WIDTH - 1:0] masked_tdata_with_pseudo_header;
+
+    // Realign the data with the pseudo header included.
+    // Pad out with 0s as the pseudo header is smaller than the real header.
+    assign masked_tdata_with_pseudo_header = {($bits(udp_header) - $bits(udp_pseudo_header))'b0,
+    masked_tdata[C_M_AXIS_DATA_WIDTH-1:$bits(udp_header)],
+    pseudo_header_bits};
+
+    // Work out what to use for computing checksum based upon whether this is the header transaction.
+    wire [C_M_AXIS_DATA_WIDTH - 1:0] tdata_to_use = buffer_pos == 0 ? masked_tdata_with_pseudo_header : masked_tdata;
+
+
     wire [C_M_AXIS_DATA_WIDTH - 1:0] ordered_masked_tdata;
-    assign ordered_masked_tdata = {<<8{masked_tdata}};
+    assign ordered_masked_tdata = {<<8{tdata_to_use}};
 
 
     wire udp_header buffered_header;
