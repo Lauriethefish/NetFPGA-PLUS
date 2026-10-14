@@ -37,6 +37,9 @@ package inter_structs;
     logic [7:0] zeroes;
     logic [7:0] protocol;
     logic [15:0] udp_length;
-    udp_header udp;
+    logic [15:0] src_port;
+    logic [15:0] dst_port;
+    logic [15:0] length;
+    logic [15:0] checksum;
   } udp_pseudo_header;
 endpackage

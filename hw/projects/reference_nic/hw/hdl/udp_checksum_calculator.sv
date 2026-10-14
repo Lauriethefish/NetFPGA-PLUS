@@ -75,12 +75,10 @@ module udp_checksum_calculator
         8'b0,
         tdata_udp_header.ipv4.protocol,
         tdata_udp_header.length,
-        '{
-            tdata_udp_header.src_port,
-            tdata_udp_header.dst_port,
-            tdata_udp_header.length,
-            16'b0 // Consider checksum as being 0 for calculation.
-        }
+        tdata_udp_header.src_port,
+        tdata_udp_header.dst_port,
+        tdata_udp_header.length,
+        16'b0 // Consider checksum as being 0 for calculation.
     };
 
     wire [$bits(udp_pseudo_header)-1:0] pseudo_header_bits;
