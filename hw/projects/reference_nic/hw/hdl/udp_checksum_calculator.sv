@@ -146,12 +146,13 @@ module udp_checksum_calculator
                     // Add contribution to the checksum.
                     // NOTE: the header is different and we need to deal with this fact.
                     running_checksum <= running_checksum + transfer_checksum;
-                end
-                // If this is the last packet, then next time, we're in sending mode
-                if(s_axis_tlast) begin
-                    state <= 1;
-                    buffer_len <= buffer_pos;
-                    buffer_pos <= 0;
+
+                    // If this is the last packet, then next time, we're in sending mode
+                    if(s_axis_tlast) begin
+                        state <= 1;
+                        buffer_len <= buffer_pos + 1;
+                        buffer_pos <= 0;
+                    end
                 end
             end else begin
                 // Check if a transfer is going to occur
@@ -161,6 +162,7 @@ module udp_checksum_calculator
                         state <= 0;
                         buffer_len <= 0;
                         buffer_pos <= 0;
+                        running_checksum <= 0;
                     end else begin
                         // Not at the end, move to the next transfer
                         buffer_pos <= buffer_pos + 1;
