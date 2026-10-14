@@ -153,7 +153,7 @@ module udp_checksum_calculator
                     // If this is the last packet, then next time, we're in sending mode
                     if(s_axis_tlast) begin
                         state <= 1;
-                        buffer_len <= buffer_pos + 1;
+                        buffer_len <= buffer_pos;
                         buffer_pos <= 0;
                     end
                 end
