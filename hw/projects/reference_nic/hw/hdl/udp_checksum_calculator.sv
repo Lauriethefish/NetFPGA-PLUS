@@ -63,6 +63,9 @@ module udp_checksum_calculator
         end
     endgenerate
 
+    wire [C_M_AXIS_DATA_WIDTH - 1:0] ordered_masked_tdata;
+    assign ordered_masked_tdata = {<<8{masked_tdata}};
+
 
     wire udp_header buffered_header;
     wire [C_M_AXIS_DATA_WIDTH - 1:0] buffered_tdata;
@@ -110,14 +113,14 @@ module udp_checksum_calculator
         for(i = 0; i < C_M_AXIS_DATA_WIDTH/128; i++) begin
             // Select each of the 16 bit blocks and sum them up
             // Noting that the 8 bit blocks need to be reshuffled due to bit order.
-            assign segment_sums[i] =  16'({<<8{masked_tdata[i*128+16*1-1: i*128+16*0]}}) +
-                + 16'({<<8{masked_tdata[i*128+16*2-1: i*128+16*1]}})
-                + 16'({<<8{masked_tdata[i*128+16*3-1: i*128+16*2]}})
-                + 16'({<<8{masked_tdata[i*128+16*4-1: i*128+16*3]}})
-                + 16'({<<8{masked_tdata[i*128+16*5-1: i*128+16*4]}})
-                + 16'({<<8{masked_tdata[i*128+16*6-1: i*128+16*5]}})
-                + 16'({<<8{masked_tdata[i*128+16*7-1: i*128+16*6]}})
-                + 16'({<<8{masked_tdata[i*128+16*8-1: i*128+16*7]}});
+            assign segment_sums[i] =  ordered_masked_tdata[i*128+16*1-1: i*128+16*0] +
+                + ordered_masked_tdata[i*128+16*2-1: i*128+16*1]
+                + ordered_masked_tdata[i*128+16*3-1: i*128+16*2]
+                + ordered_masked_tdata[i*128+16*4-1: i*128+16*3]
+                + ordered_masked_tdata[i*128+16*5-1: i*128+16*4]
+                + ordered_masked_tdata[i*128+16*6-1: i*128+16*5]
+                + ordered_masked_tdata[i*128+16*7-1: i*128+16*6]
+                + ordered_masked_tdata[i*128+16*8-1: i*128+16*7];
         end
     endgenerate
 
