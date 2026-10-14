@@ -90,9 +90,7 @@ module udp_checksum_calculator
 
     // Realign the data with the pseudo header included.
     // Pad out with 0s as the pseudo header is smaller than the real header.
-    assign masked_tdata_with_pseudo_header = {($bits(udp_header) - $bits(udp_pseudo_header))'b0,
-    masked_tdata[C_M_AXIS_DATA_WIDTH-1:$bits(udp_header)],
-    pseudo_header_bits};
+    assign masked_tdata_with_pseudo_header = {masked_tdata[C_M_AXIS_DATA_WIDTH-1:$bits(udp_header)], pseudo_header_bits};
 
     // Work out what to use for computing checksum based upon whether this is the header transaction.
     wire [C_M_AXIS_DATA_WIDTH - 1:0] tdata_to_use = buffer_pos == 0 ? masked_tdata_with_pseudo_header : masked_tdata;
