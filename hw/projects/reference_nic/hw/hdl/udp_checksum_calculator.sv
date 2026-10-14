@@ -18,9 +18,9 @@ module udp_checksum_calculator
     output [C_M_AXIS_DATA_WIDTH - 1:0] m_axis_tdata,
     output [((C_M_AXIS_DATA_WIDTH / 8)) - 1:0] m_axis_tkeep,
     output [C_M_AXIS_TUSER_WIDTH-1:0] m_axis_tuser,
-    output reg m_axis_tvalid,
+    output m_axis_tvalid,
     input  m_axis_tready,
-    output reg m_axis_tlast,
+    output m_axis_tlast,
 
     // Slave Stream Ports (read packet data)
     input [C_S_AXIS_DATA_WIDTH - 1:0] s_axis_tdata,
@@ -97,6 +97,7 @@ module udp_checksum_calculator
     assign m_axis_tkeep = buffered_tkeep;
     // Valid if currently outputting the packet we have stored.
     assign m_axis_tvalid = state;
+    assign m_axis_tlast = buffer_pos == buffer_len;
 
     // Computing the checksum of the data
     // 128 bits is 8x16 bit words. We add all these words up
