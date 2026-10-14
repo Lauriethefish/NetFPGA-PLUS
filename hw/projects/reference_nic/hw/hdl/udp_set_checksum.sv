@@ -125,12 +125,12 @@ module udp_set_checksum
         // Alternate the acceptor and dumper
         if(axis_resetn) begin
             // If we're finishing a packet from the dumper
-            if(m_axis_tlast) begin
+            if(m_axis_tlast && m_axis_tvalid) begin
                 current_dumper <= ~current_dumper;
             end
 
             // If we're finishing a packet from the input
-            if(s_axis_tlast) begin
+            if(s_axis_tlast && s_axis_tvalid) begin
                 current_acceptor <= ~current_acceptor;
             end
         end else begin
