@@ -138,33 +138,20 @@ module udp_checksum_calculator
     // 128 bits is 8x16 bit words. We add all these words up
     // Datapath is 1024 bits wide
     // So need to add up 8 of these words
-    wire [31:0] segment_sums [C_M_AXIS_DATA_WIDTH/128];
+    wire [31:0] partial_sums [(C_M_AXIS_DATA_WIDTH/16)+1];
+    assign partial_sums[0] = 0;
+
     wire [31:0] transfer_checksum;
 
     generate
-        for(i = 0; i < C_M_AXIS_DATA_WIDTH/128; i++) begin
+        for(i = 1; i <= C_M_AXIS_DATA_WIDTH/16; i++) begin
             // Select each of the 16 bit blocks and sum them up
-            // Noting that the 8 bit blocks need to be reshuffled due to bit order.
-            assign segment_sums[i] =  ordered_masked_tdata[i*128+16*1-1: i*128+16*0] +
-                + ordered_masked_tdata[i*128+16*2-1: i*128+16*1]
-                + ordered_masked_tdata[i*128+16*3-1: i*128+16*2]
-                + ordered_masked_tdata[i*128+16*4-1: i*128+16*3]
-                + ordered_masked_tdata[i*128+16*5-1: i*128+16*4]
-                + ordered_masked_tdata[i*128+16*6-1: i*128+16*5]
-                + ordered_masked_tdata[i*128+16*7-1: i*128+16*6]
-                + ordered_masked_tdata[i*128+16*8-1: i*128+16*7];
+            assign partial_sums[i] = partial_sums[i-1] + ordered_masked_tdata[i*16-1:(i-1)*16];
         end
     endgenerate
 
-    // Sum all the individual checksums to get the transfer checksum
-    assign transfer_checksum = segment_sums[0]
-        + segment_sums[1]
-        + segment_sums[2]
-        + segment_sums[3]
-        + segment_sums[4]
-        + segment_sums[5]
-        + segment_sums[6]
-        + segment_sums[7];
+    // Last partial sum is the entire checksum
+    assign transfer_checksum = partial_sums[(C_M_AXIS_DATA_WIDTH/16)];
 
     always_ff @(posedge axis_aclk) begin
         if(!axis_resetn) begin
