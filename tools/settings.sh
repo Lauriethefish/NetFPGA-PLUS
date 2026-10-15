@@ -24,7 +24,7 @@
 #
 ### User defined
 export NFPLUS_FOLDER=${HOME}/NetFPGA-PLUS
-export BOARD_NAME=au250
+export BOARD_NAME=au280
 export NF_PROJECT_NAME=reference_nic
 export PYTHON_BNRY=/home/lf540/NetFPGA-PLUS/.venv/bin/python3
 
