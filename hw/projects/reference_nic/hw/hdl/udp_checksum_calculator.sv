@@ -45,7 +45,7 @@ module udp_checksum_calculator
 
     // Each carry (i.e. the upper 16 bits) needs to be accounted for as a single
     // unit in the lower bits.
-    assign trimmed_checksum = (running_checksum & 16'hffff) + (running_checksum[31:16]);
+    assign trimmed_checksum = ~((running_checksum[0:15]) + (running_checksum[31:16]));
     // If the computed checksum is 0, then we need to set it to FFFF as 0
     // indicates no checksum is present.
     assign final_checksum = |trimmed_checksum ? trimmed_checksum : 16'hffff;
