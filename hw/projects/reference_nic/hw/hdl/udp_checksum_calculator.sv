@@ -91,7 +91,9 @@ module udp_checksum_calculator
     assign masked_tdata_with_pseudo_header = {masked_tdata[C_M_AXIS_DATA_WIDTH-1:$bits(udp_header)], pseudo_header_bits};
 
     // Work out what to use for computing checksum based upon whether this is the header transaction.
-    wire is_udp_packet = buffered_header.ipv4.protocol == 17;
+    wire is_udp_packet;
+    assign is_udp_packet = (buffered_header.ipv4.protocol == 'd17);
+
     wire [C_M_AXIS_DATA_WIDTH - 1:0] tdata_to_use = buffer_pos == 0 ? masked_tdata_with_pseudo_header : masked_tdata;
 
 
