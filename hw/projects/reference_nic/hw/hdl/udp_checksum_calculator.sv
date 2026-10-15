@@ -92,7 +92,7 @@ module udp_checksum_calculator
 
     // Work out what to use for computing checksum based upon whether this is the header transaction.
     wire is_udp_packet = buffered_header.ipv4.protocol == 17;
-    wire [C_M_AXIS_DATA_WIDTH - 1:0] tdata_to_use = (is_udp_packet && buffer_pos) == 0 ? masked_tdata_with_pseudo_header : masked_tdata;
+    wire [C_M_AXIS_DATA_WIDTH - 1:0] tdata_to_use = buffer_pos == 0 ? masked_tdata_with_pseudo_header : masked_tdata;
 
 
     wire [C_M_AXIS_DATA_WIDTH - 1:0] ordered_masked_tdata;
@@ -122,7 +122,7 @@ module udp_checksum_calculator
     assign checksum_set_header_bits = {<<8{checksum_set_header}};
 
     // Overwrite the header if this is the first transfer of the packet.
-    assign buffered_tdata_with_header_update = buffer_pos == 0 ?
+    assign buffered_tdata_with_header_update = (is_udp_packet && buffer_pos == 0) ?
         {buffered_tdata[C_M_AXIS_DATA_WIDTH - 1:$bits(udp_header)],checksum_set_header_bits}
         : buffered_tdata;
 
