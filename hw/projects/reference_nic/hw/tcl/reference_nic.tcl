@@ -43,7 +43,7 @@ set_param board.repoPaths $::env(BOARD_FILE_PATH)
 # Design Parameters on NF_DATAPATH
 #####################################
 set datapath_width_bit    1024
-set datapath_freq_mhz     250
+set datapath_freq_mhz     200
 #####################################
 # Project Settings
 #####################################
