@@ -39,6 +39,9 @@ set ip_version 1.01
 set lib_name NetFPGA
 set top top_sim
 set sim_top top_tb
+set device $::env(DEVICE)
+set board  $::env(BOARD)
+set board_name  $::env(BOARD_NAME)
 
 set test_name [lindex $argv 0]
 #####################################
