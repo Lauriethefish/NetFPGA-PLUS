@@ -48,7 +48,7 @@ set test_name [lindex $argv 0]
 #####################################
 # Project Settings
 #####################################
-create_project -name ${design} -force -dir "./${proj_dir}" -part ${device} -ip
+create_project -name ${design} -force -dir "./${proj_dir}" -part ${device}
 set_property board_part ${board} [current_project]
 set_property source_mgmt_mode DisplayOnly [current_project]
 set_property top ${top} [current_fileset]
@@ -59,15 +59,6 @@ puts "Creating UDP checksum setting IP"
 create_fileset -constrset -quiet constraints
 file copy ${public_repo_dir}/ ${repo_dir}
 set_property ip_repo_paths ${repo_dir} [current_fileset]
-#####################################
-# Project Constraints
-#####################################
-set project_constraints ./constraints/${board_name}_switch.xdc
-
-#####################################
-# Design Parameters on NF_DATAPATH
-#####################################
-set datapath_width_bit    1024
 
 update_ip_catalog
 create_ip -name axis_sim_stim -vendor NetFPGA -library NetFPGA -module_name axis_sim_stim_ip0
@@ -110,4 +101,4 @@ set output [exec $::env(PYTHON_BNRY) $::env(NF_DESIGN_DIR)/test/${test_name}/run
 puts $output
 
 launch_simulation -simset sim_1 -mode behavioral
-run 10us
+run 140us
