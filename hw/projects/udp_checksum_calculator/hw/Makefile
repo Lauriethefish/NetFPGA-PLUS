@@ -9,13 +9,11 @@ clean:
 sim:	simclean
 	vivado -mode batch -source ../../../projects/${PROJ}/hw/tcl/${NF_PROJECT_NAME}_sim.tcl -tclargs ${TESTNAME}
 	$(NFPLUS_FOLDER)/tools/scripts/nf_sim_reconcile_axi_logs.py
-	$(NFPLUS_FOLDER)/tools/scripts/nf_sim_registers_axi_logs.py
 
 
 simgui: simclean 
 	vivado -mode gui -source ../../../projects/${PROJ}/hw/tcl/$(NF_PROJECT_NAME)_sim.tcl -tclargs ${TESTNAME}
 	$(NFPLUS_FOLDER)/tools/scripts/nf_sim_reconcile_axi_logs.py
-	$(NFPLUS_FOLDER)/tools/scripts/nf_sim_registers_axi_logs.py
 
 simclean:
 	rm -rf proj_* vivado*.* *.*~ .Xil* $(NF_DESIGN_DIR)/hw/ip_repo/ $(NF_DESIGN_DIR)/hw/project/
