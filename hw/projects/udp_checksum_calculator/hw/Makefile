@@ -1,3 +1,5 @@
+PROJ = ${NF_PROJECT_NAME}
+
 all: clean
 	vivado -mode batch -source udp_checksum_calculator.tcl
 
