@@ -42,6 +42,9 @@ set sim_top top_tb
 set device $::env(DEVICE)
 set board  $::env(BOARD)
 set board_name  $::env(BOARD_NAME)
+set proj_dir ./project
+set public_repo_dir $::env(NFPLUS_FOLDER)/hw/lib/
+set repo_dir ./ip_repo
 
 set test_name [lindex $argv 0]
 #####################################
