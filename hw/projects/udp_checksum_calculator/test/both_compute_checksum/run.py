@@ -74,8 +74,8 @@ for i in range(NUM_PKTS):
     pkts_sent.append(pkt)
     pkts_expected.append(pkt_expect)
 
-nftest_send_single('nf0', pkts_sent) 
-nftest_expect_single('nf0', pkts_expected) 
+nftest_send_single(pkts_sent) 
+nftest_expect_single(pkts_expected) 
 
 print("")
 
