@@ -61,18 +61,6 @@ read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/udp_checksum_calculator.sv"
 read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/udp_set_checksum.sv"
 update_compile_order -fileset sources_1
 update_compile_order -fileset sim_1
-ipx::package_project
-
-set_property name ${design} [ipx::current_core]
-set_property library ${lib_name} [ipx::current_core]
-set_property vendor_display_name {NetFPGA} [ipx::current_core]
-set_property company_url {http://www.netfpga.org} [ipx::current_core]
-set_property vendor {NetFPGA} [ipx::current_core]
-set_property supported_families {{virtexuplus} {Production} {virtexuplushbm} {Production}} [ipx::current_core]
-set_property taxonomy {{/NetFPGA/Generic}} [ipx::current_core]
-set_property version ${ip_version} [ipx::current_core]
-set_property display_name ${design} [ipx::current_core]
-set_property description ${design} [ipx::current_core]
 
 #####################################
 # Design Parameters on NF_DATAPATH
