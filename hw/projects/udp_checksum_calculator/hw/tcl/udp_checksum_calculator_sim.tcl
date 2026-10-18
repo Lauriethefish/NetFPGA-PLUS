@@ -35,22 +35,16 @@ set design udp_checksum_calculator
 set top udp_set_checksum
 set device $::env(DEVICE)
 set proj_dir ./synth
-set ip_version 1.01
-set lib_name NetFPGA
 set top top_sim
 set sim_top top_tb
-set device $::env(DEVICE)
 set board  $::env(BOARD)
 set board_name  $::env(BOARD_NAME)
 set proj_dir ./project
 set public_repo_dir $::env(NFPLUS_FOLDER)/hw/lib/
 set repo_dir ./ip_repo
+set project_constraints ./constraints/${board_name}_switch.xdc
 
 set test_name [lindex $argv 0]
-#####################################
-# set IP paths
-#####################################
-
 #####################################
 # Project Settings
 #####################################
@@ -59,7 +53,6 @@ set_property board_part ${board} [current_project]
 set_property source_mgmt_mode DisplayOnly [current_project]
 set_property top ${top} [current_fileset]
 puts "Creating UDP checksum setting IP"
-
 #####################################
 # set IP paths
 #####################################
