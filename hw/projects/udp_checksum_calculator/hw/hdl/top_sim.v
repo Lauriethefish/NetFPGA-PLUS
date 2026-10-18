@@ -176,7 +176,12 @@
       .m_axis_tlast (p_axis_o_tlast)
     );
 
-	axis_sim_stim_ip0 axis_sim_stim_0 (
+	axis_sim_stim_ip0 axis_sim_stim_0
+  #(
+    parameter C_S_AXIS_DATA_WIDTH = 1024,
+    parameter C_S_AXIS_TUSER_WIDTH = 128,
+  )
+  (
 		.ACLK            (clk_200),
 		.ARESETN         (sys_rst_n_c),
 
@@ -194,7 +199,12 @@
 		.barrier_proceed (barrier_proceed)
 	);
 
-	axis_sim_record_ip0 axis_sim_record_0 (
+	axis_sim_record_ip0 
+  #(
+    parameter C_S_AXIS_DATA_WIDTH = 1024,
+    parameter C_S_AXIS_TUSER_WIDTH = 128,
+  )
+  axis_sim_record_0 (
 		.axi_aclk (clk_200),
 		// Slave Stream Ports (interface to data path)
 		.s_axis_tdata (p_axis_o_tdata),
