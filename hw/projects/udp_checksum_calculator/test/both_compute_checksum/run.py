@@ -76,6 +76,7 @@ for i in range(NUM_PKTS):
 
 nftest_send_single(pkts_sent) 
 nftest_expect_single(pkts_expected) 
+mres = []
 
 print("")
 
