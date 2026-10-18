@@ -85,6 +85,7 @@ update_compile_order -fileset sim_1
 #####################################
 set datapath_width_bit    1024
 
+update_ip_catalog
 create_ip -name axis_sim_stim -vendor NetFPGA -library NetFPGA -module_name axis_sim_stim_ip0
 set_property -dict [list CONFIG.input_file $::env(NF_DESIGN_DIR)/test/checksum_calc_stim.axi] [get_ips axis_sim_stim_ip0]
 generate_target all [get_ips axis_sim_stim_ip0]
