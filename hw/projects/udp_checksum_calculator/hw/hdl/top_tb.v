@@ -40,7 +40,7 @@
 
  module top_tb # (
   parameter          PL_SIM_FAST_LINK_TRAINING           = "TRUE",      // Simulation Speedup
-  parameter          C_DATA_WIDTH                        = 512,         // RX/TX interface data width
+  parameter          C_DATA_WIDTH                        = 1024,         // RX/TX interface data width
   parameter          KEEP_WIDTH                          = C_DATA_WIDTH / 32,
   parameter  integer USER_CLK2_FREQ                 = 4,
   parameter          REF_CLK_FREQ                   = 0,           // 0 - 100 MHz, 1 - 125 MHz,  2 - 250 MHz

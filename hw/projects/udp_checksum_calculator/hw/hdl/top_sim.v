@@ -42,7 +42,7 @@
 `timescale 1ps / 100 fs
 
  module top_sim # (
-  parameter          C_DATA_WIDTH                        = 512,         // RX/TX interface data width
+  parameter          C_DATA_WIDTH                        = 1024,         // RX/TX interface data width
   parameter          C_TUSER_WIDTH                       = 128,         // RX/TX interface data width  
   parameter          C_NF_DATA_WIDTH                     = 1024,         // RX/TX interface data width
   parameter          KEEP_WIDTH                          = C_DATA_WIDTH / 32
