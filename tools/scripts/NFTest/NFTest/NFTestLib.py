@@ -327,6 +327,22 @@ def nftest_expect_dma(ifaceName, pkt, mask = None):
         hwPktLib.expect(iface_map[ifaceName], pkt, mask)
 
 ############################
+# Function: nftest_send_single
+# Arguments: packet to send
+# Description: sends a packet down the simulator-only single AXI stream interface
+############################
+def nftest_send_single(pkt):
+    axitools.axis_dump( pkt, simLib.fsinglestim(), 512, 1e-9 )
+
+############################
+# Function: nftest_expect_single
+# Arguments: packet to expect
+# Description: expects a packet from the simulator-only single AXI stream interface
+############################
+def nftest_expect_single(pkt):
+    axitools.axis_dump( pkt, simLib.fsingleexpect(), 512, 1e-9 )
+
+############################
 # Function: nftest_barrier
 # Arguments: none
 # Description: pauses execution until expected packets arrive

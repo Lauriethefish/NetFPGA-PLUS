@@ -50,6 +50,8 @@ f_expectDMA = []
 f_dma = []
 f_regstim = []
 f_regexpect = []
+f_singlestim = []
+f_singleexpect = []
 
 # directory = 'packet_data'
 dma_stim = 'dma_0_stim.axi'
@@ -58,6 +60,8 @@ ingress_fileHeader = 'nf_interface_' # 'ingress_port_'
 expectPHY_fileHeader = 'nf_interface_' # 'expected_port_'
 reg_expect = 'reg_expect.axi' 
 reg_stim = 'reg_stim.axi'
+single_stim = 'single_stim.axi'
+single_expect = 'single_expect.axi'
 
 ############################
 # Function: init()
@@ -69,6 +73,8 @@ def init():
     f_dma = open(dma_stim,'w')  
     f_regstim = open(reg_stim, 'w')
     f_regexpect = open(reg_expect, 'w')  
+    f_singlestim = open(single_stim, 'w')
+    f_singleexpect = open(single_expect, 'w')
 
     for i in range(NUM_PORTS):
         filename = ingress_fileHeader + str(i) + "_stim.axi"
@@ -142,6 +148,17 @@ def fregstim():
 
 def fregexpect():
     return f_regexpect
+
+############################
+# Function: fsinglestim(), fsingleexpect()
+#  A Getter that returns the file pointer for the single-port
+# AXI stream input/output.
+############################
+def fsinglestim():
+    return f_singlestim
+
+def fsingleexpect():
+    return f_singleexpect
 
 ############################
 # Function: fDMA
