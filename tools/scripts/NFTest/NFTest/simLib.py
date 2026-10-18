@@ -70,6 +70,7 @@ single_expect = 'single_expect.axi'
 def init():
 
     global f_dma; global f_regstim; global f_regexpect
+    global f_singlestim, f_singleexpect;
     f_dma = open(dma_stim,'w')  
     f_regstim = open(reg_stim, 'w')
     f_regexpect = open(reg_expect, 'w')  
