@@ -176,11 +176,12 @@
       .m_axis_tlast (p_axis_o_tlast)
     );
 
-	axis_sim_stim_ip0 axis_sim_stim_0
+	axis_sim_stim_ip0
   #(
     parameter C_S_AXIS_DATA_WIDTH = 1024,
     parameter C_S_AXIS_TUSER_WIDTH = 128,
   )
+  axis_sim_stim_0
   (
 		.ACLK            (clk_200),
 		.ARESETN         (sys_rst_n_c),
