@@ -62,11 +62,11 @@ set_property ip_repo_paths ${repo_dir} [current_fileset]
 
 update_ip_catalog
 create_ip -name axis_sim_stim -vendor NetFPGA -library NetFPGA -module_name axis_sim_stim_ip0
-set_property -dict [list CONFIG.input_file $::env(NF_DESIGN_DIR)/test/checksum_calc_stim.axi] [get_ips axis_sim_stim_ip0]
+set_property -dict [list CONFIG.input_file $::env(NF_DESIGN_DIR)/test/single_stim.axi] [get_ips axis_sim_stim_ip0]
 generate_target all [get_ips axis_sim_stim_ip0]
 
 create_ip -name axis_sim_record -vendor NetFPGA -library NetFPGA -module_name axis_sim_record_ip0
-set_property -dict [list CONFIG.OUTPUT_FILE $::env(NF_DESIGN_DIR)/test/checksum_calc_log.axi] [get_ips axis_sim_record_ip0]
+set_property -dict [list CONFIG.OUTPUT_FILE $::env(NF_DESIGN_DIR)/test/single_log.axi] [get_ips axis_sim_record_ip0]
 reset_target all [get_ips axis_sim_record_ip0]
 generate_target all [get_ips axis_sim_record_ip0]
 
