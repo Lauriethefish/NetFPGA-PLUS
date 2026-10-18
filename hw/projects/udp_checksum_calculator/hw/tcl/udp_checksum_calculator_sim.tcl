@@ -49,12 +49,22 @@ set test_name [lindex $argv 0]
 # Project Settings
 #####################################
 create_project -name ${design} -force -dir "./${proj_dir}" -part ${device} -ip
-set_property source_mgmt_mode All [current_project]  
+set_property board_part ${board} [current_project]
+set_property source_mgmt_mode DisplayOnly [current_project]
 set_property top ${top} [current_fileset]
-set_property ip_repo_paths $::env(NFPLUS_FOLDER)/hw/lib/  [current_fileset]
 puts "Creating UDP checksum setting IP"
+
+#####################################
+# set IP paths
+#####################################
+create_fileset -constrset -quiet constraints
+file copy ${public_repo_dir}/ ${repo_dir}
+set_property ip_repo_paths ${repo_dir} [current_fileset]
+#####################################
 # Project Constraints
 #####################################
+set project_constraints ./constraints/${board_name}_switch.xdc
+
 # Project Structure & IP Build
 #####################################
 
@@ -99,4 +109,4 @@ set output [exec $::env(PYTHON_BNRY) $::env(NF_DESIGN_DIR)/test/${test_name}/run
 puts $output
 
 launch_simulation -simset sim_1 -mode behavioral
-run 140us
+run 10us
