@@ -39,6 +39,8 @@ set ip_version 1.01
 set lib_name NetFPGA
 set top top_sim
 set sim_top top_tb
+
+set test_name [lindex $argv 0]
 #####################################
 # set IP paths
 #####################################
