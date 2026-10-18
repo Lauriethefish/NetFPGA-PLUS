@@ -61,7 +61,7 @@ expectPHY_fileHeader = 'nf_interface_' # 'expected_port_'
 reg_expect = 'reg_expect.axi' 
 reg_stim = 'reg_stim.axi'
 single_stim = 'single_stim.axi'
-single_expect = 'single_expect.axi'
+single_expect = 'single_expected.axi'
 
 ############################
 # Function: init()
@@ -70,6 +70,7 @@ single_expect = 'single_expect.axi'
 def init():
 
     global f_dma; global f_regstim; global f_regexpect
+    global f_singlestim, f_singleexpect;
     f_dma = open(dma_stim,'w')  
     f_regstim = open(reg_stim, 'w')
     f_regexpect = open(reg_expect, 'w')  

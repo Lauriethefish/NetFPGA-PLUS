@@ -389,10 +389,13 @@ def nftest_finish(reg_list):
 		                 expected_dma[iface])
 
         total_errors += hwPktLib.finish()
-        for i in range(len(reg_list)):
-            if(reg_list[i]!=1):
-                reg_errors += 1	
-        reg_status = reg_read_result(reg_list)
+        if(len(reg_list) > 0):
+            for i in range(len(reg_list)):
+                if(reg_list[i]!=1):
+                    reg_errors += 1	
+            reg_status = reg_read_result(reg_list)
+        else:
+            reg_status = 1
         print('\n'+'*****************')
         print('HW Test results')
         print('*****************')
