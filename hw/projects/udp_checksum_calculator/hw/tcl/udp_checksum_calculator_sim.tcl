@@ -71,15 +71,6 @@ set_property ip_repo_paths ${repo_dir} [current_fileset]
 #####################################
 set project_constraints ./constraints/${board_name}_switch.xdc
 
-# Project Structure & IP Build
-#####################################
-
-read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/inter_structs.sv"
-read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/udp_checksum_calculator.sv"
-read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/udp_set_checksum.sv"
-update_compile_order -fileset sources_1
-update_compile_order -fileset sim_1
-
 #####################################
 # Design Parameters on NF_DATAPATH
 #####################################
@@ -94,6 +85,16 @@ create_ip -name axis_sim_record -vendor NetFPGA -library NetFPGA -module_name ax
 set_property -dict [list CONFIG.OUTPUT_FILE $::env(NF_DESIGN_DIR)/test/checksum_calc_log.axi] [get_ips axis_sim_record_ip0]
 reset_target all [get_ips axis_sim_record_ip0]
 generate_target all [get_ips axis_sim_record_ip0]
+
+#####################################
+# Project Structure & IP Build
+#####################################
+
+read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/inter_structs.sv"
+read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/udp_checksum_calculator.sv"
+read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/udp_set_checksum.sv"
+read_verilog "$::env(NF_DESIGN_DIR)/hw/hdl/top_sim.v"
+read_verilog "$::env(NF_DESIGN_DIR)/hw/hdl/top_tb.v"
 
 update_compile_order -fileset sources_1
 update_compile_order -fileset sim_1
