@@ -1,7 +1,7 @@
 PROJ = ${NF_PROJECT_NAME}
 
 all: clean
-	vivado -mode batch -source udp_checksum_calculator_sim.tcl
+	vivado -mode batch -source tcl/udp_checksum_calculator_sim.tcl
 
 clean:
 	rm -rf ip_*  vivado*.* *.xml xgui/ .Xil* *.*~ *.zip
