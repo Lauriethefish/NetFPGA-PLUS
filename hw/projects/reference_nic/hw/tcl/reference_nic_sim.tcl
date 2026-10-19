@@ -33,6 +33,7 @@ set board_name  $::env(BOARD_NAME)
 
 set proj_dir ./project
 set public_repo_dir $::env(NFPLUS_FOLDER)/hw/lib/
+set projects_dir $::env(NFPLUS_FOLDER)/hw/projects/
 set repo_dir ./ip_repo
 set project_constraints ./constraints/${board_name}_switch.xdc
 
@@ -57,6 +58,7 @@ puts "Creating User Datapath reference project"
 #####################################
 create_fileset -constrset -quiet constraints
 file copy ${public_repo_dir}/ ${repo_dir}
+file copy ${projects_dir}/udp_checksum_calculator ${repo_dir}/udp_checksum_calculator
 set_property ip_repo_paths ${repo_dir} [current_fileset]
  
 #####################################
