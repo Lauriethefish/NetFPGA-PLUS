@@ -31,6 +31,7 @@
 
 # Vivado Launch Script
 #### Change design settings here #######
+set device          $::env(DEVICE)
 set design udp_checksum_calculator
 set top udp_set_checksum
 set proj_dir ./synth
