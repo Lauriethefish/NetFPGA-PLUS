@@ -32,7 +32,6 @@
 # Vivado Launch Script
 #### Change design settings here #######
 set device          $::env(DEVICE)
-set design udp_checksum_calculator
 set top udp_set_checksum
 set proj_dir ./synth
 set proj_dir ./project
@@ -53,7 +52,7 @@ set test_name [lindex $argv 0]
 #####################################
 # Project Settings
 #####################################
-create_project -name ${design} -force -dir "./${proj_dir}" -part ${device}
+create_project -name ${ip_name} -force -dir "./${proj_dir}" -part ${device}
 set_property source_mgmt_mode DisplayOnly [current_project]
 set_property top ${top} [current_fileset]
 puts "Creating UDP checksum setting IP"
@@ -67,6 +66,7 @@ set_property ip_repo_paths ${repo_dir} [current_fileset]
 # Design Parameters on NF_DATAPATH
 #####################################
 set datapath_width_bit    1024
+update_ip_catalog
 
 set_property name 			${ip_name} [ipx::current_core]
 set_property library 			${lib_name} [ipx::current_core]
@@ -78,16 +78,6 @@ set_property taxonomy 			{{/NetFPGA/Generic}} [ipx::current_core]
 set_property version 			${ip_version} [ipx::current_core]
 set_property display_name 		${ip_display_name} [ipx::current_core]
 set_property description 		${ip_description} [ipx::current_core]
-
-update_ip_catalog
-create_ip -name axis_sim_stim -vendor NetFPGA -library NetFPGA -module_name axis_sim_stim_ip0
-set_property -dict [list CONFIG.input_file $::env(NF_DESIGN_DIR)/test/single_stim.axi] [get_ips axis_sim_stim_ip0]
-generate_target all [get_ips axis_sim_stim_ip0]
-
-create_ip -name axis_sim_record -vendor NetFPGA -library NetFPGA -module_name axis_sim_record_ip0
-set_property -dict [list CONFIG.OUTPUT_FILE $::env(NF_DESIGN_DIR)/test/single_log.axi] [get_ips axis_sim_record_ip0]
-reset_target all [get_ips axis_sim_record_ip0]
-generate_target all [get_ips axis_sim_record_ip0]
 
 create_ip -name nf_mac_attachment -vendor NetFPGA -library NetFPGA -module_name nf_mac_attachment_ip
 set_property CONFIG.C_M_AXIS_DATA_WIDTH ${datapath_width_bit} [get_ips nf_mac_attachment_ip]
