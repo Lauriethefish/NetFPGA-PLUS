@@ -68,6 +68,8 @@ set_property ip_repo_paths ${repo_dir} [current_fileset]
 set datapath_width_bit    1024
 update_ip_catalog
 
+ipx::package_project
+
 set_property name 			${ip_name} [ipx::current_core]
 set_property library 			${lib_name} [ipx::current_core]
 set_property vendor_display_name 	${vendor_display_name} [ipx::current_core]
