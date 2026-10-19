@@ -68,6 +68,19 @@ set_property ip_repo_paths ${repo_dir} [current_fileset]
 set datapath_width_bit    1024
 update_ip_catalog
 
+#####################################
+# Project Structure & IP Build
+#####################################
+
+read_verilog -sv "./hdl/inter_structs.sv"
+read_verilog -sv "./hdl/udp_checksum_calculator.sv"
+read_verilog -sv "./hdl/udp_set_checksum.sv"
+read_verilog "./hdl/top_sim.v"
+read_verilog "./hdl/top_tb.v"
+
+update_compile_order -fileset sources_1
+update_compile_order -fileset sim_1
+
 ipx::package_project
 
 set_property name 			${ip_name} [ipx::current_core]
@@ -87,19 +100,6 @@ set_property CONFIG.C_S_AXIS_DATA_WIDTH ${datapath_width_bit} [get_ips nf_mac_at
 set_property generate_synth_checkpoint false [get_files nf_mac_attachment_ip.xci]
 reset_target all [get_ips nf_mac_attachment_ip]
 generate_target all [get_ips nf_mac_attachment_ip]
-
-#####################################
-# Project Structure & IP Build
-#####################################
-
-read_verilog -sv "./hdl/inter_structs.sv"
-read_verilog -sv "./hdl/udp_checksum_calculator.sv"
-read_verilog -sv "./hdl/udp_set_checksum.sv"
-read_verilog "./hdl/top_sim.v"
-read_verilog "./hdl/top_tb.v"
-
-update_compile_order -fileset sources_1
-update_compile_order -fileset sim_1
 
 # Write IP Core xml to File system
 ipx::check_integrity [ipx::current_core]
