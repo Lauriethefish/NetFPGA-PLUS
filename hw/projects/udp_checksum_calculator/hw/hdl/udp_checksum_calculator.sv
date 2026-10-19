@@ -2,8 +2,8 @@
 // NB is either buffering a packet or outputting the result, not both.
 module udp_checksum_calculator
 #(
-    parameter C_M_AXIS_DATA_WIDTH=512,
-    parameter C_S_AXIS_DATA_WIDTH=512,
+    parameter C_M_AXIS_DATA_WIDTH=1024,
+    parameter C_S_AXIS_DATA_WIDTH=1024,
     parameter C_M_AXIS_TUSER_WIDTH=128,
     parameter C_S_AXIS_TUSER_WIDTH=128,
     parameter BUFFER_SIZE=16
