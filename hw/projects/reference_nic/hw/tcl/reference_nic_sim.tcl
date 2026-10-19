@@ -88,7 +88,7 @@ reset_target all [get_ips output_queues_ip]
 generate_target all [get_ips output_queues_ip]
 
 # Checksum calculator
-create_ip -name udp_checksum_calculator -vendor NetFPGA -library NetFPGA -module_name udp_set_checksum
+create_ip -name udp_checksum_calculator -vendor NetFPGA -library NetFPGA -module_name udp_checksum_calculator
 set_property generate_synth_checkpoint false [get_files udp_checksum_calculator.xci]
 reset_target all [get_ips udp_checksum_calculator]
 generate_target all [get_ips udp_checksum_calculator]
