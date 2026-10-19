@@ -58,7 +58,6 @@ puts "Creating User Datapath reference project"
 #####################################
 create_fileset -constrset -quiet constraints
 file copy ${public_repo_dir}/ ${repo_dir}
-file mkdir ${repo_dir}/udp_checksum_calculator
 file copy ${projects_dir}/udp_checksum_calculator ${repo_dir}
 set_property ip_repo_paths ${repo_dir} [current_fileset]
  
