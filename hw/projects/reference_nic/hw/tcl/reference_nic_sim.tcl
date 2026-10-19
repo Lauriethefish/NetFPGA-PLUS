@@ -33,6 +33,7 @@ set board_name  $::env(BOARD_NAME)
 
 set proj_dir ./project
 set public_repo_dir $::env(NFPLUS_FOLDER)/hw/lib/
+set projects_dir $::env(NFPLUS_FOLDER)/hw/projects
 set repo_dir ./ip_repo
 set project_constraints ./constraints/${board_name}_switch.xdc
 
@@ -57,6 +58,7 @@ puts "Creating User Datapath reference project"
 #####################################
 create_fileset -constrset -quiet constraints
 file copy ${public_repo_dir}/ ${repo_dir}
+file copy ${projects_dir}/udp_checksum_calculator ${repo_dir}
 set_property ip_repo_paths ${repo_dir} [current_fileset]
  
 #####################################
@@ -84,6 +86,12 @@ set_property CONFIG.C_S_AXIS_DATA_WIDTH ${datapath_width_bit} [get_ips output_qu
 set_property generate_synth_checkpoint false [get_files output_queues_ip.xci]
 reset_target all [get_ips output_queues_ip]
 generate_target all [get_ips output_queues_ip]
+
+# Checksum calculator
+create_ip -name udp_checksum_calculator -vendor NetFPGA -library NetFPGA -module_name udp_checksum_setter_ip
+set_property generate_synth_checkpoint false [get_files udp_checksum_setter_ip.xci]
+reset_target all [get_ips udp_checksum_setter_ip]
+generate_target all [get_ips udp_checksum_setter_ip]
 
 create_ip -name nf_mac_attachment -vendor NetFPGA -library NetFPGA -module_name nf_mac_attachment_ip
 set_property CONFIG.C_M_AXIS_DATA_WIDTH ${datapath_width_bit} [get_ips nf_mac_attachment_ip]
@@ -219,9 +227,6 @@ set_property generate_synth_checkpoint false [get_files axi_crossbar_0.xci]
 reset_target all [get_ips axi_crossbar_0]
 generate_target all [get_ips axi_crossbar_0]
 
-read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/inter_structs.sv"
-read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/udp_checksum_calculator.sv"
-read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/udp_set_checksum.sv"
 read_verilog "$::env(NF_DESIGN_DIR)/hw/hdl/nf_datapath.v"
 read_verilog "$::env(NF_DESIGN_DIR)/hw/hdl/top_sim.v"
 read_verilog "$::env(NF_DESIGN_DIR)/hw/hdl/top_tb.v"
