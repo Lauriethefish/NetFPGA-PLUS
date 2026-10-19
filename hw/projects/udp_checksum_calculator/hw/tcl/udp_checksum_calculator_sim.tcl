@@ -31,9 +31,9 @@
 
 # Vivado Launch Script
 #### Change design settings here #######
+set device          $::env(DEVICE)
 set design udp_checksum_calculator
 set top udp_set_checksum
-set device $::env(DEVICE)
 set proj_dir ./synth
 set top top_sim
 set sim_top top_tb
