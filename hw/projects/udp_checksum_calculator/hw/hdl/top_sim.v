@@ -183,8 +183,8 @@
 
 	axis_sim_stim_ip0
   #(
-    parameter C_S_AXIS_DATA_WIDTH = 1024,
-    parameter C_S_AXIS_TUSER_WIDTH = 128
+    C_S_AXIS_DATA_WIDTH(1024),
+    C_S_AXIS_TUSER_WIDTH(128)
   )
   axis_sim_stim_0
   (
@@ -207,8 +207,8 @@
 
 	axis_sim_record_ip0 
   #(
-    parameter C_S_AXIS_DATA_WIDTH = 1024,
-    parameter C_S_AXIS_TUSER_WIDTH = 128
+    C_S_AXIS_DATA_WIDTH(1024),
+    C_S_AXIS_TUSER_WIDTH(128)
   )
   axis_sim_record_0 (
 		.axi_aclk (clk_200),
