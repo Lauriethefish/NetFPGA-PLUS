@@ -191,7 +191,7 @@
 		.M_AXIS_TKEEP    (p_axis_i_tkeep),
 		.M_AXIS_TUSER    (p_axis_i_tuser),
 		.M_AXIS_TVALID   (p_axis_i_tvalid),
-		.M_AXIS_TREADY   (p_axis_i_tready),
+		.M_AXIS_TREADY   (1),
 		.M_AXIS_TLAST    (p_axis_i_tlast),
 
 		.counter         (counter0),
