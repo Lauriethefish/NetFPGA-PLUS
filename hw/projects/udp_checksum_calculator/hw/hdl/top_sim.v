@@ -38,7 +38,7 @@
 //
 // @NETFPGA_LICENSE_HEADER_END@
 //
-
+`default_nettype none
 `timescale 1ps / 100 fs
 
  module top_sim # (
