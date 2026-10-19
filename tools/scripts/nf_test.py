@@ -498,7 +498,7 @@ def prepareTestWorkDir(testName):
 		subprocess.call(['cp', '-r', '-p', src_test_dir + '/reg_stim.log', dst_dir])
 		subprocess.call(['cp', '-r', '-p', src_test_dir + '/reg_expect.axi', dst_dir])
 		subprocess.call(['cp', '-r', '-p', src_test_dir + '/reg_stim.axi', dst_dir])
-        subprocess.call(['cp', '-r', '-p', src_test_dir + '/single_expected.axi', dst_dir])
+		subprocess.call(['cp', '-r', '-p', src_test_dir + '/single_expected.axi', dst_dir])
 		subprocess.call(['cp', '-r', '-p', src_test_dir + '/single_stim.axi', dst_dir])
 		subprocess.call(['cp', '-r', '-p', src_test_dir + '/single_log.axi', dst_dir])
 
