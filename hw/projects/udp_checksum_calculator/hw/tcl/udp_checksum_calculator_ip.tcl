@@ -79,11 +79,11 @@ generate_target all [get_ips nf_mac_attachment_ip]
 # Project Structure & IP Build
 #####################################
 
-read_verilog -sv "./hw/hdl/inter_structs.sv"
-read_verilog -sv "./hw/hdl/udp_checksum_calculator.sv"
-read_verilog -sv "./hw/hdl/udp_set_checksum.sv"
-read_verilog "./hw/hdl/top_sim.v"
-read_verilog "./hw/hdl/top_tb.v"
+read_verilog -sv "./hdl/inter_structs.sv"
+read_verilog -sv "./hdl/udp_checksum_calculator.sv"
+read_verilog -sv "./hdl/udp_set_checksum.sv"
+read_verilog "./hdl/top_sim.v"
+read_verilog "./hdl/top_tb.v"
 
 update_compile_order -fileset sources_1
 update_compile_order -fileset sim_1
