@@ -79,11 +79,11 @@ generate_target all [get_ips nf_mac_attachment_ip]
 # Project Structure & IP Build
 #####################################
 
-read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/inter_structs.sv"
-read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/udp_checksum_calculator.sv"
-read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/udp_set_checksum.sv"
-read_verilog "$::env(NF_DESIGN_DIR)/hw/hdl/top_sim.v"
-read_verilog "$::env(NF_DESIGN_DIR)/hw/hdl/top_tb.v"
+read_verilog -sv "./hw/hdl/inter_structs.sv"
+read_verilog -sv "./hw/hdl/udp_checksum_calculator.sv"
+read_verilog -sv "./hw/hdl/udp_set_checksum.sv"
+read_verilog "./hw/hdl/top_sim.v"
+read_verilog "./hw/hdl/top_tb.v"
 
 update_compile_order -fileset sources_1
 update_compile_order -fileset sim_1
