@@ -231,7 +231,7 @@ module nf_datapath #(
       .S_AXI_ARESETN(axi_resetn)
     );
 
-    udp_checksum_setter
+    udp_checksum_setter_ip
     #(
       .C_M_AXIS_DATA_WIDTH (C_M_AXIS_DATA_WIDTH),
       .C_S_AXIS_DATA_WIDTH (C_S_AXIS_DATA_WIDTH),
