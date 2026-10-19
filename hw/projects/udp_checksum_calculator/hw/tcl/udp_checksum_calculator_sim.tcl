@@ -59,6 +59,10 @@ puts "Creating UDP checksum setting IP"
 create_fileset -constrset -quiet constraints
 file copy ${public_repo_dir}/ ${repo_dir}
 set_property ip_repo_paths ${repo_dir} [current_fileset]
+#####################################
+# Design Parameters on NF_DATAPATH
+#####################################
+set datapath_width_bit    1024
 
 update_ip_catalog
 create_ip -name axis_sim_stim -vendor NetFPGA -library NetFPGA -module_name axis_sim_stim_ip0
@@ -69,6 +73,13 @@ create_ip -name axis_sim_record -vendor NetFPGA -library NetFPGA -module_name ax
 set_property -dict [list CONFIG.OUTPUT_FILE $::env(NF_DESIGN_DIR)/test/single_log.axi] [get_ips axis_sim_record_ip0]
 reset_target all [get_ips axis_sim_record_ip0]
 generate_target all [get_ips axis_sim_record_ip0]
+
+create_ip -name nf_mac_attachment -vendor NetFPGA -library NetFPGA -module_name nf_mac_attachment_ip
+set_property CONFIG.C_M_AXIS_DATA_WIDTH ${datapath_width_bit} [get_ips nf_mac_attachment_ip]
+set_property CONFIG.C_S_AXIS_DATA_WIDTH ${datapath_width_bit} [get_ips nf_mac_attachment_ip]
+set_property generate_synth_checkpoint false [get_files nf_mac_attachment_ip.xci]
+reset_target all [get_ips nf_mac_attachment_ip]
+generate_target all [get_ips nf_mac_attachment_ip]
 
 #####################################
 # Project Structure & IP Build

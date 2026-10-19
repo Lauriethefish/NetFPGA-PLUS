@@ -100,6 +100,12 @@
   wire[C_TUSER_WIDTH-1:0]     p_axis_i_tuser , p_axis_o_tuser;
   wire[C_DATA_WIDTH/8-1:0]    p_axis_i_tkeep , p_axis_o_tkeep;
   wire                        p_axis_i_tready, p_axis_o_tready;
+  wire[C_DATA_WIDTH-1:0]      axis_i_tdata , axis_o_tdata;
+  wire                        axis_i_tvalid, axis_o_tvalid;
+  wire                        axis_i_tlast , axis_o_tlast;
+  wire[C_TUSER_WIDTH-1:0]     axis_i_tuser , axis_o_tuser;
+  wire[C_DATA_WIDTH/8-1:0]    axis_i_tkeep , axis_o_tkeep;
+  wire                        axis_i_tready, axis_o_tready;
 
   // Network Interfaces
   wire axi_aresetn;
@@ -161,19 +167,18 @@
       .axis_aclk(axis_aclk), 
       .axis_resetn(axis_resetn), 
       
-      .s_axis_tdata (p_axis_i_tdata), 
-      .s_axis_tkeep (p_axis_i_tkeep), 
-      .s_axis_tuser (p_axis_i_tuser), 
-      .s_axis_tvalid(p_axis_i_tvalid),
-      .s_axis_tready(p_axis_i_tready), 
-      .s_axis_tlast (p_axis_i_tlast),
-
-      .m_axis_tdata (p_axis_o_tdata), 
-      .m_axis_tkeep (p_axis_o_tkeep), 
-      .m_axis_tuser (p_axis_o_tuser), 
-      .m_axis_tvalid(p_axis_o_tvalid), 
-      .m_axis_tready(p_axis_o_tready), 
-      .m_axis_tlast (p_axis_o_tlast)
+      .s_axis_tdata (axis_i_tdata), 
+      .s_axis_tkeep (axis_i_tkeep), 
+      .s_axis_tuser (axis_i_tuser), 
+      .s_axis_tvalid(axis_i_tvalid),
+      .s_axis_tready(axis_i_tready), 
+      .s_axis_tlast (axis_i_tlast),
+      .m_axis_tdata (axis_o_tdata), 
+      .m_axis_tkeep (axis_o_tkeep), 
+      .m_axis_tuser (axis_o_tuser), 
+      .m_axis_tvalid(axis_o_tvalid), 
+      .m_axis_tready(axis_o_tready), 
+      .m_axis_tlast (axis_o_tlast)
     );
 
 	axis_sim_stim_ip0
@@ -217,6 +222,48 @@
 	
 		.counter (counter0),
 		.activity_rec(activity_rec0)
+	);
+
+  nf_mac_attachment_ip u_nf_attachment_0 (
+		// 10GE block clk & rst 
+		.clk156                (clk_200),  
+		.areset_clk156         (!sys_rst_n_c), 
+		// RX MAC 64b@clk156 (no backpressure) -> rx_queue 64b@axis_clk
+		.m_axis_mac_tdata      (p_axis_i_tdata),
+		.m_axis_mac_tkeep      (p_axis_i_tkeep),
+		.m_axis_mac_tvalid     (p_axis_i_tvalid),
+		.m_axis_mac_tuser_err  (1'b1),       // valid frame
+		.m_axis_mac_tuser      (p_axis_i_tuser),
+		.m_axis_mac_tlast      (p_axis_i_tlast),
+		// tx_queue 64b@axis_clk -> mac 64b@clk156
+		.s_axis_mac_tdata      (p_axis_o_tdata),
+		.s_axis_mac_tkeep      (p_axis_o_tkeep),
+		.s_axis_mac_tvalid     (p_axis_o_tvalid),
+		.s_axis_mac_tuser_err  (),      //underrun
+		.s_axis_mac_tuser      (p_axis_o_tuser),
+		.s_axis_mac_tlast      (p_axis_o_tlast),
+		.s_axis_mac_tready     (p_axis_o_tready),
+		
+		// TX/RX DATA channels  
+		.interface_number      (8'b0000_0001),
+		
+		// NFPLUS pipeline clk & rst 
+		.axis_aclk             (clk_200),
+		.axis_aresetn          (sys_rst_n_c),
+		// input from ref pipeline 256b -> MAC
+		.s_axis_pipe_tdata     (axis_o_tdata),
+		.s_axis_pipe_tkeep     (axis_o_tkeep),
+		.s_axis_pipe_tlast     (axis_o_tlast),
+		.s_axis_pipe_tuser     (axis_o_tuser),
+		.s_axis_pipe_tvalid    (axis_o_tvalid),
+		.s_axis_pipe_tready    (axis_o_tready),
+		// output to ref pipeline 256b -> DMA
+		.m_axis_pipe_tdata     (axis_i_tdata),
+		.m_axis_pipe_tkeep     (axis_i_tkeep),
+		.m_axis_pipe_tlast     (axis_i_tlast),
+		.m_axis_pipe_tuser     (axis_i_tuser),
+		.m_axis_pipe_tvalid    (axis_i_tvalid),
+		.m_axis_pipe_tready    (axis_i_tready)
 	);
 
 endmodule
