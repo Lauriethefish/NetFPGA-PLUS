@@ -164,8 +164,8 @@
     )
     set_checksum
     (
-      .axis_aclk(axis_aclk), 
-      .axis_resetn(axis_resetn), 
+      .axis_aclk(clk_200),
+      .axis_resetn(sys_rst_n_c), 
       
       .s_axis_tdata (axis_i_tdata), 
       .s_axis_tkeep (axis_i_tkeep), 
