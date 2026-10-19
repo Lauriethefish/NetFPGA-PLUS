@@ -61,7 +61,7 @@ expectPHY_fileHeader = 'nf_interface_' # 'expected_port_'
 reg_expect = 'reg_expect.axi' 
 reg_stim = 'reg_stim.axi'
 single_stim = 'single_stim.axi'
-single_expect = 'single_expect.axi'
+single_expect = 'single_expected.axi'
 
 ############################
 # Function: init()
