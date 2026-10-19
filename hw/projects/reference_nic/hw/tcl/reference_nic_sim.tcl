@@ -89,9 +89,9 @@ generate_target all [get_ips output_queues_ip]
 
 # Checksum calculator
 create_ip -name udp_checksum_calculator -vendor NetFPGA -library NetFPGA -module_name udp_checksum_setter_ip
-set_property generate_synth_checkpoint false [get_files udp_checksum_calculator.xci]
-reset_target all [get_ips udp_checksum_calculator]
-generate_target all [get_ips udp_checksum_calculator]
+set_property generate_synth_checkpoint false [get_files udp_checksum_setter_ip.xci]
+reset_target all [get_ips udp_checksum_setter_ip]
+generate_target all [get_ips udp_checksum_setter_ip]
 
 create_ip -name nf_mac_attachment -vendor NetFPGA -library NetFPGA -module_name nf_mac_attachment_ip
 set_property CONFIG.C_M_AXIS_DATA_WIDTH ${datapath_width_bit} [get_ips nf_mac_attachment_ip]
