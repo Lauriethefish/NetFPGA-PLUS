@@ -40,8 +40,7 @@ import sys
 import os
 from scapy.layers.all import Ether, IP, TCP, UDP
 
-conn = ('../connections/conn', [])
-nftest_init(sim_loop = ['nf0', 'nf1'], hw_config = [conn])
+nftest_init(sim_loop = [], hw_config = [])
 
 # NB: ONLY simulator is supported here. The checksum calculator can't be used
 # on its own on hardware, only integrated into the larger QUIC pipeline.
