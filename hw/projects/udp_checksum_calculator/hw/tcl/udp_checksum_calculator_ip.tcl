@@ -39,6 +39,16 @@ set proj_dir ./project
 set public_repo_dir $::env(NFPLUS_FOLDER)/hw/lib/
 set repo_dir ./ip_repo
 
+set device          $::env(DEVICE)
+set ip_name 		{udp_checksum_calculator}
+set lib_name 		{NetFPGA}
+set vendor_name 	{NetFPGA}
+set ip_display_name 	{udp_checksum_calculator}
+set ip_description 	{UDP checksum calculator at 100Gbps}
+set vendor_display_name {NetFPGA}
+set vendor_company_url 	{http://www.netfpga.org}
+set ip_version 		{1.0}
+
 set test_name [lindex $argv 0]
 #####################################
 # Project Settings
@@ -57,6 +67,17 @@ set_property ip_repo_paths ${repo_dir} [current_fileset]
 # Design Parameters on NF_DATAPATH
 #####################################
 set datapath_width_bit    1024
+
+set_property name 			${ip_name} [ipx::current_core]
+set_property library 			${lib_name} [ipx::current_core]
+set_property vendor_display_name 	${vendor_display_name} [ipx::current_core]
+set_property company_url 		${vendor_company_url} [ipx::current_core]
+set_property vendor 			${vendor_name} [ipx::current_core]
+set_property supported_families {{virtexuplus} {Production} {virtexuplushbm} {Production}} [ipx::current_core]
+set_property taxonomy 			{{/NetFPGA/Generic}} [ipx::current_core]
+set_property version 			${ip_version} [ipx::current_core]
+set_property display_name 		${ip_display_name} [ipx::current_core]
+set_property description 		${ip_description} [ipx::current_core]
 
 update_ip_catalog
 create_ip -name axis_sim_stim -vendor NetFPGA -library NetFPGA -module_name axis_sim_stim_ip0
@@ -87,3 +108,15 @@ read_verilog "./hdl/top_tb.v"
 
 update_compile_order -fileset sources_1
 update_compile_order -fileset sim_1
+
+# Write IP Core xml to File system
+ipx::check_integrity [ipx::current_core]
+write_peripheral [ipx::current_core]
+
+# Generate GUI Configuration Files
+ipx::create_xgui_files [ipx::current_core]
+ipx::update_checksums [ipx::current_core]
+ipx::save_core [ipx::current_core]
+
+close_project
+exit
