@@ -75,8 +75,6 @@ update_ip_catalog
 read_verilog -sv "./hdl/inter_structs.sv"
 read_verilog -sv "./hdl/udp_checksum_calculator.sv"
 read_verilog -sv "./hdl/udp_set_checksum.sv"
-read_verilog "./hdl/top_sim.v"
-read_verilog "./hdl/top_tb.v"
 
 update_compile_order -fileset sources_1
 update_compile_order -fileset sim_1
