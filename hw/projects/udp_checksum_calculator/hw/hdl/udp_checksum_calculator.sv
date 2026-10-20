@@ -26,6 +26,7 @@ module udp_checksum_calculator
     input [C_S_AXIS_DATA_WIDTH - 1:0] s_axis_tdata,
     input [((C_S_AXIS_DATA_WIDTH / 8)) - 1:0] s_axis_tkeep,
     input [C_S_AXIS_TUSER_WIDTH-1:0] s_axis_tuser,
+    input [31:0] tdata_half_sum,
     input  s_axis_tvalid,
     output s_axis_tready,
     input  s_axis_tlast
@@ -40,25 +41,27 @@ module udp_checksum_calculator
     assign s_axis_tready = state <= 1;
 
     reg [31:0] running_checksum;
-    wire [15:0] trimmed_checksum;
+    wire [31:0] trimmed_checksum;
+    wire [31:0] trimmed_checksum_2;
     wire [15:0] final_checksum;
 
     // Each carry (i.e. the upper 16 bits) needs to be accounted for as a single
     // unit in the lower bits.
-    assign trimmed_checksum = ~((running_checksum[15:0]) + (running_checksum[31:16]));
+    assign trimmed_checksum = (32'((running_checksum[15:0])) + 32'((running_checksum[31:16])));
+    assign trimmed_checksum_2 = ~(32'((trimmed_checksum[15:0])) + 32'((trimmed_checksum[31:16])));
     // If the computed checksum is 0, then we need to set it to FFFF as 0
     // indicates no checksum is present.
-    assign final_checksum = |trimmed_checksum ? trimmed_checksum : 16'hffff;
+    assign final_checksum = |trimmed_checksum_2 ? trimmed_checksum_2 : 16'hffff;
 
     reg [$clog2(BUFFER_SIZE)-1:0] buffer_pos;
     reg [$clog2(BUFFER_SIZE)-1:0] buffer_len;
     reg [C_M_AXIS_DATA_WIDTH + (C_M_AXIS_DATA_WIDTH/8) + C_M_AXIS_TUSER_WIDTH:0]
         buffered_stream[BUFFER_SIZE-1:0];
 
-    wire [C_M_AXIS_DATA_WIDTH - 1:0] masked_tdata;
+    wire [C_M_AXIS_DATA_WIDTH/2 - 1:0] masked_tdata;
     genvar i;
     generate
-        for(i = 0; i < C_M_AXIS_DATA_WIDTH/8; i++) begin
+        for(i = 0; i < C_M_AXIS_DATA_WIDTH/8/2; i++) begin
             assign masked_tdata[i*8+7:i*8] = s_axis_tkeep[i] ? s_axis_tdata[i*8+7:i*8] : 0;
         end
     endgenerate
@@ -84,20 +87,20 @@ module udp_checksum_calculator
     wire [$bits(udp_pseudo_header)-1:0] pseudo_header_bits;
     assign pseudo_header_bits = {<<8{pseudo_header}};
 
-    wire [C_M_AXIS_DATA_WIDTH - 1:0] masked_tdata_with_pseudo_header;
+    wire [C_M_AXIS_DATA_WIDTH/2 - 1:0] masked_tdata_with_pseudo_header;
 
     // Realign the data with the pseudo header included.
     // Pad out with 0s as the pseudo header is smaller than the real header.
-    assign masked_tdata_with_pseudo_header = {masked_tdata[C_M_AXIS_DATA_WIDTH-1:$bits(udp_header)], pseudo_header_bits};
+    assign masked_tdata_with_pseudo_header = {masked_tdata[C_M_AXIS_DATA_WIDTH/2-1:$bits(udp_header)], pseudo_header_bits};
 
     // Work out what to use for computing checksum based upon whether this is the header transaction.
     wire is_udp_packet;
     assign is_udp_packet = (buffered_header.ipv4.protocol == 'd17);
 
-    wire [C_M_AXIS_DATA_WIDTH - 1:0] tdata_to_use = buffer_pos == 0 ? masked_tdata_with_pseudo_header : masked_tdata;
+    wire [C_M_AXIS_DATA_WIDTH/2 - 1:0] tdata_to_use = buffer_pos == 0 ? masked_tdata_with_pseudo_header : masked_tdata;
 
 
-    wire [C_M_AXIS_DATA_WIDTH - 1:0] ordered_masked_tdata;
+    wire [C_M_AXIS_DATA_WIDTH/2 - 1:0] ordered_masked_tdata;
     assign ordered_masked_tdata = {<<8{tdata_to_use}};
 
 
@@ -140,20 +143,20 @@ module udp_checksum_calculator
     // 128 bits is 8x16 bit words. We add all these words up
     // Datapath is 1024 bits wide
     // So need to add up 8 of these words
-    wire [31:0] partial_sums [(C_M_AXIS_DATA_WIDTH/16)+1];
+    wire [31:0] partial_sums [(C_M_AXIS_DATA_WIDTH/16/2)+1];
     assign partial_sums[0] = 0;
 
     wire [31:0] transfer_checksum;
 
     generate
-        for(i = 1; i <= C_M_AXIS_DATA_WIDTH/16; i++) begin
+        for(i = 1; i <= C_M_AXIS_DATA_WIDTH/16/2; i++) begin
             // Select each of the 16 bit blocks and sum them up
             assign partial_sums[i] = partial_sums[i-1] + ordered_masked_tdata[i*16-1:(i-1)*16];
         end
     endgenerate
 
-    // Last partial sum is the entire checksum
-    assign transfer_checksum = partial_sums[(C_M_AXIS_DATA_WIDTH/16)];
+    // Last partial sum is the entire checksum, but add the sum of the first half
+    assign transfer_checksum = partial_sums[(C_M_AXIS_DATA_WIDTH/16/2)] + tdata_half_sum;
 
     always_ff @(posedge axis_aclk) begin
         if(!axis_resetn) begin
