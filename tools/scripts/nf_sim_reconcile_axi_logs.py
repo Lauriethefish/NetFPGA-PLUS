@@ -40,6 +40,7 @@ import glob
 import os
 import sys
 import scapy
+from scapy.layers.all import Ether, IP, TCP, UDP
 
 EXPECTED_AXI = '_expected.axi'
 LOG_AXI      = '_log.axi'
