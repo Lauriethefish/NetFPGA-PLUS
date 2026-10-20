@@ -26,7 +26,7 @@ module udp_checksum_calculator
     input [C_S_AXIS_DATA_WIDTH - 1:0] s_axis_tdata,
     input [((C_S_AXIS_DATA_WIDTH / 8)) - 1:0] s_axis_tkeep,
     input [C_S_AXIS_TUSER_WIDTH-1:0] s_axis_tuser,
-    input [31:0] tdata_half_sum;
+    input [31:0] tdata_half_sum,
     input  s_axis_tvalid,
     output s_axis_tready,
     input  s_axis_tlast
