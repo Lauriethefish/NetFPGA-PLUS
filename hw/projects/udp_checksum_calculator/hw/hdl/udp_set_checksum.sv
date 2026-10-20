@@ -132,12 +132,13 @@ module udp_set_checksum
     always_ff @(posedge axis_aclk) begin
         // Alternate the acceptor and dumper
         if(axis_resetn) begin
-            s_axis_tdata_buf <= s_axis_tdata;
-            s_axis_tkeep_buf <= s_axis_tkeep;
-            s_axis_tuser_buf <= s_axis_tuser;
-            s_axis_tvalid_buf <= s_axis_tvalid;
-            s_axis_tlast_buf <= s_axis_tlast;
-
+            if(s_axis_tready && s_axis_tvalid) begin
+                s_axis_tdata_buf <= s_axis_tdata;
+                s_axis_tkeep_buf <= s_axis_tkeep;
+                s_axis_tuser_buf <= s_axis_tuser;
+                s_axis_tvalid_buf <= s_axis_tvalid;
+                s_axis_tlast_buf <= s_axis_tlast;
+            end
 
             // If we're finishing a packet from the dumper
             if(m_axis_tlast && m_axis_tvalid) begin
@@ -149,6 +150,7 @@ module udp_set_checksum
                 current_acceptor <= ~current_acceptor;
             end
         end else begin
+            s_axis_tvalid_buf <= 0;
             current_dumper <= 0;
             current_acceptor <= 0;
         end
