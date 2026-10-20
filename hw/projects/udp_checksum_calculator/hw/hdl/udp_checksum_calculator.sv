@@ -153,7 +153,7 @@ module udp_checksum_calculator
         end
     endgenerate
 
-    // Last partial sum is the entire checksum
+    // Last partial sum is the entire checksum, but add the sum of the first half
     assign transfer_checksum = partial_sums[(C_M_AXIS_DATA_WIDTH/16/2)] + tdata_half_sum;
 
     always_ff @(posedge axis_aclk) begin

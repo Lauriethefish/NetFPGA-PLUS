@@ -39,6 +39,7 @@ import axitools
 import glob
 import os
 import sys
+import scapy
 
 EXPECTED_AXI = '_expected.axi'
 LOG_AXI      = '_log.axi'
@@ -54,6 +55,7 @@ def reconcile_axi( log_pkts, exp_pkts ):
         for logged, expected, i in zip(log_pkts, exp_pkts, range(0, len(log_pkts))):
             if(logged != expected):
                 print(f"DIFFERS: packet no {i}: {logged} vs {expected}!")
+                print(f"Checksum: {logged.getlayer(2)[scapy.UDP].chksum} vs {expected.getlayer(2)[scapy.UDP].chksum}")
 
         print('\tFAIL (%d packets expected, %d packets received)' % (len(exp_pkts), len(log_pkts)))
         return True
