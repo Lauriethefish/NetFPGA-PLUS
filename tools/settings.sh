@@ -25,7 +25,7 @@
 ### User defined
 export NFPLUS_FOLDER=${HOME}/NetFPGA-PLUS
 export BOARD_NAME=au280
-export NF_PROJECT_NAME=reference_nic
+export NF_PROJECT_NAME=udp_checksum_calculator
 export PYTHON_BNRY=/home/lf540/NetFPGA-PLUS/.venv/bin/python3
 
 ### Don't change
