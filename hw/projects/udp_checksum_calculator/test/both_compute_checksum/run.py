@@ -66,7 +66,7 @@ for i in range(NUM_PKTS):
     DA = "00:ca:fe:00:00:00"
     pkt_expect = make_UDP_pkt(dst_MAC=DA, src_MAC=SA, dst_IP=DST_IP,
                             src_IP=SRC_IP, TTL=TTL, src_port=8080, dst_port = 4040,
-                            pkt_len=80)
+                            pkt_len=80+i)
     pkt = pkt_expect.copy()
     pkt.getlayer(2)[scapy.UDP].chksum = 0
     pkt.time = ((i*(1e-8)) + (1e-6)) 
