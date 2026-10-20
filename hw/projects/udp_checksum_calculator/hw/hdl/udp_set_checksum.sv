@@ -34,7 +34,7 @@ module udp_set_checksum
     genvar i;
     generate
         for(i = 0; i < C_M_AXIS_DATA_WIDTH/8 / 2; i++) begin
-            assign first_half_tdata_masked[i*8+7:i*8] = s_axis_tkeep[i+(C_M_AXIS_DATA_WIDTH/2)] ? s_axis_tdata[i*8+7+512:i*8+512] : 0;
+            assign first_half_tdata_masked[i*8+7:i*8] = s_axis_tkeep[i+(C_M_AXIS_DATA_WIDTH/8/2)] ? s_axis_tdata[i*8+7+512:i*8+512] : 0;
         end
     endgenerate
 
