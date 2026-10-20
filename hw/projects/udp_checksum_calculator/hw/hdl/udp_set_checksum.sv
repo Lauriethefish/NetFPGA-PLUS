@@ -150,7 +150,7 @@ module udp_set_checksum
             end
 
             // If we're finishing a packet from the input
-            if(s_axis_tlast && s_axis_tvalid) begin
+            if(s_axis_tlast_buf && s_axis_tvalid_buf) begin
                 current_acceptor <= ~current_acceptor;
             end
         end else begin
