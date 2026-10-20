@@ -30,7 +30,7 @@ module udp_set_checksum
     output s_axis_tready,
     input  s_axis_tlast
 );
-    wire [C_M_AXIS_DATA_WIDTH - 1:0] first_half_tdata_masked;
+    wire [C_M_AXIS_DATA_WIDTH/2 - 1:0] first_half_tdata_masked;
     genvar i;
     generate
         for(i = 0; i < C_M_AXIS_DATA_WIDTH/8 / 2; i++) begin
@@ -38,7 +38,7 @@ module udp_set_checksum
         end
     endgenerate
 
-    wire [C_M_AXIS_DATA_WIDTH - 1:0] first_half_tdata_ordered;
+    wire [C_M_AXIS_DATA_WIDTH/2 - 1:0] first_half_tdata_ordered;
     assign first_half_tdata_ordered = {<<8{first_half_tdata_masked}};
 
     wire [31:0] partial_sums [(C_M_AXIS_DATA_WIDTH/16/2)+1];
