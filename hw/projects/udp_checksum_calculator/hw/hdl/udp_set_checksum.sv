@@ -59,8 +59,9 @@ module udp_set_checksum
     reg current_acceptor;
     reg current_dumper;
 
-    // Ready if the current acceptor is ready
-    assign s_axis_tready = current_acceptor ? s_axis_tready_c1 : s_axis_tready_c0;
+    // Ready if the current acceptor is ready or if there is nothing in the buffer
+    assign s_axis_tready = !s_axis_tvalid_buf ||
+        (current_acceptor ? s_axis_tready_c1 : s_axis_tready_c0);
 
     assign s_axis_tvalid_c0 = (current_acceptor == 0) && s_axis_tvalid_buf;
     assign s_axis_tvalid_c1 = (current_acceptor == 1) && s_axis_tvalid_buf;
@@ -132,6 +133,7 @@ module udp_set_checksum
     always_ff @(posedge axis_aclk) begin
         // Alternate the acceptor and dumper
         if(axis_resetn) begin
+            // If ready and there is data, move it into the buffer
             if(s_axis_tready && s_axis_tvalid) begin
                 s_axis_tdata_buf <= s_axis_tdata;
                 s_axis_tkeep_buf <= s_axis_tkeep;
