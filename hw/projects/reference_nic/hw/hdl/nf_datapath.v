@@ -232,12 +232,6 @@ module nf_datapath #(
     );
 
     udp_checksum_setter_ip
-    #(
-      .C_M_AXIS_DATA_WIDTH (C_M_AXIS_DATA_WIDTH),
-      .C_S_AXIS_DATA_WIDTH (C_S_AXIS_DATA_WIDTH),
-      .C_M_AXIS_TUSER_WIDTH (C_M_AXIS_TUSER_WIDTH),
-      .C_S_AXIS_TUSER_WIDTH (C_M_AXIS_TUSER_WIDTH)
-    )
     set_checksum
     (
       .axis_aclk(axis_aclk), 
