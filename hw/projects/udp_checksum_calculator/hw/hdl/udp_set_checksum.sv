@@ -1,7 +1,7 @@
 `define C_M_AXIS_DATA_WIDTH 1024
 `define C_S_AXIS_DATA_WIDTH 1024
 `define C_M_AXIS_TUSER_WIDTH 128
-`define C_M_AXIS_TUSER_WIDTH 128
+`define C_S_AXIS_TUSER_WIDTH 128
 
 module udp_set_checksum
 (
