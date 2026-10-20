@@ -21,6 +21,8 @@ module udp_set_checksum
     output m_axis_tlast,
 
     // Slave Stream Ports (read packet data)
+    // Register these inputs
+    // And compute checksum of the first half
     input [C_S_AXIS_DATA_WIDTH - 1:0] s_axis_tdata,
     input [((C_S_AXIS_DATA_WIDTH / 8)) - 1:0] s_axis_tkeep,
     input [C_S_AXIS_TUSER_WIDTH-1:0] s_axis_tuser,
@@ -28,6 +30,12 @@ module udp_set_checksum
     output s_axis_tready,
     input  s_axis_tlast
 );
+    reg [C_S_AXIS_DATA_WIDTH - 1:0] s_axis_tdata_buf;
+    reg [((C_S_AXIS_DATA_WIDTH / 8)) - 1:0] s_axis_tkeep_buf;
+    reg [C_S_AXIS_TUSER_WIDTH-1:0] s_axis_tuser_buf;
+    reg  s_axis_tvalid_buf;
+    reg  s_axis_tlast_buf;
+
     import inter_structs::*;
 
     // Essentially need to send to either of the udp checksum calculators,
@@ -51,11 +59,12 @@ module udp_set_checksum
     reg current_acceptor;
     reg current_dumper;
 
-    // Ready if the current acceptor is ready
-    assign s_axis_tready = current_acceptor ? s_axis_tready_c1 : s_axis_tready_c0;
+    // Ready if the current acceptor is ready or if there is nothing in the buffer
+    assign s_axis_tready = !s_axis_tvalid_buf ||
+        (current_acceptor ? s_axis_tready_c1 : s_axis_tready_c0);
 
-    assign s_axis_tvalid_c0 = (current_acceptor == 0) && s_axis_tvalid;
-    assign s_axis_tvalid_c1 = (current_acceptor == 1) && s_axis_tvalid;
+    assign s_axis_tvalid_c0 = (current_acceptor == 0) && s_axis_tvalid_buf;
+    assign s_axis_tvalid_c1 = (current_acceptor == 1) && s_axis_tvalid_buf;
 
     
     assign m_axis_tdata = current_dumper ? m_axis_tdata_c1 : m_axis_tdata_c0;
@@ -86,12 +95,12 @@ module udp_set_checksum
         .m_axis_tready(m_axis_tready_c0),
         .m_axis_tlast(m_axis_tlast_c0),
 
-        .s_axis_tdata(s_axis_tdata),
-        .s_axis_tkeep(s_axis_tkeep),
-        .s_axis_tuser(s_axis_tuser),
+        .s_axis_tdata(s_axis_tdata_buf),
+        .s_axis_tkeep(s_axis_tkeep_buf),
+        .s_axis_tuser(s_axis_tuser_buf),
         .s_axis_tvalid(s_axis_tvalid_c0),
         .s_axis_tready(s_axis_tready_c0),
-        .s_axis_tlast(s_axis_tlast)
+        .s_axis_tlast(s_axis_tlast_buf)
     );
 
     udp_checksum_calculator
@@ -113,12 +122,12 @@ module udp_set_checksum
         .m_axis_tready(m_axis_tready_c1),
         .m_axis_tlast(m_axis_tlast_c1),
 
-        .s_axis_tdata(s_axis_tdata),
-        .s_axis_tkeep(s_axis_tkeep),
-        .s_axis_tuser(s_axis_tuser),
+        .s_axis_tdata(s_axis_tdata_buf),
+        .s_axis_tkeep(s_axis_tkeep_buf),
+        .s_axis_tuser(s_axis_tuser_buf),
         .s_axis_tvalid(s_axis_tvalid_c1),
         .s_axis_tready(s_axis_tready_c1),
-        .s_axis_tlast(s_axis_tlast)
+        .s_axis_tlast(s_axis_tlast_buf)
     );
 
     always_ff @(posedge axis_aclk) begin
@@ -130,10 +139,25 @@ module udp_set_checksum
             end
 
             // If we're finishing a packet from the input
-            if(s_axis_tlast && s_axis_tvalid) begin
+            if(s_axis_tlast_buf && s_axis_tvalid_buf) begin
                 current_acceptor <= ~current_acceptor;
             end
+
+            // If ready and there is data, move it into the buffer
+            if(s_axis_tready && s_axis_tvalid) begin
+                s_axis_tdata_buf <= s_axis_tdata;
+                s_axis_tkeep_buf <= s_axis_tkeep;
+                s_axis_tuser_buf <= s_axis_tuser;
+                s_axis_tvalid_buf <= s_axis_tvalid;
+                s_axis_tlast_buf <= s_axis_tlast;
+            end else if(current_acceptor ? s_axis_tready_c1 : s_axis_tready_c0) begin
+                // Data has been emptied from buffer
+                s_axis_tvalid_buf <= 0;
+                s_axis_tlast_buf <= 0;
+            end
         end else begin
+            s_axis_tvalid_buf <= 0;
+            s_axis_tlast_buf <= 0;
             current_dumper <= 0;
             current_acceptor <= 0;
         end
