@@ -34,6 +34,7 @@ set proj_dir ./project
 set public_repo_dir $::env(NFPLUS_FOLDER)/hw/lib
 set repo_dir ./ip_repo
 set project_constraints "${public_repo_dir}/common/constraints/${board_name}_general.xdc"
+set projects_dir $::env(NFPLUS_FOLDER)/hw/projects
 
 set start_time [exec date +%s]
 set_param general.maxThreads 8
