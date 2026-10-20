@@ -133,6 +133,16 @@ module udp_set_checksum
     always_ff @(posedge axis_aclk) begin
         // Alternate the acceptor and dumper
         if(axis_resetn) begin
+            // If we're finishing a packet from the dumper
+            if(m_axis_tlast && m_axis_tvalid) begin
+                current_dumper <= ~current_dumper;
+            end
+
+            // If we're finishing a packet from the input
+            if(s_axis_tlast_buf && s_axis_tvalid_buf) begin
+                current_acceptor <= ~current_acceptor;
+            end
+
             // If ready and there is data, move it into the buffer
             if(s_axis_tready && s_axis_tvalid) begin
                 s_axis_tdata_buf <= s_axis_tdata;
@@ -143,16 +153,6 @@ module udp_set_checksum
             end else if(current_acceptor ? s_axis_tready_c1 : s_axis_tready_c0) begin
                 s_axis_tvalid_buf <= 0;
                 s_axis_tlast_buf <= 0;
-            end
-
-            // If we're finishing a packet from the dumper
-            if(m_axis_tlast && m_axis_tvalid) begin
-                current_dumper <= ~current_dumper;
-            end
-
-            // If we're finishing a packet from the input
-            if(s_axis_tlast_buf && s_axis_tvalid_buf) begin
-                current_acceptor <= ~current_acceptor;
             end
         end else begin
             s_axis_tvalid_buf <= 0;
