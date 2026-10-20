@@ -51,6 +51,10 @@ def reconcile_axi( log_pkts, exp_pkts ):
         print('\tPASS (%d packets expected, %d packets received)' % (len(exp_pkts), len(log_pkts)))
         return False
     else:
+        for logged, expected in zip(log_pkts, exp_pkts):
+            if(logged != expected):
+                print(f"DIFFERS: {logged} vs {expected}!")
+
         print('\tFAIL (%d packets expected, %d packets received)' % (len(exp_pkts), len(log_pkts)))
         return True
 

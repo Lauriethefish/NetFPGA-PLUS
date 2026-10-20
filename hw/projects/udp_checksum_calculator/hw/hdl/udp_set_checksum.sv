@@ -151,6 +151,7 @@ module udp_set_checksum
                 s_axis_tvalid_buf <= s_axis_tvalid;
                 s_axis_tlast_buf <= s_axis_tlast;
             end else if(current_acceptor ? s_axis_tready_c1 : s_axis_tready_c0) begin
+                // Data has been emptied from buffer
                 s_axis_tvalid_buf <= 0;
                 s_axis_tlast_buf <= 0;
             end
