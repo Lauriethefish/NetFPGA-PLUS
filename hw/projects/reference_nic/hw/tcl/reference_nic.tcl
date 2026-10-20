@@ -43,7 +43,7 @@ set_param board.repoPaths $::env(BOARD_FILE_PATH)
 # Design Parameters on NF_DATAPATH
 #####################################
 set datapath_width_bit    1024
-set datapath_freq_mhz     200
+set datapath_freq_mhz     250
 #####################################
 # Project Settings
 #####################################
@@ -72,6 +72,7 @@ puts "Creating User Datapath reference project"
 #####################################
 create_fileset -constrset -quiet constraints
 file copy ${public_repo_dir}/ ${repo_dir}
+file copy ${projects_dir}/udp_checksum_calculator ${repo_dir}
 set_property ip_repo_paths ${repo_dir} [current_fileset]
 #####################################
 # Project Constraints
@@ -117,6 +118,11 @@ set_property CONFIG.C_S_AXIS_DATA_WIDTH ${datapath_width_bit} [get_ips output_qu
 set_property generate_synth_checkpoint false [get_files output_queues_ip.xci]
 reset_target all [get_ips output_queues_ip]
 generate_target all [get_ips output_queues_ip]
+# Checksum calculator
+create_ip -name udp_checksum_calculator -vendor NetFPGA -library NetFPGA -module_name udp_checksum_setter_ip
+set_property generate_synth_checkpoint false [get_files udp_checksum_setter_ip.xci]
+reset_target all [get_ips udp_checksum_setter_ip]
+generate_target all [get_ips udp_checksum_setter_ip]
 
 create_ip -name xilinx_shell -vendor xilinx -library xilinx -module_name xilinx_shell_ip
 set_property CONFIG.MAX_PKT_LEN 1518 [get_ips xilinx_shell_ip]
