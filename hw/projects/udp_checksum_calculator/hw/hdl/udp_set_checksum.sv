@@ -30,9 +30,34 @@ module udp_set_checksum
     output s_axis_tready,
     input  s_axis_tlast
 );
+    wire [C_M_AXIS_DATA_WIDTH - 1:0] first_half_tdata_masked;
+    genvar i;
+    generate
+        for(i = 0; i < C_M_AXIS_DATA_WIDTH/8 / 2; i++) begin
+            assign first_half_tdata_masked[i*8+7:i*8] = s_axis_tkeep[i+(C_M_AXIS_DATA_WIDTH/2)] ? s_axis_tdata[i*8+7+512:i*8+512] : 0;
+        end
+    endgenerate
+
+    wire [C_M_AXIS_DATA_WIDTH - 1:0] first_half_tdata_ordered;
+    assign first_half_tdata_ordered = {<<8{first_half_tdata_masked}};
+
+    wire [31:0] partial_sums [(C_M_AXIS_DATA_WIDTH/16/2)+1];
+    assign partial_sums[0] = 0;
+    generate
+        for(i = 1; i <= C_M_AXIS_DATA_WIDTH/16/2; i++) begin
+            // Select each of the 16 bit blocks and sum them up
+            assign partial_sums[i] = partial_sums[i-1] + first_half_tdata_ordered[i*16-1:(i-1)*16];
+        end
+    endgenerate
+
+    // Compute the sum of the first half in a pipeline stage
+    wire [31:0] overall_sum;
+    assign overall_sum = partial_sums[(C_M_AXIS_DATA_WIDTH/16/2)];
+
     reg [C_S_AXIS_DATA_WIDTH - 1:0] s_axis_tdata_buf;
     reg [((C_S_AXIS_DATA_WIDTH / 8)) - 1:0] s_axis_tkeep_buf;
     reg [C_S_AXIS_TUSER_WIDTH-1:0] s_axis_tuser_buf;
+    reg [31:0] s_axis_tdata_half_sum_buf;
     reg  s_axis_tvalid_buf;
     reg  s_axis_tlast_buf;
 
@@ -100,7 +125,8 @@ module udp_set_checksum
         .s_axis_tuser(s_axis_tuser_buf),
         .s_axis_tvalid(s_axis_tvalid_c0),
         .s_axis_tready(s_axis_tready_c0),
-        .s_axis_tlast(s_axis_tlast_buf)
+        .s_axis_tlast(s_axis_tlast_buf),
+        .tdata_half_sum(s_axis_tdata_half_sum_buf)
     );
 
     udp_checksum_calculator
@@ -127,7 +153,8 @@ module udp_set_checksum
         .s_axis_tuser(s_axis_tuser_buf),
         .s_axis_tvalid(s_axis_tvalid_c1),
         .s_axis_tready(s_axis_tready_c1),
-        .s_axis_tlast(s_axis_tlast_buf)
+        .s_axis_tlast(s_axis_tlast_buf),
+        .tdata_half_sum(s_axis_tdata_half_sum_buf)
     );
 
     always_ff @(posedge axis_aclk) begin
@@ -150,6 +177,7 @@ module udp_set_checksum
                 s_axis_tuser_buf <= s_axis_tuser;
                 s_axis_tvalid_buf <= s_axis_tvalid;
                 s_axis_tlast_buf <= s_axis_tlast;
+                s_axis_tdata_half_sum_buf <= overall_sum;
             end else if(current_acceptor ? s_axis_tready_c1 : s_axis_tready_c0) begin
                 // Data has been emptied from buffer
                 s_axis_tvalid_buf <= 0;
