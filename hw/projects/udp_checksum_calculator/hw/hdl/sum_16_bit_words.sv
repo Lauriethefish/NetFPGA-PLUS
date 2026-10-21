@@ -6,8 +6,8 @@ module sum_16_bit_words
     parameter INPUT_WIDTH=128
 )
 (
-    input [DATA_WIDTH-1:0] s_axis_tdata;
-    input [DATA_WIDTH-1:0] s_axis_tkeep;
+    input [INPUT_WIDTH-1:0] s_axis_tdata;
+    input [(INPUT_WIDTH/8)-1:0] s_axis_tkeep;
 
     output [31:0] sum;
 );
