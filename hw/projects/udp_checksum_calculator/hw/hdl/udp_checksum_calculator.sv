@@ -93,9 +93,9 @@ module udp_checksum_calculator
     // Sum up the header
     sum_16_bit_words 
     #(
-        parameter DATA_START=0,
-        parameter DATA_WIDTH=$bits(udp_pseudo_header),
-        parameter INPUT_WIDTH=$bits(udp_pseudo_header)
+        .DATA_START(0),
+        .DATA_WIDTH($bits(udp_pseudo_header)),
+        .INPUT_WIDTH($bits(udp_pseudo_header))
     )
     header_summer(
         .s_axis_tdata(pseudo_header_bits),
@@ -107,9 +107,9 @@ module udp_checksum_calculator
     // should not be included.
     sum_16_bit_words 
     #(
-        parameter DATA_START=0,
-        parameter DATA_WIDTH=$bits(udp_pseudo_header),
-        parameter INPUT_WIDTH=$bits(udp_pseudo_header)
+        .DATA_START(0),
+        .DATA_WIDTH($bits(udp_pseudo_header)),
+        .INPUT_WIDT($bits(udp_pseudo_header))
     )
     header_placeholder_summer(
         .s_axis_tdata(s_axis_tdata[$bits(udp_header)-1:0]),
