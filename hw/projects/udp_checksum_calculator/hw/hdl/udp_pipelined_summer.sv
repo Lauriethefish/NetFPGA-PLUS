@@ -94,7 +94,7 @@ module udp_pipelined_summer
                 m_axis_tvalid(int_axis_tvalid[i+1]),
                 m_axis_tready(int_axis_tready[i+1]),
                 m_axis_tlast(int_axis_tlast[i+1]),
-                m_axis_partial_sum(int_axis_partial_sum[i+1]);
+                m_axis_partial_sum(int_axis_partial_sum[i+1]),
 
                 // Slave Stream Ports (read packet data)
                 s_axis_tdata(int_axis_tdata[i]),
