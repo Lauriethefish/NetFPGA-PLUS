@@ -40,9 +40,9 @@ module udp_pipelined_summer_section
     wire [31:0] segment_sum;
 
     sum_16_bit_words #(
-        DATA_START=DATA_ADD_START,
-        DATA_WIDTH=DATA_ADD_LENGTH,
-        INPUT_WIDTH=C_M_AXIS_DATA_WIDTH
+        .DATA_START(DATA_ADD_START),
+        .DATA_WIDTH(DATA_ADD_LENGTH),
+        .INPUT_WIDTH(C_M_AXIS_DATA_WIDTH)
     ) summer (
         .s_axis_tdata(s_axis_tdata),
         .s_axis_tkeep(s_axis_tkeep),
@@ -65,8 +65,8 @@ module udp_pipelined_summer_section
             if(m_axis_tready && m_axis_tvalid && !s_axis_tvalid) begin
                 m_axis_tvalid <= 0;
             end
-        end else
+        end else begin
             m_axis_tvalid <= 0;
-        
+        end
     end
 endmodule
