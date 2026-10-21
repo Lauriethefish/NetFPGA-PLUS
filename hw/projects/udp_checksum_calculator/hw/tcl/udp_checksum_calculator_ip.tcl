@@ -72,6 +72,8 @@ update_ip_catalog
 # Project Structure & IP Build
 #####################################
 
+read_verilog -sv "$./hdl/udp_pipelined_summer_section.sv"
+read_verilog -sv "$./hdl/udp_pipelined_summer.sv"
 read_verilog -sv "./hdl/inter_structs.sv"
 read_verilog -sv "./hdl/udp_checksum_calculator.sv"
 read_verilog -sv "./hdl/udp_set_checksum.sv"
