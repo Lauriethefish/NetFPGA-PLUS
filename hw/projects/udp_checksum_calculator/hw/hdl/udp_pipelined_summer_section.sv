@@ -31,7 +31,7 @@ module udp_pipelined_summer_section
     input [C_S_AXIS_TUSER_WIDTH-1:0] s_axis_tuser,
     input  s_axis_tvalid,
     output s_axis_tready,
-    input  s_axis_tlast
+    input  s_axis_tlast,
     input [31:0] s_axis_partial_sum
 );
     // Ready to receive data IF downstream is ready OR nothing buffered.
