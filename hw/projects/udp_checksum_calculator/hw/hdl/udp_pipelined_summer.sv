@@ -83,27 +83,27 @@ module udp_pipelined_summer
             sect
             (
                 // Global clock/reset
-                axis_aclk(axis_aclk),
+                .axis_aclk(axis_aclk),
                 // Active low
-                axis_resetn(axis_resetn),
+                .axis_resetn(axis_resetn),
 
                 // Master Stream Ports (write packet data)
-                m_axis_tdata(int_axis_tdata[i+1]),
-                m_axis_tkeep(int_axis_tkeep[i+1]),
-                m_axis_tuser(int_axis_tuser[i+1]),
-                m_axis_tvalid(int_axis_tvalid[i+1]),
-                m_axis_tready(int_axis_tready[i+1]),
-                m_axis_tlast(int_axis_tlast[i+1]),
-                m_axis_partial_sum(int_axis_partial_sum[i+1]),
+                .m_axis_tdata(int_axis_tdata[i+1]),
+                .m_axis_tkeep(int_axis_tkeep[i+1]),
+                .m_axis_tuser(int_axis_tuser[i+1]),
+                .m_axis_tvalid(int_axis_tvalid[i+1]),
+                .m_axis_tready(int_axis_tready[i+1]),
+                .m_axis_tlast(int_axis_tlast[i+1]),
+                .m_axis_partial_sum(int_axis_partial_sum[i+1]),
 
                 // Slave Stream Ports (read packet data)
-                s_axis_tdata(int_axis_tdata[i]),
-                s_axis_tkeep(int_axis_tkeep[i]),
-                s_axis_tuser(int_axis_tuser[i]),
-                s_axis_tvalid(int_axis_tvalid[i]),
-                s_axis_tready(int_axis_tready[i]),
-                s_axis_tlast(int_axis_tlast[i]),
-                s_axis_partial_sum(int_axis_partial_sum[i])
+                .s_axis_tdata(int_axis_tdata[i]),
+                .s_axis_tkeep(int_axis_tkeep[i]),
+                .s_axis_tuser(int_axis_tuser[i]),
+                .s_axis_tvalid(int_axis_tvalid[i]),
+                .s_axis_tready(int_axis_tready[i]),
+                .s_axis_tlast(int_axis_tlast[i]),
+                .s_axis_partial_sum(int_axis_partial_sum[i])
             );
         end
     endgenerate
