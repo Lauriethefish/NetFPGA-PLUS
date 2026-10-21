@@ -65,8 +65,8 @@ module udp_pipelined_summer_section
             if(m_axis_tready && m_axis_tvalid && !s_axis_tvalid) begin
                 m_axis_tvalid <= 0;
             end
-        end else begin
+        end else
             m_axis_tvalid <= 0;
-        end
+        
     end
 endmodule
