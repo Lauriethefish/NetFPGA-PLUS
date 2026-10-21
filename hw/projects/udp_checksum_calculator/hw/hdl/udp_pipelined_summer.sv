@@ -42,7 +42,7 @@ module udp_pipelined_summer
     wire int_axis_tvalid [NUM_SECTIONS:0];
     wire int_axis_tready [NUM_SECTIONS:0];
     wire int_axis_tlast [NUM_SECTIONS:0];
-    wire int_axis_partial_sum [NUM_SECTIONS:0];
+    wire [31:0] int_axis_partial_sum [NUM_SECTIONS:0];
 
     assign int_axis_tdata[0] = s_axis_tdata;
     assign int_axis_tkeep[0] = s_axis_tkeep;
