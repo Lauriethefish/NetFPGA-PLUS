@@ -70,15 +70,15 @@ module udp_pipelined_summer
         for(genvar i = 0; i < NUM_SECTIONS; i++) begin
             udp_pipelined_summer_section s0
             #(
-                C_M_AXIS_DATA_WIDTH=1024,
-                C_S_AXIS_DATA_WIDTH=1024,
-                C_M_AXIS_TUSER_WIDTH=128,
-                C_S_AXIS_TUSER_WIDTH=128,
+                .C_M_AXIS_DATA_WIDTH(C_M_AXIS_DATA_WIDTH),
+                .C_S_AXIS_DATA_WIDTH(C_S_AXIS_DATA_WIDTH),
+                .C_M_AXIS_TUSER_WIDTH(C_M_AXIS_TUSER_WIDTH),
+                .C_S_AXIS_TUSER_WIDTH(C_S_AXIS_TUSER_WIDTH),
 
                 // NB must be multiple of 8
-                DATA_ADD_START=i*BITS_PER_SUMMER,
+                .DATA_ADD_START(i*BITS_PER_SUMMER),
                 // as above.
-                DATA_ADD_LENGTH=BITS_PER_SUMMER
+                .DATA_ADD_LENGTH(BITS_PER_SUMMER)
             )
             (
                 // Global clock/reset
