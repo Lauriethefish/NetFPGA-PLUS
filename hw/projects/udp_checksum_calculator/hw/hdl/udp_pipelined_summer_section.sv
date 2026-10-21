@@ -23,7 +23,7 @@ module udp_pipelined_summer_section
     output reg m_axis_tvalid,
     input  m_axis_tready,
     output reg m_axis_tlast,
-    output reg [31:0] m_axis_partial_sum;
+    output reg [31:0] m_axis_partial_sum,
 
     // Slave Stream Ports (read packet data)
     input [C_S_AXIS_DATA_WIDTH - 1:0] s_axis_tdata,
@@ -32,7 +32,7 @@ module udp_pipelined_summer_section
     input  s_axis_tvalid,
     output s_axis_tready,
     input  s_axis_tlast
-    input [31:0] s_axis_partial_sum;
+    input [31:0] s_axis_partial_sum
 );
     // Ready to receive data IF downstream is ready OR nothing buffered.
     assign s_axis_tready = m_axis_tready || !m_axis_tvalid;
