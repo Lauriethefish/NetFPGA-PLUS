@@ -29,7 +29,7 @@ module udp_checksum_calculator
     input  s_axis_tvalid,
     output s_axis_tready,
     input  s_axis_tlast,
-    input [31:0] s_axis_checksum,
+    input [31:0] s_axis_checksum
 );
     import inter_structs::*;
 
