@@ -26,10 +26,10 @@ module udp_checksum_calculator
     input [C_S_AXIS_DATA_WIDTH - 1:0] s_axis_tdata,
     input [((C_S_AXIS_DATA_WIDTH / 8)) - 1:0] s_axis_tkeep,
     input [C_S_AXIS_TUSER_WIDTH-1:0] s_axis_tuser,
-    input [31:0] tdata_half_sum,
     input  s_axis_tvalid,
     output s_axis_tready,
-    input  s_axis_tlast
+    input  s_axis_tlast,
+    input [31:0] s_axis_checksum,
 );
     import inter_structs::*;
 
@@ -87,11 +87,36 @@ module udp_checksum_calculator
     wire [$bits(udp_pseudo_header)-1:0] pseudo_header_bits;
     assign pseudo_header_bits = {<<8{pseudo_header}};
 
-    wire [C_M_AXIS_DATA_WIDTH/2 - 1:0] masked_tdata_with_pseudo_header;
+    wire [31:0] header_sum;
+    wire [31:0] header_sum_to_remove;
 
-    // Realign the data with the pseudo header included.
-    // Pad out with 0s as the pseudo header is smaller than the real header.
-    assign masked_tdata_with_pseudo_header = {masked_tdata[C_M_AXIS_DATA_WIDTH/2-1:$bits(udp_header)], pseudo_header_bits};
+    // Sum up the header
+    sum_16_bit_words 
+    #(
+        parameter DATA_START=0,
+        parameter DATA_WIDTH=$bits(udp_pseudo_header),
+        parameter INPUT_WIDTH=$bits(udp_pseudo_header)
+    )
+    header_summer(
+        .s_axis_tdata(pseudo_header_bits),
+        .s_axis_tkeep('1)
+        .sum(header_sum)
+    );
+
+    // Sum up the data in the area occupied by the pseudo header, as these
+    // should not be included.
+    sum_16_bit_words 
+    #(
+        parameter DATA_START=0,
+        parameter DATA_WIDTH=$bits(udp_pseudo_header),
+        parameter INPUT_WIDTH=$bits(udp_pseudo_header)
+    )
+    header_placeholder_summer(
+        .s_axis_tdata(s_axis_tdata[$bits(udp_header)-1:0]),
+        .s_axis_tkeep('1)
+        .sum(header_sum_to_remove)
+    );
+
 
     // Work out what to use for computing checksum based upon whether this is the header transaction.
     wire is_udp_packet;
@@ -139,24 +164,10 @@ module udp_checksum_calculator
     assign m_axis_tvalid = state;
     assign m_axis_tlast = buffer_pos == buffer_len;
 
-    // Computing the checksum of the data
-    // 128 bits is 8x16 bit words. We add all these words up
-    // Datapath is 1024 bits wide
-    // So need to add up 8 of these words
-    wire [31:0] partial_sums [(C_M_AXIS_DATA_WIDTH/16/2)+1];
-    assign partial_sums[0] = 0;
-
-    wire [31:0] transfer_checksum;
-
-    generate
-        for(i = 1; i <= C_M_AXIS_DATA_WIDTH/16/2; i++) begin
-            // Select each of the 16 bit blocks and sum them up
-            assign partial_sums[i] = partial_sums[i-1] + ordered_masked_tdata[i*16-1:(i-1)*16];
-        end
-    endgenerate
-
-    // Last partial sum is the entire checksum, but add the sum of the first half
-    assign transfer_checksum = partial_sums[(C_M_AXIS_DATA_WIDTH/16/2)] + tdata_half_sum;
+    // Use the already computed sum of the whole transaction
+    // Account for the sum of the pseudo header, removing the sum of the header
+    // that was over-accounted for.
+    assign transfer_checksum = s_axis_checksum + (buffer_pos == 0 ? header_sum - header_sum_to_remove : 0);
 
     always_ff @(posedge axis_aclk) begin
         if(!axis_resetn) begin

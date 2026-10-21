@@ -28,36 +28,42 @@ module udp_set_checksum
     output s_axis_tready,
     input  s_axis_tlast
 );
-    wire [`C_M_AXIS_DATA_WIDTH/2 - 1:0] first_half_tdata_masked;
-    genvar i;
-    generate
-        for(i = 0; i < `C_M_AXIS_DATA_WIDTH/8 / 2; i++) begin
-            assign first_half_tdata_masked[i*8+7:i*8] = s_axis_tkeep[i+(`C_M_AXIS_DATA_WIDTH/8/2)] ? s_axis_tdata[i*8+7+512:i*8+512] : 0;
-        end
-    endgenerate
+    wire [`C_S_AXIS_DATA_WIDTH - 1:0] s_axis_tdata_buf;
+    wire [((`C_S_AXIS_DATA_WIDTH / 8)) - 1:0] s_axis_tkeep_buf;
+    wire [`C_S_AXIS_TUSER_WIDTH-1:0] s_axis_tuser_buf;
+    wire  s_axis_tvalid_buf;
+    wire  s_axis_tlast_buf;
+    wire [31:0] s_axis_checksum_buf;
 
-    wire [`C_M_AXIS_DATA_WIDTH/2 - 1:0] first_half_tdata_ordered;
-    assign first_half_tdata_ordered = {<<8{first_half_tdata_masked}};
+    udp_pipelined_summer
+    #(
+        parameter C_M_AXIS_DATA_WIDTH=1024,
+        parameter C_S_AXIS_DATA_WIDTH=1024,
+        parameter C_M_AXIS_TUSER_WIDTH=128,
+        parameter C_S_AXIS_TUSER_WIDTH=128,
 
-    wire [31:0] partial_sums [(`C_M_AXIS_DATA_WIDTH/16/2)+1];
-    assign partial_sums[0] = 0;
-    generate
-        for(i = 1; i <= `C_M_AXIS_DATA_WIDTH/16/2; i++) begin
-            // Select each of the 16 bit blocks and sum them up
-            assign partial_sums[i] = partial_sums[i-1] + first_half_tdata_ordered[i*16-1:(i-1)*16];
-        end
-    endgenerate
+        // NB must be multiple of 8
+        parameter NUM_SECTIONS=8
+    )
+    summer
+    (
+        .axis_aclk(axis_aclk),
+        .axis_resetn(axis_resetn),
 
-    // Compute the sum of the first half in a pipeline stage
-    wire [31:0] overall_sum;
-    assign overall_sum = partial_sums[(`C_M_AXIS_DATA_WIDTH/16/2)];
-
-    reg [`C_S_AXIS_DATA_WIDTH - 1:0] s_axis_tdata_buf;
-    reg [((`C_S_AXIS_DATA_WIDTH / 8)) - 1:0] s_axis_tkeep_buf;
-    reg [`C_S_AXIS_TUSER_WIDTH-1:0] s_axis_tuser_buf;
-    reg [31:0] s_axis_tdata_half_sum_buf;
-    reg  s_axis_tvalid_buf;
-    reg  s_axis_tlast_buf;
+        .m_axis_tdata(s_axis_tdata_buf),
+        .m_axis_tkeep(s_axis_tkeep_buf),
+        .m_axis_tuser(s_axis_tuser_buf),
+        .m_axis_tvalid(s_axis_tvalid_buf),
+        .m_axis_tready(current_acceptor ? s_axis_tready_c1 : s_axis_tready_c0),
+        .m_axis_tlast(s_axis_tlast_buf),
+        .m_axis_checksum(s_axis_checksum_buf),
+        .s_axis_tdata(s_axis_tdata),
+        .s_axis_tkeep(s_axis_tkeep),
+        .s_axis_tuser(s_axis_tuser),
+        .s_axis_tvalid(s_axis_tvalid),
+        .s_axis_tready(s_axis_tready),
+        .s_axis_tlast(s_axis_tlast)
+    );
 
     import inter_structs::*;
 
@@ -83,13 +89,9 @@ module udp_set_checksum
     reg current_dumper;
 
     // Ready if the current acceptor is ready or if there is nothing in the buffer
-    assign s_axis_tready = !s_axis_tvalid_buf ||
-        (current_acceptor ? s_axis_tready_c1 : s_axis_tready_c0);
-
     assign s_axis_tvalid_c0 = (current_acceptor == 0) && s_axis_tvalid_buf;
     assign s_axis_tvalid_c1 = (current_acceptor == 1) && s_axis_tvalid_buf;
 
-    
     assign m_axis_tdata = current_dumper ? m_axis_tdata_c1 : m_axis_tdata_c0;
     assign m_axis_tuser = current_dumper ? m_axis_tuser_c1 : m_axis_tuser_c0;
     assign m_axis_tkeep = current_dumper ? m_axis_tkeep_c1 : m_axis_tkeep_c0;
@@ -124,7 +126,7 @@ module udp_set_checksum
         .s_axis_tvalid(s_axis_tvalid_c0),
         .s_axis_tready(s_axis_tready_c0),
         .s_axis_tlast(s_axis_tlast_buf),
-        .tdata_half_sum(s_axis_tdata_half_sum_buf)
+        .s_axis_checksum(s_axis_checksum_buf)
     );
 
     udp_checksum_calculator
@@ -167,23 +169,7 @@ module udp_set_checksum
             if(s_axis_tlast_buf && s_axis_tvalid_buf) begin
                 current_acceptor <= ~current_acceptor;
             end
-
-            // If ready and there is data, move it into the buffer
-            if(s_axis_tready && s_axis_tvalid) begin
-                s_axis_tdata_buf <= s_axis_tdata;
-                s_axis_tkeep_buf <= s_axis_tkeep;
-                s_axis_tuser_buf <= s_axis_tuser;
-                s_axis_tvalid_buf <= s_axis_tvalid;
-                s_axis_tlast_buf <= s_axis_tlast;
-                s_axis_tdata_half_sum_buf <= overall_sum;
-            end else if(current_acceptor ? s_axis_tready_c1 : s_axis_tready_c0) begin
-                // Data has been emptied from buffer
-                s_axis_tvalid_buf <= 0;
-                s_axis_tlast_buf <= 0;
-            end
         end else begin
-            s_axis_tvalid_buf <= 0;
-            s_axis_tlast_buf <= 0;
             current_dumper <= 0;
             current_acceptor <= 0;
         end
