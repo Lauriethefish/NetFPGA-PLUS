@@ -22,7 +22,7 @@ module udp_pipelined_summer
     output m_axis_tvalid,
     input  m_axis_tready,
     output m_axis_tlast,
-    output [31:0] m_axis_checksum;
+    output [31:0] m_axis_checksum,
 
     // Slave Stream Ports (read packet data)
     input [C_S_AXIS_DATA_WIDTH - 1:0] s_axis_tdata,
