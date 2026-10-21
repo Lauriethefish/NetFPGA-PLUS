@@ -37,13 +37,12 @@ module udp_set_checksum
 
     udp_pipelined_summer
     #(
-        parameter C_M_AXIS_DATA_WIDTH=1024,
-        parameter C_S_AXIS_DATA_WIDTH=1024,
-        parameter C_M_AXIS_TUSER_WIDTH=128,
-        parameter C_S_AXIS_TUSER_WIDTH=128,
+        C_M_AXIS_DATA_WIDTH=C_M_AXIS_DATA_WIDTH,
+        C_S_AXIS_DATA_WIDTH=C_S_AXIS_DATA_WIDTH,
+        C_M_AXIS_TUSER_WIDTH=C_M_AXIS_TUSER_WIDTH,
+        C_S_AXIS_TUSER_WIDTH=C_S_AXIS_TUSER_WIDTH,
 
-        // NB must be multiple of 8
-        parameter NUM_SECTIONS=8
+        NUM_SECTIONS=8
     )
     summer
     (
