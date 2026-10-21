@@ -117,17 +117,9 @@ module udp_checksum_calculator
         .sum(header_sum_to_remove)
     );
 
-
     // Work out what to use for computing checksum based upon whether this is the header transaction.
     wire is_udp_packet;
     assign is_udp_packet = (buffered_header.ipv4.protocol == 'd17);
-
-    wire [C_M_AXIS_DATA_WIDTH/2 - 1:0] tdata_to_use = buffer_pos == 0 ? masked_tdata_with_pseudo_header : masked_tdata;
-
-
-    wire [C_M_AXIS_DATA_WIDTH/2 - 1:0] ordered_masked_tdata;
-    assign ordered_masked_tdata = {<<8{tdata_to_use}};
-
 
     wire udp_header buffered_header;
     wire [C_M_AXIS_DATA_WIDTH - 1:0] buffered_tdata;
