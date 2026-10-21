@@ -100,6 +100,7 @@ module udp_pipelined_summer
 
     assign m_axis_tdata = int_axis_tdata[NUM_SECTIONS];
     assign m_axis_tuser = int_axis_tuser[NUM_SECTIONS];
+    assign m_axis_tkeep = int_axis_tkeep[NUM_SECTIONS];
     assign m_axis_tvalid = int_axis_tvalid[NUM_SECTIONS];
     assign int_axis_tready[NUM_SECTIONS] = m_axis_tready;
     assign m_axis_tlast = int_axis_tlast[NUM_SECTIONS];
