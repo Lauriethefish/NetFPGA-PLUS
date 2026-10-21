@@ -153,7 +153,7 @@ module udp_set_checksum
         .s_axis_tvalid(s_axis_tvalid_c1),
         .s_axis_tready(s_axis_tready_c1),
         .s_axis_tlast(s_axis_tlast_buf),
-        .tdata_half_sum(s_axis_tdata_half_sum_buf)
+        .s_axis_checksum(s_axis_checksum_buf)
     );
 
     always_ff @(posedge axis_aclk) begin
