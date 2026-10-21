@@ -47,7 +47,7 @@ module udp_pipelined_summer_section
         .s_axis_tdata(s_axis_tdata),
         .s_axis_tkeep(s_axis_tkeep),
         .sum(segment_sum)
-    )
+    );
 
     always_ff @(posedge axis_aclk) begin
         if(axis_resetn) begin
