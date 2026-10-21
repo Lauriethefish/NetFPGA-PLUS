@@ -44,23 +44,12 @@ module udp_pipelined_summer
     wire int_axis_tlast [NUM_SECTIONS:0];
     wire int_axis_partial_sum [NUM_SECTIONS:0];
 
-    assign {
-        int_axis_tdata[0],
-        int_axis_tkeep[0],
-        int_axis_tuser[0],
-        int_axis_tvalid[0],
-        int_axis_tready[0],
-        int_axis_tlast[0],
-        int_axis_partial_sum[0]
-    } 
-    = {s_axis_tdata,
-        s_axis_tkeep,
-        s_axis_tuser,
-        s_axis_tvalid,
-        s_axis_tready,
-        s_axis_tlast,
-        32'b0
-    };
+    assign int_axis_tdata[0] = s_axis_tdata;
+    assign int_axis_tkeep[0] = s_axis_tkeep;
+    assign int_axis_tvalid[0] = s_axis_tvalid;
+    assign int_axis_tready[0] = s_axis_tready;
+    assign int_axis_tlast[0] = s_axis_tlast;
+    assign int_axis_partial_sum[0] = '0;
 
     // Store the data in a pipeline/FIFO
     // In each stage add up a certain portion of the data
@@ -108,17 +97,10 @@ module udp_pipelined_summer
         end
     endgenerate
 
-
-    assign {m_axis_tdata,
-        m_axis_tuser,
-        m_axis_tvalid,
-        m_axis_tready,
-        m_axis_tlast,
-        m_axis_checksum} = {int_axis_tdata[NUM_SECTIONS],
-            int_axis_tuser[NUM_SECTIONS],
-            int_axis_tvalid[NUM_SECTIONS],
-            int_axis_tready[NUM_SECTIONS],
-            int_axis_tlast[NUM_SECTIONS],
-            int_axis_partial_sum[NUM_SECTIONS]
-        };
+    assign m_axis_tdata = int_axis_tdata[NUM_SECTIONS];
+    assign m_axis_tuser = int_axis_tuser[NUM_SECTIONS];
+    assign m_axis_tvalid = int_axis_tvalid[NUM_SECTIONS];
+    assign m_axis_tready = int_axis_tready[NUM_SECTIONS];
+    assign m_axis_tlast = int_axis_tlast[NUM_SECTIONS];
+    assign m_axis_checksum = int_axis_partial_sum[NUM_SECTIONS];
 endmodule
