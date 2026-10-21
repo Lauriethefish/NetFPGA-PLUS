@@ -99,7 +99,7 @@ module udp_checksum_calculator
     )
     header_summer(
         .s_axis_tdata(pseudo_header_bits),
-        .s_axis_tkeep('1)
+        .s_axis_tkeep('1),
         .sum(header_sum)
     );
 
@@ -113,7 +113,7 @@ module udp_checksum_calculator
     )
     header_placeholder_summer(
         .s_axis_tdata(s_axis_tdata[$bits(udp_header)-1:0]),
-        .s_axis_tkeep('1)
+        .s_axis_tkeep('1),
         .sum(header_sum_to_remove)
     );
 
