@@ -47,9 +47,10 @@ module udp_pipelined_summer
     assign int_axis_tdata[0] = s_axis_tdata;
     assign int_axis_tkeep[0] = s_axis_tkeep;
     assign int_axis_tvalid[0] = s_axis_tvalid;
+    assign int_axis_tuser[0] = s_axis_tuser;
     assign s_axis_tready = int_axis_tready[0];
     assign int_axis_tlast[0] = s_axis_tlast;
-    assign int_axis_partial_sum[0] = '0;
+    assign int_axis_partial_sum[0] = 32'b0;
 
     // Store the data in a pipeline/FIFO
     // In each stage add up a certain portion of the data
