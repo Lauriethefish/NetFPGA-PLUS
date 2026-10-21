@@ -16,7 +16,7 @@ module sum_16_bit_words
 
     genvar i;
     generate
-        for(i = DATA_START/8; i < (DATA_START+DATA_LENGTH)/8; i++) begin
+        for(i = DATA_START/8; i < (DATA_START+DATA_WIDTH)/8; i++) begin
             assign segment_to_add[i*8+7-DATA_START:i*8-DATA_START]
                 = s_axis_tkeep[i] ? s_axis_tdata[i*8+7:i*8] : 0;
         end
