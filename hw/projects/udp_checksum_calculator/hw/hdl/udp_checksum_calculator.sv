@@ -159,6 +159,7 @@ module udp_checksum_calculator
     // Use the already computed sum of the whole transaction
     // Account for the sum of the pseudo header, removing the sum of the header
     // that was over-accounted for.
+    wire [31:0] transfer_checksum;
     assign transfer_checksum = s_axis_checksum + (buffer_pos == 0 ? header_sum - header_sum_to_remove : 0);
 
     always_ff @(posedge axis_aclk) begin
