@@ -68,7 +68,7 @@ module udp_pipelined_summer
 
     generate
         for(genvar i = 0; i < NUM_SECTIONS; i++) begin
-            udp_pipelined_summer_section s0
+            udp_pipelined_summer_section
             #(
                 .C_M_AXIS_DATA_WIDTH(C_M_AXIS_DATA_WIDTH),
                 .C_S_AXIS_DATA_WIDTH(C_S_AXIS_DATA_WIDTH),
@@ -80,6 +80,7 @@ module udp_pipelined_summer
                 // as above.
                 .DATA_ADD_LENGTH(BITS_PER_SUMMER)
             )
+            sect
             (
                 // Global clock/reset
                 axis_aclk(axis_aclk),
