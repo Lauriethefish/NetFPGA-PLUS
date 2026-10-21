@@ -108,8 +108,8 @@ module udp_checksum_calculator
     sum_16_bit_words 
     #(
         .DATA_START(0),
-        .DATA_WIDTH($bits(udp_pseudo_header)),
-        .INPUT_WIDT($bits(udp_pseudo_header))
+        .DATA_WIDTH($bits(udp_header)),
+        .INPUT_WIDTH($bits(udp_header))
     )
     header_placeholder_summer(
         .s_axis_tdata(s_axis_tdata[$bits(udp_header)-1:0]),
