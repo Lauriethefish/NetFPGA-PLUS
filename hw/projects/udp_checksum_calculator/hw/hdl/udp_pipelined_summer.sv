@@ -7,7 +7,7 @@ module udp_pipelined_summer
     parameter C_S_AXIS_TUSER_WIDTH=128,
 
     // NB must be multiple of 8
-    parameter NUM_SECTIONS=8
+    parameter NUM_SECTIONS=16
 )
 (
     // Global clock/reset
