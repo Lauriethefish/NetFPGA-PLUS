@@ -87,7 +87,7 @@ module udp_checksum_calculator
     wire [$bits(udp_pseudo_header)-1:0] pseudo_header_bits;
     assign pseudo_header_bits = {<<8{pseudo_header}};
 
-    localparam TRANS_SUM_WIDTH = 20;
+    localparam TRANS_SUM_WIDTH = 22;
 
     wire [TRANS_SUM_WIDTH-1:0] header_sum;
     wire [TRANS_SUM_WIDTH-1:0] header_sum_to_remove;
