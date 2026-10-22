@@ -42,7 +42,7 @@ module udp_set_checksum
         .C_M_AXIS_TUSER_WIDTH(`C_M_AXIS_TUSER_WIDTH),
         .C_S_AXIS_TUSER_WIDTH(`C_S_AXIS_TUSER_WIDTH),
 
-        .NUM_SECTIONS(8)
+        .NUM_SECTIONS(16)
     )
     summer
     (
