@@ -11,6 +11,10 @@ module udp_pipelined_summer_section
     parameter DATA_ADD_LENGTH
 )
 (
+    // Adding up only 128 bits per section or 8 16-bit words.
+    // So only need e.g. 20 bits conervatively
+    localparam SEGMENT_SUM_WIDTH = 20;
+
     // Global clock/reset
     input axis_aclk,
     // Active low
@@ -37,12 +41,13 @@ module udp_pipelined_summer_section
     // Ready to receive data IF downstream is ready OR nothing buffered.
     assign s_axis_tready = m_axis_tready || !m_axis_tvalid;
 
-    wire [31:0] segment_sum;
+    wire [SEGMENT_SUM_WIDTH-1:0] segment_sum;
 
     sum_16_bit_words #(
         .DATA_START(DATA_ADD_START),
         .DATA_WIDTH(DATA_ADD_LENGTH),
-        .INPUT_WIDTH(C_M_AXIS_DATA_WIDTH)
+        .INPUT_WIDTH(C_M_AXIS_DATA_WIDTH),
+        .OUTPUT_WIDTH(SEGMENT_SUM_WIDTH)
     ) summer (
         .s_axis_tdata(s_axis_tdata),
         .s_axis_tkeep(s_axis_tkeep),

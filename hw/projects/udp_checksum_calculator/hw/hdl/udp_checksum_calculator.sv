@@ -87,15 +87,18 @@ module udp_checksum_calculator
     wire [$bits(udp_pseudo_header)-1:0] pseudo_header_bits;
     assign pseudo_header_bits = {<<8{pseudo_header}};
 
-    wire [31:0] header_sum;
-    wire [31:0] header_sum_to_remove;
+    localparam TRANS_SUM_WIDTH = 20;
+
+    wire [TRANS_SUM_WIDTH-1:0] header_sum;
+    wire [TRANS_SUM_WIDTH-1:0] header_sum_to_remove;
 
     // Sum up the header
     sum_16_bit_words 
     #(
         .DATA_START(0),
         .DATA_WIDTH($bits(udp_pseudo_header)),
-        .INPUT_WIDTH($bits(udp_pseudo_header))
+        .INPUT_WIDTH($bits(udp_pseudo_header)),
+        .OUTPUT_WIDTH(TRANS_SUM_WIDTH)
     )
     header_summer(
         .s_axis_tdata(pseudo_header_bits),
@@ -109,7 +112,8 @@ module udp_checksum_calculator
     #(
         .DATA_START(0),
         .DATA_WIDTH($bits(udp_header)),
-        .INPUT_WIDTH($bits(udp_header))
+        .INPUT_WIDTH($bits(udp_header)),
+        .OUTPUT_WIDTH(TRANS_SUM_WIDTH)
     )
     header_placeholder_summer(
         .s_axis_tdata(s_axis_tdata[$bits(udp_header)-1:0]),
