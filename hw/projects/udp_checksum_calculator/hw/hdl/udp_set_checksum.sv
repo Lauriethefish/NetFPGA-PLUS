@@ -151,6 +151,7 @@ module udp_set_checksum
         .m_axis_tlast(m_axis_tlast_c1),
 
         .s_axis_tdata(s_axis_tdata_buf),
+        .s_axis_orig_header(s_axis_orig_header_buf),
         .s_axis_tkeep(s_axis_tkeep_buf),
         .s_axis_tuser(s_axis_tuser_buf),
         .s_axis_tvalid(s_axis_tvalid_c1),
