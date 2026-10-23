@@ -72,7 +72,7 @@ module udp_pseudo_header_inserter
 
     wire [C_M_AXIS_DATA_WIDTH-1:0] s_axis_tdata_with_pseudo_header;
     assign s_axis_tdata_with_pseudo_header = 
-        {s_axis_tdata[C_M_AXIS_DATA_WIDTH-1:C_M_AXIS_DATA_WIDTH-$bits(udp_header)], zeroes_padding, pseudo_header_bits};
+        {s_axis_tdata[C_M_AXIS_DATA_WIDTH-1:$bits(udp_header)], zeroes_padding, pseudo_header_bits};
     
     always_ff @(posedge axis_aclk) begin
         if(axis_resetn) begin
