@@ -29,7 +29,7 @@ module udp_set_checksum
     input  s_axis_tlast
 );
     wire [`C_S_AXIS_DATA_WIDTH - 1:0] s_axis_tdata_buf;
-    wire [$bits(inter_structs::udp_header):0] s_axis_orig_header_buf,
+    wire [$bits(inter_structs::udp_header):0] s_axis_orig_header_buf;
     wire [((`C_S_AXIS_DATA_WIDTH / 8)) - 1:0] s_axis_tkeep_buf;
     wire [`C_S_AXIS_TUSER_WIDTH-1:0] s_axis_tuser_buf;
     wire  s_axis_tvalid_buf;
