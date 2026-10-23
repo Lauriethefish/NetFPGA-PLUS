@@ -67,7 +67,7 @@ module udp_pseudo_header_inserter
     wire [$bits(udp_pseudo_header)-1:0] pseudo_header_bits;
     assign pseudo_header_bits = {<<8{pseudo_header}};
 
-    wire [$bits(udp_header) - $bits(udp_pseudo_header)] zeroes_padding;
+    wire [$bits(udp_header) - $bits(udp_pseudo_header)-1:0] zeroes_padding;
     assign zeroes_padding = '0;
 
     wire [C_M_AXIS_DATA_WIDTH-1:0] s_axis_tdata_with_pseudo_header;
