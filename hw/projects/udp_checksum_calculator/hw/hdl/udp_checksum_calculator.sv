@@ -67,7 +67,7 @@ module udp_checksum_calculator
 
     wire [C_M_AXIS_DATA_WIDTH - 1:0] s_axis_tdata_restored_header;
     assign s_axis_tdata_restored_header = need_restore_udp_header ? 
-        {s_axis_tdata[C_M_AXIS_DATA_WIDTH-1:C_M_AXIS_DATA_WIDTH-$bits(udp_header)], s_axis_orig_header[$bits(udp_header)-1:0]} : s_axis_tdata;
+        {s_axis_tdata[C_M_AXIS_DATA_WIDTH-1:$bits(udp_header)], s_axis_orig_header[$bits(udp_header)-1:0]} : s_axis_tdata;
 
 
     // Work out what to use for computing checksum based upon whether this is the header transaction.
