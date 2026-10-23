@@ -29,6 +29,7 @@ module udp_set_checksum
     input  s_axis_tlast
 );
     wire [`C_S_AXIS_DATA_WIDTH - 1:0] s_axis_tdata_buf;
+    wire [$bits(inter_structs::udp_header):0] s_axis_orig_header_buf,
     wire [((`C_S_AXIS_DATA_WIDTH / 8)) - 1:0] s_axis_tkeep_buf;
     wire [`C_S_AXIS_TUSER_WIDTH-1:0] s_axis_tuser_buf;
     wire  s_axis_tvalid_buf;
@@ -50,6 +51,7 @@ module udp_set_checksum
         .axis_resetn(axis_resetn),
 
         .m_axis_tdata(s_axis_tdata_buf),
+        .m_axis_orig_header(s_axis_orig_header_buf),
         .m_axis_tkeep(s_axis_tkeep_buf),
         .m_axis_tuser(s_axis_tuser_buf),
         .m_axis_tvalid(s_axis_tvalid_buf),
@@ -120,6 +122,7 @@ module udp_set_checksum
         .m_axis_tlast(m_axis_tlast_c0),
 
         .s_axis_tdata(s_axis_tdata_buf),
+        .s_axis_orig_header(s_axis_orig_header_buf),
         .s_axis_tkeep(s_axis_tkeep_buf),
         .s_axis_tuser(s_axis_tuser_buf),
         .s_axis_tvalid(s_axis_tvalid_c0),

@@ -18,6 +18,7 @@ module udp_pipelined_summer_section
 
     // Master Stream Ports (write packet data)
     output reg [C_M_AXIS_DATA_WIDTH - 1:0] m_axis_tdata,
+    output reg [$bits(inter_structs::udp_header):0] m_axis_orig_header,
     output reg [((C_M_AXIS_DATA_WIDTH / 8)) - 1:0] m_axis_tkeep,
     output reg [C_M_AXIS_TUSER_WIDTH-1:0] m_axis_tuser,
     output reg m_axis_tvalid,
@@ -27,6 +28,7 @@ module udp_pipelined_summer_section
 
     // Slave Stream Ports (read packet data)
     input [C_S_AXIS_DATA_WIDTH - 1:0] s_axis_tdata,
+    input [$bits(inter_structs::udp_header):0] s_axis_orig_header,
     input [((C_S_AXIS_DATA_WIDTH / 8)) - 1:0] s_axis_tkeep,
     input [C_S_AXIS_TUSER_WIDTH-1:0] s_axis_tuser,
     input  s_axis_tvalid,
@@ -58,6 +60,7 @@ module udp_pipelined_summer_section
         if(axis_resetn) begin
             if(s_axis_tready && s_axis_tvalid) begin
                 m_axis_tdata <= s_axis_tdata;
+                m_axis_orig_header <= s_axis_orig_header;
                 m_axis_tvalid <= s_axis_tvalid;
                 m_axis_tkeep <= s_axis_tkeep;
                 m_axis_tuser <= s_axis_tuser;
