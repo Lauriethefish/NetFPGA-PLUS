@@ -101,7 +101,7 @@ module udp_tree_summer
                     
                     always_ff @(posedge axis_aclk) begin
                         if(axis_resetn && int_axis_tvalid[pl_stage] && int_axis_tready[pl_stage]) begin
-                            int_axis_tpartial_sum[i] <= ordered_words_to_add[31:16] + ordered_words_to_add[15:0];
+                            int_axis_tpartial_sum[i] <= SUM_WIDTH'(ordered_words_to_add[31:16]) + ordered_words_to_add[15:0];
                         end
                     end
                 end 
