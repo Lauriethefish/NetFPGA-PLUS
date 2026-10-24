@@ -1,4 +1,4 @@
-module udp_pipelined_summer
+module udp_tree_summer
 #(
     // NB this MUST be a power of two.
     parameter C_M_AXIS_DATA_WIDTH=1024,
