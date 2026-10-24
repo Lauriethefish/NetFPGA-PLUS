@@ -160,6 +160,7 @@ module nf_datapath #(
     );
     
     //internal connectivity
+    wire [10:0] dummy;
      
     wire [C_M_AXIS_DATA_WIDTH - 1:0]         s_axis_pc_tdata;
     wire [((C_M_AXIS_DATA_WIDTH / 8)) - 1:0] s_axis_pc_tkeep;
