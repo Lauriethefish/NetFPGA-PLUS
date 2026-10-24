@@ -46,7 +46,7 @@ module udp_tree_summer
     // Phase 2 needs C_M_AXIS_DATA_WIDTH/16/4
     // Phase 3 needs C_M_AXIS_DATA_WIDTH/16/8
     // Overall need C_M_AXIS_DATA_WIDTH/16
-    reg [SUM_WIDTH-1:0][C_M_AXIS_DATA_WIDTH/16:0] int_axis_tpartial_sum;
+    reg [SUM_WIDTH-1:0] int_axis_tpartial_sum [C_M_AXIS_DATA_WIDTH/16:0];
 
 
     // 1024 bits means 1024/16 = 64 x 16 bit words
