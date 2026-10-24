@@ -6,7 +6,7 @@ module udp_tree_summer
     parameter C_M_AXIS_TUSER_WIDTH=128,
     parameter C_S_AXIS_TUSER_WIDTH=128,
 
-    parameter SUM_WIDTH=22
+    parameter SUM_WIDTH=23
 )
 (
     // Global clock/reset
