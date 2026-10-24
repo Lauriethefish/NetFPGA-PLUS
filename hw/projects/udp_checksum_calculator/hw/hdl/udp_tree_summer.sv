@@ -91,11 +91,11 @@ module udp_tree_summer
 
     generate
         for(genvar pl_stage = 0; pl_stage < NUM_SECTIONS; pl_stage++) begin
-            localparam num_partial_sums = C_M_AXIS_DATA_WIDTH/16/2/(2 << pl_stage);
+            localparam num_partial_sums = C_M_AXIS_DATA_WIDTH/16/(2 << pl_stage);
 
             // Compute partial sums and output them to the right spot
             if(pl_stage == 0) begin
-                for(genvar i = 0; i < C_M_AXIS_DATA_WIDTH/16/2; i++) begin
+                for(genvar i = 0; i < num_partial_sums; i++) begin
                     wire [31:0] bits_to_add = int_axis_tdata[0][(i+1)*32-1:(i*32)];
                     wire [31:0] ordered_words_to_add = {<<8{bits_to_add}};
                     
@@ -108,9 +108,9 @@ module udp_tree_summer
             end else begin
                 // For pl_stage = 1, want to read from 0
                 // For pl_stage = 2, want to read from C_M_AXIS_DATA_WIDTH/16/2
-                localparam read_partial_sums = C_M_AXIS_DATA_WIDTH/16 - C_M_AXIS_DATA_WIDTH/16/(2 << (pl_stage - 1));
+                localparam read_partial_sums = C_M_AXIS_DATA_WIDTH/16 - C_M_AXIS_DATA_WIDTH/16/(2 << (pl_stage - 2));
                 // For pl_stage = 1, want to write to C_M_AXIS_DATA_WIDTH/16/2
-                localparam write_partial_sums = C_M_AXIS_DATA_WIDTH/16 - C_M_AXIS_DATA_WIDTH/16/(2 << (pl_stage));
+                localparam write_partial_sums = C_M_AXIS_DATA_WIDTH/16 - C_M_AXIS_DATA_WIDTH/16/(2 << (pl_stage - 1));
 
                 for(genvar i = 0; i < num_partial_sums; i++) begin
                     always_ff @(posedge axis_aclk) begin
