@@ -159,10 +159,10 @@ module udp_tree_summer
                     // i.e. if last stage has no data to give us, and we have data,
                     // and the next stage is ready for it
                     if(!int_axis_tvalid[pl_stage - 1] && int_axis_tvalid[pl_stage] && int_axis_tready[pl_stage]) begin
-                        int_axis_tvalid[pl_stage] <= 0;
+                        int_axis_tvalid_r <= 0;
                     end
                 end else begin
-                    int_axis_tvalid[pl_stage] <= 0;
+                    int_axis_tvalid_r <= 0;
                 end
             end
         end
