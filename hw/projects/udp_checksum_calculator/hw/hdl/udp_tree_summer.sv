@@ -89,21 +89,23 @@ module udp_pipelined_summer
     wire [SUM_WIDTH-1:0] final_sum;
 
     generate
-        genvar num_partial_sums = C_M_AXIS_DATA_WIDTH/16/2;
-        genvar read_partial_sums = -1;
-        genvar write_partial_sums = 0;
-
         for(genvar pl_stage = 0; pl_stage < NUM_SECTIONS; pl_stage++) begin
+            localparam num_partial_sums = C_M_AXIS_DATA_WIDTH/16/2/(2 << pl_stage);
+
             // Compute partial sums and output them to the right spot
-            if(read_partial_sums == -1) begin
+            if(pl_stage == -1) begin
                 for(genvar i = 0; i < C_M_AXIS_DATA_WIDTH/16/2; i++) begin
                     wire [31:0] bits_to_add = int_axis_tdata[0][(i+1)*32-1:(i*32)];
                     wire [31:0] ordered_words_to_add = {<<8{bits_to_add}};
 
-                    int_axis_partial_sum[write_partial_sums+i] = ordered_words_to_add[31:16] + ordered_words_to_add[15:0];
+                    int_axis_partial_sum[i] = ordered_words_to_add[31:16] + ordered_words_to_add[15:0];
                 end 
-                read_partial_sums = 0;
             end else begin
+                // For pl_stage = 1, want to read from 0
+                localparam read_partial_sums = C_M_AXIS_DATA_WIDTH/16 - C_M_AXIS_DATA_WIDTH/16/(2 << pl_stage);
+                // For pl_stage = 1, want to write to C_M_AXIS_DATA_WIDTH/16/2
+                localparam write_partial_sums = C_M_AXIS_DATA_WIDTH/16 - C_M_AXIS_DATA_WIDTH/16/(2 << (pl_stage + 1));
+
                 for(genvar i = 0; i < num_partial_sums; i++) begin
                     int_axis_partial_sum[write_partial_sums+i] =
                         int_axis_partial_sum[read_partial_sums+2*i] +
@@ -111,12 +113,6 @@ module udp_pipelined_summer
                 end
                 read_partial_sums = write_partial_sums;
             end
-
-            write_partial_sums = write_partial_sums + num_partial_sums;
-            num_partial_sums = num_partial_sums / 2;
-
-            // This stage ready if the next is ready, or if there is no data currently in the stage
-            assign int_axis_tready[pl_stage] = int_axis_tready[pl_stage + 1] || !int_axis_tvalid[pl_stage];
         end
         assign final_sum = int_axis_partial_sum[read_partial_sums];
 
