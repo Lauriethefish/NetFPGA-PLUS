@@ -87,6 +87,14 @@ module udp_tree_summer
         .s_axis_tlast(s_axis_tlast)
     );
 
+    wire [C_M_AXIS_DATA_WIDTH-1:0] s_axis_tdata_filtered;
+    generate
+        for(genvar i = 0; i < C_M_AXIS_DATA_WIDTH/8; i++) begin
+            assign s_axis_tdata_filtered[i*8+7:i*8]
+                = s_axis_tkeep[i] ? s_axis_tdata[i*8+7:i*8] : 0;
+        end
+    endgenerate
+
     wire [SUM_WIDTH-1:0] final_sum;
 
     generate
@@ -96,7 +104,7 @@ module udp_tree_summer
             // Compute partial sums and output them to the right spot
             if(pl_stage == 0) begin
                 for(genvar i = 0; i < num_partial_sums; i++) begin
-                    wire [31:0] bits_to_add = int_axis_tdata[0][(i+1)*32-1:(i*32)];
+                    wire [31:0] bits_to_add = s_axis_tdata_filtered[(i+1)*32-1:(i*32)];
                     wire [31:0] ordered_words_to_add = {<<8{bits_to_add}};
                     
                     always_ff @(posedge axis_aclk) begin
