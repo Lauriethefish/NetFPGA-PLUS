@@ -39,6 +39,7 @@ module udp_pipelined_summer
     wire [((C_M_AXIS_DATA_WIDTH / 8)) - 1:0] int_axis_tkeep [NUM_SECTIONS:0];
     wire [C_M_AXIS_TUSER_WIDTH-1:0] int_axis_tuser [NUM_SECTIONS:0];
     wire int_axis_tvalid [NUM_SECTIONS:0];
+    wire int_axis_tready [NUM_SECTIONS:0];
     wire int_axis_tlast [NUM_SECTIONS:0];
     // Use for holding partial sums computed in each stage of calculation
     // Phase 1 needs C_M_AXIS_DATA_WIDTH/16/2
@@ -133,19 +134,19 @@ module udp_pipelined_summer
             reg int_axis_tvalid_r;
             reg int_axis_tlast_r;
 
+            assign int_axis_tdata[pl_stage] = int_axis_tdata_r;
+            assign int_axis_tuser[pl_stage] = int_axis_tuser_r;
+            assign int_axis_tkeep[pl_stage] = int_axis_tkeep_r;
+            assign int_axis_tvalid[pl_stage] = int_axis_tvalid_r;
+            assign int_axis_tlast[pl_stage] = int_axis_tlast_r;
+            assign int_axis_orig_header[pl_stage] = int_axis_orig_header_r;
+
             always_ff @(posedge axis_aclk) begin
                 if(axis_resetn) begin 
                     // If previous stage has data, and this stage is ready for it,
                     // then transfer it
                     // Note: int_axis_tready indicates whether the receiver is ready for data.
                     if(int_axis_tready[pl_stage - 1] && int_axis_tvalid[pl_stage - 1]) begin
-                        assign int_axis_tdata[pl_stage] = int_axis_tdata_r;
-                        assign int_axis_tuser[pl_stage] = int_axis_tuser_r;
-                        assign int_axis_tkeep[pl_stage] = int_axis_tkeep_r;
-                        assign int_axis_tvalid[pl_stage] = int_axis_tvalid_r;
-                        assign int_axis_tlast[pl_stage] = int_axis_tlast_r;
-                        assign int_axis_orig_header[pl_stage] = int_axis_orig_header_r;
-
                         int_axis_tdata_r <= int_axis_tdata[pl_stage - 1];
                         int_axis_tuser_r <= int_axis_tuser[pl_stage - 1];
                         int_axis_tvalid_r <= int_axis_tvalid[pl_stage - 1];
