@@ -108,7 +108,7 @@ module udp_tree_summer
             end else begin
                 // For pl_stage = 1, want to read from 0
                 // For pl_stage = 2, want to read from C_M_AXIS_DATA_WIDTH/16/2
-                localparam read_partial_sums = C_M_AXIS_DATA_WIDTH/16 - C_M_AXIS_DATA_WIDTH/16/(2 << (pl_stage - 2));
+                localparam read_partial_sums = pl_stage == 1 ? 0 : (C_M_AXIS_DATA_WIDTH/16 - C_M_AXIS_DATA_WIDTH/16/(2 << (pl_stage - 2)));
                 // For pl_stage = 1, want to write to C_M_AXIS_DATA_WIDTH/16/2
                 localparam write_partial_sums = C_M_AXIS_DATA_WIDTH/16 - C_M_AXIS_DATA_WIDTH/16/(2 << (pl_stage - 1));
 
