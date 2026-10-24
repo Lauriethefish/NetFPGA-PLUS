@@ -91,7 +91,7 @@ module udp_tree_summer
     generate
         for(genvar i = 0; i < C_M_AXIS_DATA_WIDTH/8; i++) begin
             assign s_axis_tdata_filtered[i*8+7:i*8]
-                = s_axis_tkeep[i] ? s_axis_tdata[i*8+7:i*8] : 0;
+                = int_axis_tkeep[0][i] ? int_axis_tdata[0][i*8+7:i*8] : 0;
         end
     endgenerate
 
