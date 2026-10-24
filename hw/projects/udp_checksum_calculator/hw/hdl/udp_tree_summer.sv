@@ -123,7 +123,7 @@ module udp_pipelined_summer
                 end
             end
         end
-        assign final_sum = int_axis_tpartial_sum[read_partial_sums];
+        assign final_sum = int_axis_tpartial_sum[C_M_AXIS_DATA_WIDTH/16-1];
 
         // Generate AXI pipelining logic
         for(genvar pl_stage = 1; pl_stage <= NUM_SECTIONS; pl_stage++) begin
