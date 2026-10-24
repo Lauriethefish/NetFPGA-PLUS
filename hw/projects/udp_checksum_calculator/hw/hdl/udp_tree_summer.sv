@@ -94,7 +94,7 @@ module udp_tree_summer
             localparam num_partial_sums = C_M_AXIS_DATA_WIDTH/16/2/(2 << pl_stage);
 
             // Compute partial sums and output them to the right spot
-            if(pl_stage == -1) begin
+            if(pl_stage == 0) begin
                 for(genvar i = 0; i < C_M_AXIS_DATA_WIDTH/16/2; i++) begin
                     wire [31:0] bits_to_add = int_axis_tdata[0][(i+1)*32-1:(i*32)];
                     wire [31:0] ordered_words_to_add = {<<8{bits_to_add}};
