@@ -427,6 +427,7 @@ read_verilog     "${public_repo_dir}/common/hdl/top.v"
 create_run -flow {Vivado Synthesis 2020} synth
 set_property write_incremental_synth_checkpoint true [get_runs synth_1]
 set_property AUTO_INCREMENTAL_CHECKPOINT 1 [get_runs synth_1]
+set_property strategy Flow_AlternateRoutability [get_runs synth_1]
 #Setting Implementation options
 create_run impl -parent_run synth -flow {Vivado Implementation 2020}
 set_property strategy Performance_ExplorePostRoutePhysOpt [get_runs impl_1]
