@@ -81,7 +81,7 @@ set_property ip_repo_paths ${repo_dir} [current_fileset]
 add_files -fileset constraints -norecurse ${project_constraints}
 if {[string match $board_name "au280"]} {
 	add_files -fileset constraints -norecurse ${public_repo_dir}/common/constraints/au280_timing.tcl
-	add_files -fileset constraints -norecurse /constraints/au280_user_timing.tcl
+	add_files -fileset constraints -norecurse ./constraints/au280_user_timing.tcl
 } elseif {[string match $board_name "au200"]} {
 	add_files -fileset constraints -norecurse ${public_repo_dir}/common/constraints/au200_vcu1525_timing.tcl
 	add_files -fileset constraints -norecurse ./constraints/au200_vcu1525_user_timing.tcl
