@@ -56,7 +56,7 @@ module udp_checksum_calculator
 
     reg [$clog2(BUFFER_SIZE)-1:0] buffer_pos;
     reg [$clog2(BUFFER_SIZE)-1:0] buffer_len;
-    reg [C_M_AXIS_DATA_WIDTH + (C_M_AXIS_DATA_WIDTH/8) + C_M_AXIS_TUSER_WIDTH:0]
+    reg [C_M_AXIS_DATA_WIDTH + (C_M_AXIS_DATA_WIDTH/8) + C_M_AXIS_TUSER_WIDTH - 1:0]
         buffered_stream[BUFFER_SIZE-1:0];
 
     // UDP packets have their header replaced with the pseudo header. Put it back here if necessary.

@@ -434,7 +434,7 @@ set_property steps.phys_opt_design.is_enabled true [get_runs impl_1]
 set_property STEPS.PHYS_OPT_DESIGN.ARGS.DIRECTIVE ExploreWithHoldFix [get_runs impl_1]
 #set_property STEPS.PLACE_DESIGN.ARGS.DIRECTIVE AggressiveExplore [get_runs impl_1]
 # Spread logic out more widely to fix congestion we've been experiencing.
-set_property STEPS.PLACE_DESIGN.ARGS.DIRECTIVE AltSpreadLogic_medium [get_runs impl_1]
+set_property STEPS.PLACE_DESIGN.ARGS.DIRECTIVE AltSpreadLogic_high [get_runs impl_1]
 set_property STEPS.POST_ROUTE_PHYS_OPT_DESIGN.is_enabled true [get_runs impl_1]
 
 #set_property STEPS.POST_ROUTE_PHYS_OPT_DESIGN.ARGS.DIRECTIVE Explore [get_runs impl_1]
