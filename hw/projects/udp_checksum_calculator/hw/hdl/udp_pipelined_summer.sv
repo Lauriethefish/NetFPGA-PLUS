@@ -22,6 +22,7 @@ module udp_pipelined_summer
     output m_axis_tvalid,
     input  m_axis_tready,
     output m_axis_tlast,
+    output [$bits(inter_structs::udp_header):0] m_axis_orig_header,
     output [31:0] m_axis_checksum,
 
     // Slave Stream Ports (read packet data)
@@ -37,6 +38,7 @@ module udp_pipelined_summer
 
     // Assign the first of these to the s_axis_tdata, i.e. the input
     wire [C_M_AXIS_DATA_WIDTH - 1:0] int_axis_tdata [NUM_SECTIONS:0];
+    wire [$bits(inter_structs::udp_header):0] int_axis_orig_header [NUM_SECTIONS:0];
     wire [((C_M_AXIS_DATA_WIDTH / 8)) - 1:0] int_axis_tkeep [NUM_SECTIONS:0];
     wire [C_M_AXIS_TUSER_WIDTH-1:0] int_axis_tuser [NUM_SECTIONS:0];
     wire int_axis_tvalid [NUM_SECTIONS:0];
@@ -44,12 +46,38 @@ module udp_pipelined_summer
     wire int_axis_tlast [NUM_SECTIONS:0];
     wire [31:0] int_axis_partial_sum [NUM_SECTIONS:0];
 
-    assign int_axis_tdata[0] = s_axis_tdata;
-    assign int_axis_tkeep[0] = s_axis_tkeep;
-    assign int_axis_tvalid[0] = s_axis_tvalid;
-    assign int_axis_tuser[0] = s_axis_tuser;
-    assign s_axis_tready = int_axis_tready[0];
-    assign int_axis_tlast[0] = s_axis_tlast;
+    // Insert module that will cut and paste in the pseudo header for checksum
+    // calculation.
+    udp_pseudo_header_inserter
+    #(
+        .C_M_AXIS_DATA_WIDTH(C_M_AXIS_DATA_WIDTH),
+        .C_S_AXIS_DATA_WIDTH(C_S_AXIS_DATA_WIDTH),
+        .C_M_AXIS_TUSER_WIDTH(C_M_AXIS_TUSER_WIDTH),
+        .C_S_AXIS_TUSER_WIDTH(C_S_AXIS_TUSER_WIDTH)
+    )
+    header_inserter
+    (
+        .axis_aclk(axis_aclk),
+        .axis_resetn(axis_resetn),
+
+        // Master Stream Ports (write packet data)
+        .m_axis_tdata(int_axis_tdata[0]),
+        .m_axis_orig_header(int_axis_orig_header[0]),
+        .m_axis_tkeep(int_axis_tkeep[0]),
+        .m_axis_tuser(int_axis_tuser[0]),
+        .m_axis_tvalid(int_axis_tvalid[0]),
+        .m_axis_tready(int_axis_tready[0]),
+        .m_axis_tlast(int_axis_tlast[0]),
+
+        // Slave Stream Ports (read packet data)
+        .s_axis_tdata(s_axis_tdata),
+        .s_axis_tkeep(s_axis_tkeep),
+        .s_axis_tuser(s_axis_tuser),
+        .s_axis_tvalid(s_axis_tvalid),
+        .s_axis_tready(s_axis_tready),
+        .s_axis_tlast(s_axis_tlast)
+    );
+
     assign int_axis_partial_sum[0] = 32'b0;
 
     // Store the data in a pipeline/FIFO
@@ -79,6 +107,7 @@ module udp_pipelined_summer
 
                 // Master Stream Ports (write packet data)
                 .m_axis_tdata(int_axis_tdata[i+1]),
+                .m_axis_orig_header(int_axis_orig_header[i+1]),
                 .m_axis_tkeep(int_axis_tkeep[i+1]),
                 .m_axis_tuser(int_axis_tuser[i+1]),
                 .m_axis_tvalid(int_axis_tvalid[i+1]),
@@ -88,6 +117,7 @@ module udp_pipelined_summer
 
                 // Slave Stream Ports (read packet data)
                 .s_axis_tdata(int_axis_tdata[i]),
+                .s_axis_orig_header(int_axis_orig_header[i]),
                 .s_axis_tkeep(int_axis_tkeep[i]),
                 .s_axis_tuser(int_axis_tuser[i]),
                 .s_axis_tvalid(int_axis_tvalid[i]),
@@ -99,6 +129,7 @@ module udp_pipelined_summer
     endgenerate
 
     assign m_axis_tdata = int_axis_tdata[NUM_SECTIONS];
+    assign m_axis_orig_header = int_axis_orig_header[NUM_SECTIONS];
     assign m_axis_tuser = int_axis_tuser[NUM_SECTIONS];
     assign m_axis_tkeep = int_axis_tkeep[NUM_SECTIONS];
     assign m_axis_tvalid = int_axis_tvalid[NUM_SECTIONS];

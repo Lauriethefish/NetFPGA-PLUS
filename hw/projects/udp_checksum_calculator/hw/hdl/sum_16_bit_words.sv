@@ -3,7 +3,8 @@ module sum_16_bit_words
     // Must be multiple of 16
     parameter DATA_START=0,
     parameter DATA_WIDTH=128,
-    parameter INPUT_WIDTH=128
+    parameter INPUT_WIDTH=128,
+    parameter OUTPUT_WIDTH=32
 )
 (
     input [INPUT_WIDTH-1:0] s_axis_tdata,
@@ -26,7 +27,7 @@ module sum_16_bit_words
     assign ordered_segment_to_add = {<<8{segment_to_add}};
 
     // Compute sum of 16 bit words
-    wire [31:0] partial_sums [(DATA_WIDTH/16)+1];
+    wire [OUTPUT_WIDTH-1:0] partial_sums [(DATA_WIDTH/16)+1];
     assign partial_sums[0] = 0;
 
     generate

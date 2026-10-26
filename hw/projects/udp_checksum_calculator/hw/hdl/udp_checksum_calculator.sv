@@ -24,6 +24,7 @@ module udp_checksum_calculator
 
     // Slave Stream Ports (read packet data)
     input [C_S_AXIS_DATA_WIDTH - 1:0] s_axis_tdata,
+    input [$bits(inter_structs::udp_header):0] s_axis_orig_header,
     input [((C_S_AXIS_DATA_WIDTH / 8)) - 1:0] s_axis_tkeep,
     input [C_S_AXIS_TUSER_WIDTH-1:0] s_axis_tuser,
     input  s_axis_tvalid,
@@ -55,67 +56,19 @@ module udp_checksum_calculator
 
     reg [$clog2(BUFFER_SIZE)-1:0] buffer_pos;
     reg [$clog2(BUFFER_SIZE)-1:0] buffer_len;
-    reg [C_M_AXIS_DATA_WIDTH + (C_M_AXIS_DATA_WIDTH/8) + C_M_AXIS_TUSER_WIDTH:0]
+    reg [C_M_AXIS_DATA_WIDTH + (C_M_AXIS_DATA_WIDTH/8) + C_M_AXIS_TUSER_WIDTH - 1:0]
         buffered_stream[BUFFER_SIZE-1:0];
 
-    wire [C_M_AXIS_DATA_WIDTH/2 - 1:0] masked_tdata;
-    genvar i;
-    generate
-        for(i = 0; i < C_M_AXIS_DATA_WIDTH/8/2; i++) begin
-            assign masked_tdata[i*8+7:i*8] = s_axis_tkeep[i] ? s_axis_tdata[i*8+7:i*8] : 0;
-        end
-    endgenerate
+    // UDP packets have their header replaced with the pseudo header. Put it back here if necessary.
+    wire need_restore_udp_header;
 
-    // NB: Need to use separate set of bits if doing the pseudoheader
-    // calculation.
-    wire udp_header tdata_udp_header;
-    assign tdata_udp_header = {<<8{masked_tdata[$bits(udp_header)-1:0]}};
+    // Highest bit indicates whether the header needs restoring
+    assign need_restore_udp_header = s_axis_orig_header[$bits(udp_header)];
 
-    wire udp_pseudo_header pseudo_header;
-    assign pseudo_header = '{
-        tdata_udp_header.ipv4.src_addr,
-        tdata_udp_header.ipv4.dst_addr,
-        8'b0,
-        tdata_udp_header.ipv4.protocol,
-        tdata_udp_header.length,
-        tdata_udp_header.src_port,
-        tdata_udp_header.dst_port,
-        tdata_udp_header.length,
-        16'b0 // Consider checksum as being 0 for calculation.
-    };
+    wire [C_M_AXIS_DATA_WIDTH - 1:0] s_axis_tdata_restored_header;
+    assign s_axis_tdata_restored_header = need_restore_udp_header ? 
+        {s_axis_tdata[C_M_AXIS_DATA_WIDTH-1:$bits(udp_header)], s_axis_orig_header[$bits(udp_header)-1:0]} : s_axis_tdata;
 
-    wire [$bits(udp_pseudo_header)-1:0] pseudo_header_bits;
-    assign pseudo_header_bits = {<<8{pseudo_header}};
-
-    wire [31:0] header_sum;
-    wire [31:0] header_sum_to_remove;
-
-    // Sum up the header
-    sum_16_bit_words 
-    #(
-        .DATA_START(0),
-        .DATA_WIDTH($bits(udp_pseudo_header)),
-        .INPUT_WIDTH($bits(udp_pseudo_header))
-    )
-    header_summer(
-        .s_axis_tdata(pseudo_header_bits),
-        .s_axis_tkeep('1),
-        .sum(header_sum)
-    );
-
-    // Sum up the data in the area occupied by the pseudo header, as these
-    // should not be included.
-    sum_16_bit_words 
-    #(
-        .DATA_START(0),
-        .DATA_WIDTH($bits(udp_header)),
-        .INPUT_WIDTH($bits(udp_header))
-    )
-    header_placeholder_summer(
-        .s_axis_tdata(s_axis_tdata[$bits(udp_header)-1:0]),
-        .s_axis_tkeep('1),
-        .sum(header_sum_to_remove)
-    );
 
     // Work out what to use for computing checksum based upon whether this is the header transaction.
     wire is_udp_packet;
@@ -157,10 +110,9 @@ module udp_checksum_calculator
     assign m_axis_tlast = buffer_pos == buffer_len;
 
     // Use the already computed sum of the whole transaction
-    // Account for the sum of the pseudo header, removing the sum of the header
-    // that was over-accounted for.
+    // NB this accounts for the pseudo header due to the udp_pseudo_header_inserter module.
     wire [31:0] transfer_checksum;
-    assign transfer_checksum = s_axis_checksum + (buffer_pos == 0 ? header_sum - header_sum_to_remove : 0);
+    assign transfer_checksum = s_axis_checksum;
 
     always_ff @(posedge axis_aclk) begin
         if(!axis_resetn) begin
@@ -172,10 +124,11 @@ module udp_checksum_calculator
             if(state == 0) begin
                 if(s_axis_tvalid) begin
                     // Data transfer occurs
-                    buffered_stream[buffer_pos] <= {s_axis_tdata, s_axis_tkeep, s_axis_tuser};
+                    // NB: need to restore the original header if it was replaced
+                    // with the pseudo header earlier.
+                    buffered_stream[buffer_pos] <= {s_axis_tdata_restored_header, s_axis_tkeep, s_axis_tuser};
                     buffer_pos <= buffer_pos + 1;
                     // Add contribution to the checksum.
-                    // NOTE: the header is different and we need to deal with this fact.
                     running_checksum <= running_checksum + transfer_checksum;
 
                     // If this is the last packet, then next time, we're in sending mode

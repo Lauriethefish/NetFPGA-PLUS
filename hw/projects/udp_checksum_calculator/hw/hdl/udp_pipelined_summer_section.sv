@@ -18,6 +18,7 @@ module udp_pipelined_summer_section
 
     // Master Stream Ports (write packet data)
     output reg [C_M_AXIS_DATA_WIDTH - 1:0] m_axis_tdata,
+    output reg [$bits(inter_structs::udp_header):0] m_axis_orig_header,
     output reg [((C_M_AXIS_DATA_WIDTH / 8)) - 1:0] m_axis_tkeep,
     output reg [C_M_AXIS_TUSER_WIDTH-1:0] m_axis_tuser,
     output reg m_axis_tvalid,
@@ -27,6 +28,7 @@ module udp_pipelined_summer_section
 
     // Slave Stream Ports (read packet data)
     input [C_S_AXIS_DATA_WIDTH - 1:0] s_axis_tdata,
+    input [$bits(inter_structs::udp_header):0] s_axis_orig_header,
     input [((C_S_AXIS_DATA_WIDTH / 8)) - 1:0] s_axis_tkeep,
     input [C_S_AXIS_TUSER_WIDTH-1:0] s_axis_tuser,
     input  s_axis_tvalid,
@@ -34,15 +36,20 @@ module udp_pipelined_summer_section
     input  s_axis_tlast,
     input [31:0] s_axis_partial_sum
 );
+    // Adding up only 128 bits per section or 8 16-bit words.
+    // So only need e.g. 20 bits conervatively
+    localparam SEGMENT_SUM_WIDTH = 20;
+    
     // Ready to receive data IF downstream is ready OR nothing buffered.
     assign s_axis_tready = m_axis_tready || !m_axis_tvalid;
 
-    wire [31:0] segment_sum;
+    wire [SEGMENT_SUM_WIDTH-1:0] segment_sum;
 
     sum_16_bit_words #(
         .DATA_START(DATA_ADD_START),
         .DATA_WIDTH(DATA_ADD_LENGTH),
-        .INPUT_WIDTH(C_M_AXIS_DATA_WIDTH)
+        .INPUT_WIDTH(C_M_AXIS_DATA_WIDTH),
+        .OUTPUT_WIDTH(SEGMENT_SUM_WIDTH)
     ) summer (
         .s_axis_tdata(s_axis_tdata),
         .s_axis_tkeep(s_axis_tkeep),
@@ -53,6 +60,7 @@ module udp_pipelined_summer_section
         if(axis_resetn) begin
             if(s_axis_tready && s_axis_tvalid) begin
                 m_axis_tdata <= s_axis_tdata;
+                m_axis_orig_header <= s_axis_orig_header;
                 m_axis_tvalid <= s_axis_tvalid;
                 m_axis_tkeep <= s_axis_tkeep;
                 m_axis_tuser <= s_axis_tuser;

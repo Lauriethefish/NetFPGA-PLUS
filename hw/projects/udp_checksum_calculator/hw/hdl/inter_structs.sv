@@ -21,6 +21,7 @@ package inter_structs;
     logic [31:0] dst_addr;
   } ipv4_header;
 
+  // Full size: 42 bytes
   typedef struct packed {
     ether_header ether;
     ipv4_header ipv4;
@@ -31,6 +32,7 @@ package inter_structs;
   } udp_header;
 
   // Used for checksum calculation
+  // Full size: 20 bytes.
   typedef struct packed {
     logic [31:0] src_addr;
     logic [31:0] dst_addr;
