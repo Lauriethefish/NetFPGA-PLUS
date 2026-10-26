@@ -81,6 +81,7 @@ set_property ip_repo_paths ${repo_dir} [current_fileset]
 add_files -fileset constraints -norecurse ${project_constraints}
 if {[string match $board_name "au280"]} {
 	add_files -fileset constraints -norecurse ${public_repo_dir}/common/constraints/au280_timing.tcl
+	add_files -fileset constraints -norecurse ./constraints/au280_user_timing.tcl
 } elseif {[string match $board_name "au200"]} {
 	add_files -fileset constraints -norecurse ${public_repo_dir}/common/constraints/au200_vcu1525_timing.tcl
 	add_files -fileset constraints -norecurse ./constraints/au200_vcu1525_user_timing.tcl
@@ -427,18 +428,20 @@ read_verilog     "${public_repo_dir}/common/hdl/top.v"
 create_run -flow {Vivado Synthesis 2020} synth
 set_property write_incremental_synth_checkpoint true [get_runs synth_1]
 set_property AUTO_INCREMENTAL_CHECKPOINT 1 [get_runs synth_1]
+set_property strategy Flow_AlternateRoutability [get_runs synth_1]
 #Setting Implementation options
 create_run impl -parent_run synth -flow {Vivado Implementation 2020}
 set_property strategy Performance_ExplorePostRoutePhysOpt [get_runs impl_1]
 set_property steps.phys_opt_design.is_enabled true [get_runs impl_1]
 set_property STEPS.PHYS_OPT_DESIGN.ARGS.DIRECTIVE ExploreWithHoldFix [get_runs impl_1]
-set_property STEPS.PLACE_DESIGN.ARGS.DIRECTIVE Explore [get_runs impl_1]
+#set_property STEPS.PLACE_DESIGN.ARGS.DIRECTIVE AggressiveExplore [get_runs impl_1]
+# Spread logic out more widely to fix congestion we've been experiencing.
+set_property STEPS.PLACE_DESIGN.ARGS.DIRECTIVE AltSpreadLogic_high [get_runs impl_1]
 set_property STEPS.POST_ROUTE_PHYS_OPT_DESIGN.is_enabled true [get_runs impl_1]
 
 #set_property STEPS.POST_ROUTE_PHYS_OPT_DESIGN.ARGS.DIRECTIVE Explore [get_runs impl_1]
 set_property STEPS.POST_ROUTE_PHYS_OPT_DESIGN.ARGS.DIRECTIVE AggressiveExplore [get_runs impl_1]
 # The following implementation options will increase runtime, but get the best timing results
-#set_property strategy Performance_Explore [get_runs impl_1]
 ### Solves synthesis crash in 2013.2
 ##set_param synth.filterSetMaxDelayWithDataPathOnly true
 set_property SEVERITY {Warning} [get_drc_checks UCIO-1]
