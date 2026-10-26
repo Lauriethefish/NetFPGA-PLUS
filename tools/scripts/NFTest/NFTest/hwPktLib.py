@@ -137,7 +137,7 @@ def barrier(timeout = 10):
         prevCount = sumCount
         time.sleep(1.0)
 
-    #print "\n\n--BARRIER1-------we are no longer receiving traffic--------"
+    print("\n\n--BARRIER1-------we are no longer receiving traffic--------")
 
     # trigger the post-test packet verification/comparison and wait it to finish
     for iface in ifaceArray:
@@ -146,7 +146,7 @@ def barrier(timeout = 10):
             while captureThreads[iface].compareEvent.isSet():
                 time.sleep(0.2)
 
-    #print "\n--BARRIER2-------the bulk of the verification is done--------"
+    print("\n--BARRIER2-------the bulk of the verification is done--------")
 
     # get the status of the verification and wait for potentially delayed packets
     waitPerIteration = float(timeout)/(len(ifaceArray)*5.0)
@@ -160,7 +160,7 @@ def barrier(timeout = 10):
             captureThreads[iface].barrierEvent.wait(waitPerIteration)
             good &= captureThreads[iface].barrierEvent.is_set()
 
-    #print "\n--BARRIER3-------the barrier is done--------"
+    print("\n--BARRIER3-------the barrier is done--------")
 
     #start = time.clock()
     #good = False

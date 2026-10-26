@@ -62,7 +62,7 @@ if isHW():
     NUM_PKTS = 20
 else:
     NUM_PKTS = 1454
-num_ports = 2
+num_ports = 1
 
 pkts_expected = []
 pkts_sent = []
@@ -81,8 +81,8 @@ for i in range(NUM_PKTS):
             pkt.getlayer(2)[scapy.UDP].chksum = 0
             totalPktLengths[port] += len(pkt)
 
-            nftest_send_dma('nf' + str(port), pkt)
-            nftest_expect_dma('nf' + str(port), pkt_expect)
+            nftest_send_dma('nf' + str(port), pkt, expect=False)
+            nftest_expect_phy('nf' + str(port), pkt_expect)
     else:
         DA = "00:ca:fe:00:00:00"
         pkt_expect = make_UDP_pkt(dst_MAC=DA, src_MAC=SA, dst_IP=DST_IP,

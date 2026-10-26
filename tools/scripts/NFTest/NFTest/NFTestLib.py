@@ -278,7 +278,7 @@ def nftest_send_phy(ifaceName, pkt):
 #            packet to send
 # Description: send a packet from the dma
 ############################
-def nftest_send_dma(ifaceName, pkt):
+def nftest_send_dma(ifaceName, pkt, expect=True):
     sent_dma[ifaceName].append(pkt)
     if sim:
         for pkt_s in pkt:
@@ -289,7 +289,7 @@ def nftest_send_dma(ifaceName, pkt):
         f = simLib.fDMA()
         axitools.axis_dump( pkt, f, 512, 1e-9 )
     else:
-        hwPktLib.send(iface_map[ifaceName], pkt)
+        hwPktLib.send(iface_map[ifaceName], pkt, exp=expect)
 
 ############################
 # Function: nftest_expect_phy
@@ -324,6 +324,7 @@ def nftest_expect_dma(ifaceName, pkt, mask = None):
         f = simLib.fExpectDMA(int(ifaceName[2]) + 1)
         axitools.axis_dump( pkt, f, 512, 1e-9 )
     else:
+        print("EXPECT DMA??")
         hwPktLib.expect(iface_map[ifaceName], pkt, mask)
 
 ############################

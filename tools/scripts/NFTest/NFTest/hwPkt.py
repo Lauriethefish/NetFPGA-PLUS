@@ -36,6 +36,7 @@ import os
 from collections import deque
 from select import select
 from scapy.all import *
+from scapy.layers.all import Ether, IP, TCP, UDP
 from .scapy_sniff_patch import sniff
 
 class pktExpect(Thread):
@@ -93,7 +94,7 @@ class pktExpect(Thread):
     #              notifies background thread to compare packet lists
     ############################
     def addPkt(self,pkt):
-        print(f"Sniffed packet on NIC: {pkt}")
+        print(f"Sniffed packet on NIC: {pkt} of checksum {pkt.getlayer(2)[UDP].chksum}")
         self.lock.acquire()
         self.pkts.append(pkt)
         self.count += 1
@@ -131,8 +132,9 @@ class pktExpect(Thread):
     ############################
     def expectPkt(self, pkt, mask = None):
         self.lock.acquire()
-        print(self.device)
+        print(f"Expecting {pkt}, checksum: {pkt.getlayer(2)[UDP].chksum} on self.device")
         self.exp_pkts.append((pkt, mask))
+        print(f"TOTAL EXPECTED: {len(self.exp_pkts)}")
         self.barrierEvent.clear()
         self.lock.release()
 
@@ -146,6 +148,7 @@ class pktExpect(Thread):
     #              certain bytes
     ############################
     def comparePkts(self, pkta, pktb, mask = None):
+        print(f"Comparing {pkta} with {pktb}, mask: {mask}, result: {pkta == pktb}")
         if mask:
             pkta = [ord(x) for x in pkta]
             pktb = [ord(x) for x in pktb]
@@ -185,9 +188,11 @@ class pktExpect(Thread):
                                 ''.join([strexp,str(self.pkts[i][scapy.Padding])]),
                                 strpkt, strmask)
                     if matches:
+                        print("MATCHED")
                         self.matched.append(self.pkts[i])
                         self.pkts.remove(self.pkts[i])
                         self.exp_pkts.remove((exp, mask))
+                        print(f"Number expected: {len(self.exp_pkts)}")
                         numPkts -= 1
                         i -= 1
                         break
