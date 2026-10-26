@@ -93,7 +93,7 @@ class pktExpect(Thread):
     #              notifies background thread to compare packet lists
     ############################
     def addPkt(self,pkt):
-        print("Sniffed packet on NIC")
+        print(f"Sniffed packet on NIC: {pkt}")
         self.lock.acquire()
         self.pkts.append(pkt)
         self.count += 1
