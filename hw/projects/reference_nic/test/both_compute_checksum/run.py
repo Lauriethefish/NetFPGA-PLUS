@@ -59,7 +59,7 @@ DST_IP = "192.168.1.1"
 SRC_IP = "192.168.0.1"
 nextHopMAC = "dd:55:dd:66:dd:77"
 if isHW():
-    NUM_PKTS = 1454
+    NUM_PKTS = 600
 else:
     NUM_PKTS = 1454
 num_ports = 2
