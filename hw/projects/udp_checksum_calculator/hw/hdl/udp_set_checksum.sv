@@ -1,5 +1,5 @@
-`define C_M_AXIS_DATA_WIDTH 1024
-`define C_S_AXIS_DATA_WIDTH 1024
+`define C_M_AXIS_DATA_WIDTH 512
+`define C_S_AXIS_DATA_WIDTH 512
 `define C_M_AXIS_TUSER_WIDTH 128
 `define C_S_AXIS_TUSER_WIDTH 128
 
@@ -35,37 +35,6 @@ module udp_set_checksum
     wire  s_axis_tvalid_buf;
     wire  s_axis_tlast_buf;
     wire [31:0] s_axis_checksum_buf;
-
-    /*
-    udp_pipelined_summer
-    #(
-        .C_M_AXIS_DATA_WIDTH(`C_M_AXIS_DATA_WIDTH),
-        .C_S_AXIS_DATA_WIDTH(`C_S_AXIS_DATA_WIDTH),
-        .C_M_AXIS_TUSER_WIDTH(`C_M_AXIS_TUSER_WIDTH),
-        .C_S_AXIS_TUSER_WIDTH(`C_S_AXIS_TUSER_WIDTH),
-
-        .NUM_SECTIONS(16)
-    )
-    summer
-    (
-        .axis_aclk(axis_aclk),
-        .axis_resetn(axis_resetn),
-
-        .m_axis_tdata(s_axis_tdata_buf),
-        .m_axis_orig_header(s_axis_orig_header_buf),
-        .m_axis_tkeep(s_axis_tkeep_buf),
-        .m_axis_tuser(s_axis_tuser_buf),
-        .m_axis_tvalid(s_axis_tvalid_buf),
-        .m_axis_tready(current_acceptor ? s_axis_tready_c1 : s_axis_tready_c0),
-        .m_axis_tlast(s_axis_tlast_buf),
-        .m_axis_checksum(s_axis_checksum_buf),
-        .s_axis_tdata(s_axis_tdata),
-        .s_axis_tkeep(s_axis_tkeep),
-        .s_axis_tuser(s_axis_tuser),
-        .s_axis_tvalid(s_axis_tvalid),
-        .s_axis_tready(s_axis_tready),
-        .s_axis_tlast(s_axis_tlast)
-    );*/
 
     udp_tree_summer
     #(
@@ -193,7 +162,7 @@ module udp_set_checksum
         // Alternate the acceptor and dumper
         if(axis_resetn) begin
             // If we're finishing a packet from the dumper
-            if(m_axis_tlast && m_axis_tvalid) begin
+            if(m_axis_tlast && m_axis_tvalid && m_axis_tready) begin
                 current_dumper <= ~current_dumper;
             end
 
