@@ -92,7 +92,7 @@
  
  
  top_sim # (
-    .C_DATA_WIDTH                    (C_DATA_WIDTH                     ),
+    .C_DATA_WIDTH                    (C_DATA_WIDTH                     )
   ) top_sim (
   
   //PCI Express

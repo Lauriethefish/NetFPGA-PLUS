@@ -79,40 +79,39 @@ module nf_datapath #(
 
     
     // Interface to and from DMA
-    input [C_S_AXIS_DATA_WIDTH - 1:0]         s_axis_dma_tdata,
-    input [((C_S_AXIS_DATA_WIDTH / 8)) - 1:0] s_axis_dma_tkeep,
-    input [C_S_AXIS_TUSER_WIDTH-1:0]          s_axis_dma_tuser,
+    input [C_AXIS_DATA_WIDTH - 1:0]         s_axis_dma_tdata,
+    input [((C_AXIS_DATA_WIDTH / 8)) - 1:0] s_axis_dma_tkeep,
+    input [C_AXIS_TUSER_WIDTH-1:0]          s_axis_dma_tuser,
     input                                     s_axis_dma_tvalid,
     output                                    s_axis_dma_tready,
     input                                     s_axis_dma_tlast,
 
 
-    output [C_M_AXIS_DATA_WIDTH - 1:0]         m_axis_dma_tdata,
-    output [((C_M_AXIS_DATA_WIDTH / 8)) - 1:0] m_axis_dma_tkeep,
-    output [C_M_AXIS_TUSER_WIDTH-1:0]          m_axis_dma_tuser,
+    output [C_AXIS_DATA_WIDTH - 1:0]         m_axis_dma_tdata,
+    output [((C_AXIS_DATA_WIDTH / 8)) - 1:0] m_axis_dma_tkeep,
+    output [C_AXIS_TUSER_WIDTH-1:0]          m_axis_dma_tuser,
     output                                     m_axis_dma_tvalid,
     input                                      m_axis_dma_tready,
     output                                     m_axis_dma_tlast,
 
     // Interface to and from Ethernet (CMAC)
-    input [C_S_AXIS_DATA_WIDTH - 1:0]         s_axis_phy_tdata,
-    input [((C_S_AXIS_DATA_WIDTH / 8)) - 1:0] s_axis_phy_tkeep,
-    input [C_S_AXIS_TUSER_WIDTH-1:0]          s_axis_phy_tuser,
+    input [C_AXIS_DATA_WIDTH - 1:0]         s_axis_phy_tdata,
+    input [((C_AXIS_DATA_WIDTH / 8)) - 1:0] s_axis_phy_tkeep,
+    input [C_AXIS_TUSER_WIDTH-1:0]          s_axis_phy_tuser,
     input                                     s_axis_phy_tvalid,
     output                                    s_axis_phy_tready,
     input                                     s_axis_phy_tlast,
 
 
-    output [C_M_AXIS_DATA_WIDTH - 1:0]         m_axis_phy_tdata,
-    output [((C_M_AXIS_DATA_WIDTH / 8)) - 1:0] m_axis_phy_tkeep,
-    output [C_M_AXIS_TUSER_WIDTH-1:0]          m_axis_phy_tuser,
+    output [C_AXIS_DATA_WIDTH - 1:0]         m_axis_phy_tdata,
+    output [((C_AXIS_DATA_WIDTH / 8)) - 1:0] m_axis_phy_tkeep,
+    output [C_AXIS_TUSER_WIDTH-1:0]          m_axis_phy_tuser,
     output                                     m_axis_phy_tvalid,
     input                                      m_axis_phy_tready,
-    output                                     m_axis_phy_tlast,
-
+    output                                     m_axis_phy_tlast
     );
    
-    // For now a direct passthrough: i.e. this module is a no-op
+    // Use checksum calculator on receiving end
     assign m_axis_phy_tdata = s_axis_dma_tdata;
     assign m_axis_phy_tkeep = s_axis_dma_tkeep;
     assign m_axis_phy_tuser = s_axis_dma_tuser;
@@ -120,12 +119,35 @@ module nf_datapath #(
     assign m_axis_phy_tlast = s_axis_dma_tlast;
     assign s_axis_dma_tready = m_axis_phy_tready;
 
+/*
     assign m_axis_dma_tdata = s_axis_phy_tdata;
     assign m_axis_dma_tkeep = s_axis_phy_tkeep;
     assign m_axis_dma_tuser = s_axis_phy_tuser;
     assign m_axis_dma_tvalid = s_axis_phy_tvalid;
     assign m_axis_dma_tlast = s_axis_phy_tlast;
-    assign s_axis_phy_tready = m_axis_dma_tready;
+    assign s_axis_phy_tready = m_axis_dma_tready;*/
+    
+
+    udp_checksum_setter_ip
+    set_checksum
+    (
+      .axis_aclk(axis_aclk), 
+      .axis_resetn(axis_resetn), 
+      
+      .s_axis_tdata (s_axis_phy_tdata), 
+      .s_axis_tkeep (s_axis_phy_tkeep), 
+      .s_axis_tuser (s_axis_phy_tuser), 
+      .s_axis_tvalid(s_axis_phy_tvalid),
+      .s_axis_tready(s_axis_phy_tready), 
+      .s_axis_tlast (s_axis_phy_tlast),
+
+      .m_axis_tdata (m_axis_dma_tdata), 
+      .m_axis_tkeep (m_axis_dma_tkeep), 
+      .m_axis_tuser (m_axis_dma_tuser), 
+      .m_axis_tvalid(m_axis_dma_tvalid), 
+      .m_axis_tready(m_axis_dma_tready), 
+      .m_axis_tlast (m_axis_dma_tlast)
+    );
 
     
 endmodule

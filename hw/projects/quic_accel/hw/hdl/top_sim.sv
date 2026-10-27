@@ -269,10 +269,8 @@
 		.C_S_AXI_ADDR_WIDTH(32),          
 		.C_BASEADDR(32'h00000000),
 
-		.C_M_AXIS_DATA_WIDTH=512,
-		.C_S_AXIS_DATA_WIDTH=512,
-		.C_M_AXIS_TUSER_WIDTH=128,
-		.C_S_AXIS_TUSER_WIDTH=128,
+		.C_AXIS_DATA_WIDTH(C_DATA_WIDTH),
+		.C_AXIS_TUSER_WIDTH(C_TUSER_WIDTH)
 	) datapath_0 (
     //Datapath clock
 	.axis_aclk                      (clk_200),
@@ -328,8 +326,7 @@
     .m_axis_phy_tuser(axis_phy_o_0_tuser),
     .m_axis_phy_tvalid(axis_phy_o_0_tvalid),
     .m_axis_phy_tready(axis_phy_o_0_tready),
-    .m_axis_phy_tlast(axis_phy_o_0_tlast),
-
+    .m_axis_phy_tlast(axis_phy_o_0_tlast)
     );
 
 	nf_datapath #(
@@ -337,10 +334,8 @@
 		.C_S_AXI_ADDR_WIDTH(32),          
 		.C_BASEADDR(32'h00000000),
 
-		.C_M_AXIS_DATA_WIDTH=512,
-		.C_S_AXIS_DATA_WIDTH=512,
-		.C_M_AXIS_TUSER_WIDTH=128,
-		.C_S_AXIS_TUSER_WIDTH=128,
+		.C_AXIS_DATA_WIDTH(C_DATA_WIDTH),
+		.C_AXIS_TUSER_WIDTH(C_TUSER_WIDTH)
 	) datapath_1 (
 		//Datapath clock
 		.axis_aclk                      (clk_200),
@@ -398,8 +393,7 @@
 		.m_axis_phy_tuser(axis_phy_o_1_tuser),
 		.m_axis_phy_tvalid(axis_phy_o_1_tvalid),
 		.m_axis_phy_tready(axis_phy_o_1_tready),
-		.m_axis_phy_tlast(axis_phy_o_1_tlast),
-
+		.m_axis_phy_tlast(axis_phy_o_1_tlast)
     );
 
 	axis_sim_stim_ip0 axis_sim_stim_0 (
@@ -407,12 +401,12 @@
 		.ARESETN         (sys_rst_n_c),
 
 		//axi streaming data interface
-		.M_AXIS_TDATA    (axis_phy_stim_i_tdata),
-		.M_AXIS_TKEEP    (axis_phy_stim_i_tkeep),
-		.M_AXIS_TUSER    (axis_phy_stim_i_tuser),
-		.M_AXIS_TVALID   (axis_phy_stim_i_tvalid),
+		.M_AXIS_TDATA    (axis_phy_stim_0_tdata),
+		.M_AXIS_TKEEP    (axis_phy_stim_0_tkeep),
+		.M_AXIS_TUSER    (axis_phy_stim_0_tuser),
+		.M_AXIS_TVALID   (axis_phy_stim_0_tvalid),
 		.M_AXIS_TREADY   (1'b1),
-		.M_AXIS_TLAST    (axis_phy_stim_i_tlast),
+		.M_AXIS_TLAST    (axis_phy_stim_0_tlast),
 
 		.counter         (counter0),
 		.activity_stim   (activity_stim0),
@@ -425,12 +419,12 @@
 		.ARESETN         (sys_rst_n_c),
 		
 		//axi streaming data interface
-		.M_AXIS_TDATA    (axis_phy_stim_i_tdata),
-		.M_AXIS_TKEEP    (axis_phy_stim_i_tkeep),
-		.M_AXIS_TUSER    (axis_phy_stim_i_tuser),
-		.M_AXIS_TVALID   (axis_phy_stim_i_tvalid),
+		.M_AXIS_TDATA    (axis_phy_stim_1_tdata),
+		.M_AXIS_TKEEP    (axis_phy_stim_1_tkeep),
+		.M_AXIS_TUSER    (axis_phy_stim_1_tuser),
+		.M_AXIS_TVALID   (axis_phy_stim_1_tvalid),
 		.M_AXIS_TREADY   (1'b1),
-		.M_AXIS_TLAST    (axis_phy_stim_i_tlast),
+		.M_AXIS_TLAST    (axis_phy_stim_1_tlast),
 
 		.counter         (counter1),
 		.activity_stim   (activity_stim1),
@@ -487,12 +481,12 @@
 	axis_sim_record_ip2 axis_sim_record_2 (
 		.axi_aclk (clk_200),
 		// Slave Stream Ports (interface to data path)
-		.s_axis_tdata (p_axis_dma_rec_tdata),
-		.s_axis_tkeep (p_axis_dma_rec_tkeep),
-		.s_axis_tuser (p_axis_dma_rec_tuser),
-		.s_axis_tvalid(p_axis_dma_rec_tvalid),
-		.s_axis_tready(p_axis_dma_rec_tready),
-		.s_axis_tlast (p_axis_dma_rec_tlast),
+		.s_axis_tdata (axis_dma_rec_tdata),
+		.s_axis_tkeep (axis_dma_rec_tkeep),
+		.s_axis_tuser (axis_dma_rec_tuser),
+		.s_axis_tvalid(axis_dma_rec_tvalid),
+		.s_axis_tready(axis_dma_rec_tready),
+		.s_axis_tlast (axis_dma_rec_tlast),
 	
 		.counter (counter4),
 		.activity_rec(activity_rec4)
@@ -625,27 +619,6 @@
 		.barrier_proceed (barrier_proceed)
 	);
 
-	wire[C_DATA_WIDTH-1:0]      axis_dma_i_0_tdata , axis_dma_o_0_tdata;
-	wire                        axis_dma_i_0_tvalid, axis_dma_o_0_tvalid;
-	wire                        axis_dma_i_0_tlast , axis_dma_o_0_tlast;
-	wire[C_TUSER_WIDTH-1:0]     axis_dma_i_0_tuser , axis_dma_o_0_tuser;
-	wire[C_DATA_WIDTH/8-1:0]    axis_dma_i_0_tkeep , axis_dma_o_0_tkeep;
-	wire                        axis_dma_i_0_tready, axis_dma_o_0_tready;
-
-	wire[C_DATA_WIDTH-1:0]      axis_dma_i_1_tdata , axis_dma_o_1_tdata;
-	wire                        axis_dma_i_1_tvalid, axis_dma_o_1_tvalid;
-	wire                        axis_dma_i_1_tlast , axis_dma_o_1_tlast;
-	wire[C_TUSER_WIDTH-1:0]     axis_dma_i_1_tuser , axis_dma_o_1_tuser;
-	wire[C_DATA_WIDTH/8-1:0]    axis_dma_i_1_tkeep , axis_dma_o_1_tkeep;
-	wire                        axis_dma_i_1_tready, axis_dma_o_1_tready;
-
-	wire[C_DATA_WIDTH-1:0]      axis_dma_stim_tdata , axis_dma_rec_tdata;
-	wire                        axis_dma_stim_tvalid, axis_dma_rec_tvalid;
-	wire                        axis_dma_stim_tlast , axis_dma_rec_tlast;
-	wire[C_TUSER_WIDTH-1:0]     axis_dma_stim_tuser , axis_dma_rec_tuser;
-	wire[C_DATA_WIDTH/8-1:0]    axis_dma_stim_tkeep , axis_dma_rec_tkeep;
-	wire                        axis_dma_stim_tready, axis_dma_rec_tready;
-
 	// Multiplex the DMA stim to the two different datapths.
 	// Fairly simple, just set valid based upon the tuser
 	assign axis_dma_i_0_tdata = axis_dma_stim_tdata;
@@ -665,12 +638,13 @@
 	// Multiplex the DMA output (two streams) into a single stream for recording
 	// In comparison more difficult as we must decide when to take from each.
 	reg curr_datapath; // 0 for datapath 0, 1 for datapath 1
+	reg need_more_data;
 
-	assign axis_dma_rec_tdata = curr_datapath ? axis_dma_o_0_tdata : axis_dma_o_1_tdata;
-	assign axis_dma_rec_tvalid = curr_datapath ? axis_dma_o_0_tvalid : axis_dma_o_1_tvalid;
-	assign axis_dma_rec_tlast = curr_datapath ? axis_dma_o_0_tlast : axis_dma_o_1_tlast;
-	assign axis_dma_rec_tuser = curr_datapath ? axis_dma_o_0_tuser : axis_dma_o_1_tdata;
-	assign axis_dma_rec_tkeep = curr_datapath ? axis_dma_o_0_tkeep : axis_dma_o_1_tkeep;
+	assign axis_dma_rec_tdata = curr_datapath ? axis_dma_o_1_tdata : axis_dma_o_0_tdata;
+	assign axis_dma_rec_tvalid = curr_datapath ? axis_dma_o_1_tvalid : axis_dma_o_0_tvalid;
+	assign axis_dma_rec_tlast = curr_datapath ? axis_dma_o_1_tlast : axis_dma_o_0_tlast;
+	assign axis_dma_rec_tuser = curr_datapath ? axis_dma_o_1_tuser : axis_dma_o_0_tuser;
+	assign axis_dma_rec_tkeep = curr_datapath ? axis_dma_o_1_tkeep : axis_dma_o_0_tkeep;
 
 	// Ready only if we are the current datapath selected.
 	assign axis_dma_o_0_tready = curr_datapath == 0 && axis_dma_rec_tready;
@@ -678,16 +652,25 @@
 
 	always_ff @(posedge clk_200) begin
 		if(sys_rst_n_c) begin
-			// Swap datapaths if:
-			// - current datapath doesn't assert tvalid
-			// OR
-			// - current datapath asserts tlast
-			if((!axis_dma_rec_tvalid || axis_dma_rec_tlast)) begin
-				curr_datapath <= curr_datapath ? 0 : 1;
+			// Allowed to swap datapaths when there is no data, but only if not mid transaction
+			if(!axis_dma_rec_tvalid && !need_more_data) begin
+				// Swap datapaths if the other port has data
+				curr_datapath <= curr_datapath ? (axis_dma_o_0_tvalid ? 0 : 1) : (axis_dma_o_1_tvalid ? 1 : 0);
+				need_more_data <= 0;
+			end else if(axis_dma_rec_tvalid && axis_dma_rec_tready) begin
+				if(axis_dma_rec_tlast) begin
+					// The last transaction: swap to the other datapath but only if it is valid
+					need_more_data <= 0;
+					// i.e. if we are 1, go to 0 if it is valid, if we are 0, go to 1 if it is valid.
+					curr_datapath <= curr_datapath ? (axis_dma_o_0_tvalid ? 0 : 1) : (axis_dma_o_1_tvalid ? 1 : 0);
+				end else begin
+					// Not the last transaction: make sure to stick with this datapath until that point
+					need_more_data <= 1;
+				end
 			end
 		end else begin
 			curr_datapath <= 0;
-			more_data_in_packet <= 0;
+			need_more_data <= 0;
 		end
 	end
 

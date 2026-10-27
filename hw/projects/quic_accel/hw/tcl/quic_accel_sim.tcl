@@ -198,8 +198,8 @@ set_property generate_synth_checkpoint false [get_files axi_crossbar_0.xci]
 reset_target all [get_ips axi_crossbar_0]
 generate_target all [get_ips axi_crossbar_0]
 
-read_verilog "$::env(NF_DESIGN_DIR)/hw/hdl/nf_datapath.v"
-read_verilog "$::env(NF_DESIGN_DIR)/hw/hdl/top_sim.v"
+read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/nf_datapath.sv"
+read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/top_sim.sv"
 read_verilog "$::env(NF_DESIGN_DIR)/hw/hdl/top_tb.v"
 
 update_compile_order -fileset sources_1
