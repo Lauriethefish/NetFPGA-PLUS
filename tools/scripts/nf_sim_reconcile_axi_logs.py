@@ -55,7 +55,10 @@ def reconcile_axi( log_pkts, exp_pkts ):
         for logged, expected, i in zip(log_pkts, exp_pkts, range(0, len(log_pkts))):
             if(logged != expected):
                 print(f"DIFFERS: packet no {i}: {logged} vs {expected}!")
-                print(f"Checksum: {logged.getlayer(2)[UDP].chksum} vs {expected.getlayer(2)[UDP].chksum}")
+                print(f"EXPECTED: {bytes(expected).hex()}")
+                print(f"LOGGED__: {bytes(logged).hex()}")
+                if UDP in logged.getlayer(2):
+                    print(f"Checksum: {logged.getlayer(2)[UDP].chksum} vs {expected.getlayer(2)[UDP].chksum}")
 
         print('\tFAIL (%d packets expected, %d packets received)' % (len(exp_pkts), len(log_pkts)))
         return True
