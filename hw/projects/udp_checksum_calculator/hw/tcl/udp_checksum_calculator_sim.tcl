@@ -88,8 +88,6 @@ generate_target all [get_ips nf_mac_attachment_ip]
 read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/sum_16_bit_words.sv"
 read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/udp_pseudo_header_inserter.sv"
 read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/udp_tree_summer.sv"
-read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/udp_pipelined_summer_section.sv"
-read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/udp_pipelined_summer.sv"
 read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/inter_structs.sv"
 read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/udp_checksum_calculator.sv"
 read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/udp_set_checksum.sv"

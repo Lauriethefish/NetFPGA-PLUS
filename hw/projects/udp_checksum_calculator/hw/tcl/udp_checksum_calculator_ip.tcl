@@ -75,8 +75,6 @@ update_ip_catalog
 read_verilog -sv "./hdl/sum_16_bit_words.sv"
 read_verilog -sv "./hdl/udp_pseudo_header_inserter.sv"
 read_verilog -sv "./hdl/udp_tree_summer.sv"
-read_verilog -sv "./hdl/udp_pipelined_summer_section.sv"
-read_verilog -sv "./hdl/udp_pipelined_summer.sv"
 read_verilog -sv "./hdl/inter_structs.sv"
 read_verilog -sv "./hdl/udp_checksum_calculator.sv"
 read_verilog -sv "./hdl/udp_set_checksum.sv"
