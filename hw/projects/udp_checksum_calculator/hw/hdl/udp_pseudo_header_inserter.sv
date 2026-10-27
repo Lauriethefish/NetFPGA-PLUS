@@ -97,6 +97,11 @@ module udp_pseudo_header_inserter
             // Reset
             m_axis_tvalid <= 0;
             is_first_transfer <= 1;
+            m_axis_tdata <= '0;
+            m_axis_orig_header <= '0;
+            m_axis_tkeep <= '0;
+            m_axis_tuser <= '0;
+            m_axis_tlast <= '0;
         end
     end
 

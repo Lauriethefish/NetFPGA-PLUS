@@ -98,6 +98,15 @@ module udp_tree_summer
     wire [SUM_WIDTH-1:0] final_sum;
 
     generate
+        // Make sure all registers are reset.
+        for(genvar i = 0; i <= C_M_AXIS_DATA_WIDTH/16-1-1; i++) begin
+            always_ff @(posedge axis_aclk) begin
+                if(!axis_resetn) begin
+                    int_axis_tpartial_sum[i] <= 0;
+                end
+            end
+        end
+
         for(genvar pl_stage = 0; pl_stage < NUM_SECTIONS; pl_stage++) begin
             localparam num_partial_sums = C_M_AXIS_DATA_WIDTH/16/(2 << pl_stage);
 
@@ -170,7 +179,12 @@ module udp_tree_summer
                         int_axis_tvalid_r <= 0;
                     end
                 end else begin
+                    int_axis_tdata_r <= '0;
+                    int_axis_orig_header_r <= '0;
+                    int_axis_tkeep_r <= '0;
+                    int_axis_tuser_r <= '0;
                     int_axis_tvalid_r <= 0;
+                    int_axis_tlast_r <= '0;
                 end
             end
         end
