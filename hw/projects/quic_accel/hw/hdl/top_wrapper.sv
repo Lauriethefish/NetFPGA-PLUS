@@ -239,6 +239,42 @@ module top_wrapper #(
   wire                     s_axil_rready;
   wire               [3:0] s_axil_wstrb;
 
+  wire                     s_axil_nfa0_awvalid;
+  wire              [31:0] s_axil_nfa0_awaddr;
+  wire                     s_axil_nfa0_awready;
+  wire                     s_axil_nfa0_wvalid;
+  wire              [31:0] s_axil_nfa0_wdata;
+  wire                     s_axil_nfa0_wready;
+  wire                     s_axil_nfa0_bvalid;
+  wire               [1:0] s_axil_nfa0_bresp;
+  wire                     s_axil_nfa0_bready;
+  wire                     s_axil_nfa0_arvalid;
+  wire              [31:0] s_axil_nfa0_araddr;
+  wire                     s_axil_nfa0_arready;
+  wire                     s_axil_nfa0_rvalid;
+  wire              [31:0] s_axil_nfa0_rdata;
+  wire               [1:0] s_axil_nfa0_rresp;
+  wire                     s_axil_nfa0_rready;
+  wire               [3:0] s_axil_nfa0_wstrb;
+
+  wire                     s_axil_nfa1_awvalid;
+  wire              [31:0] s_axil_nfa1_awaddr;
+  wire                     s_axil_nfa1_awready;
+  wire                     s_axil_nfa1_wvalid;
+  wire              [31:0] s_axil_nfa1_wdata;
+  wire                     s_axil_nfa1_wready;
+  wire                     s_axil_nfa1_bvalid;
+  wire               [1:0] s_axil_nfa1_bresp;
+  wire                     s_axil_nfa1_bready;
+  wire                     s_axil_nfa1_arvalid;
+  wire              [31:0] s_axil_nfa1_araddr;
+  wire                     s_axil_nfa1_arready;
+  wire                     s_axil_nfa1_rvalid;
+  wire              [31:0] s_axil_nfa1_rdata;
+  wire               [1:0] s_axil_nfa1_rresp;
+  wire                     s_axil_nfa1_rready;
+  wire               [3:0] s_axil_nfa1_wstrb;
+
   wire [31:0] user_rst_done = 32'hffff_fffe;
 
   reg [9:0] axis_rst_cnt = 10'd0;
@@ -336,7 +372,69 @@ module top_wrapper #(
     .m_axi_rready  (s_axil_rready )
   );
 
+  axi_crossbar_0 u_interconnect(
+		.aclk          (axi_clk),
+		.aresetn       (axi_aresetn),
+		.s_axi_awaddr  (s_axi_awaddr),
+		.s_axi_awprot  (3'b010),
+		.s_axi_awvalid (s_axil_awvalid),
+		.s_axi_awready (s_axil_awready),
+		.s_axi_wdata   (s_axil_wdata  ),
+		.s_axi_wstrb   (4'hf),
+		.s_axi_wvalid  (s_axil_wvalid ),
+		.s_axi_wready  (s_axil_wready ),
+		.s_axi_bresp   (s_axil_bresp  ),
+		.s_axi_bvalid  (s_axil_bvalid ),
+		.s_axi_bready  (s_axil_bready ),
+		.s_axi_araddr  (s_axil_araddr[31:0]),
+		.s_axi_arprot  (3'b010),
+		.s_axi_arvalid (s_axil_arvalid ),
+		.s_axi_arready (s_axil_arready ),
+		.s_axi_rdata   (s_axil_rdata   ),
+		.s_axi_rresp   (s_axil_rresp   ),
+		.s_axi_rvalid  (s_axil_rvalid  ),
+		.s_axi_rready  (s_axil_rready  ),
+		.m_axi_awaddr  ({s_axil_nfa1_awaddr[31:0] ,s_axil_nfa0_awaddr[31:0]}),
+		.m_axi_awprot  (),
+		.m_axi_awvalid ({s_axil_nfa1_awvalid,s_axil_nfa0_awvalid}),
+		.m_axi_awready ({s_axil_nfa1_awready,s_axil_nfa0_awready}),
+		.m_axi_wdata   ({s_axil_nfa1_wdata  ,s_axil_nfa0_wdata  }),
+		.m_axi_wstrb   ({s_axil_nfa1_wstrb  ,s_axil_nfa0_wstrb  }),
+		.m_axi_wvalid  ({s_axil_nfa1_wvalid ,s_axil_nfa0_wvalid }),
+		.m_axi_wready  ({s_axil_nfa1_wready ,s_axil_nfa0_wready }),
+		.m_axi_bresp   ({s_axil_nfa1_bresp  ,s_axil_nfa0_bresp  }),
+		.m_axi_bvalid  ({s_axil_nfa1_bvalid ,s_axil_nfa0_bvalid }),
+		.m_axi_bready  ({s_axil_nfa1_bready ,s_axil_nfa0_bready }),
+		.m_axi_araddr  ({s_axil_nfa1_araddr ,s_axil_nfa0_araddr }),
+		.m_axi_arprot  (),
+		.m_axi_arvalid ({s_axil_nfa1_arvalid,s_axil_nfa0_arvalid}),
+		.m_axi_arready ({s_axil_nfa1_arready,s_axil_nfa0_arready}),
+		.m_axi_rdata   ({s_axil_nfa1_rdata  ,s_axil_nfa0_rdata  }),
+		.m_axi_rresp   ({s_axil_nfa1_rresp  ,s_axil_nfa0_rresp  }),
+		.m_axi_rvalid  ({s_axil_nfa1_rvalid ,s_axil_nfa0_rvalid }),
+		.m_axi_rready  ({s_axil_nfa1_rready ,s_axil_nfa0_rready }) 
+	);
+
   nf_mac_attachment_ip u_nf_attachment_0 (
+    .S_AXI_ACLK            (axil_aclk),
+    .S_AXI_ARESETN         (!axil_rst),
+    .S_AXI_AWADDR          (s_axi_nfa0_awaddr),
+    .S_AXI_AWVALID         (s_axi_nfa0_awvalid),
+    .S_AXI_WDATA           (s_axi_nfa0_wdata),
+    .S_AXI_WSTRB           (s_axi_nfa0_wstrb),
+    .S_AXI_WVALID          (s_axi_nfa0_wvalid),
+    .S_AXI_BREADY          (s_axi_nfa0_bready),
+    .S_AXI_ARADDR          (s_axi_nfa0_araddr),
+    .S_AXI_ARVALID         (s_axi_nfa0_arvalid),
+    .S_AXI_RREADY          (s_axi_nfa0_rready),
+    .S_AXI_ARREADY         (s_axi_nfa0_arready),
+    .S_AXI_RDATA           (s_axi_nfa0_rdata),
+    .S_AXI_RRESP           (s_axi_nfa0_rresp),
+    .S_AXI_RVALID          (s_axi_nfa0_rvalid),
+    .S_AXI_WREADY          (s_axi_nfa0_wready),
+    .S_AXI_BRESP           (s_axi_nfa0_bresp),
+    .S_AXI_BVALID          (s_axi_nfa0_bvalid),
+    .S_AXI_AWREADY         (s_axi_nfa0_awready),
     // 10GE block clk & rst 
     .clk156                (cmac_clk[0]),  
     .areset_clk156         (cmac0_rst), 
@@ -379,6 +477,25 @@ module top_wrapper #(
 );
 
     nf_mac_attachment_ip u_nf_attachment_1 (
+        .S_AXI_ACLK            (axil_aclk),
+        .S_AXI_ARESETN         (!axil_rst),
+        .S_AXI_AWADDR          (s_axi_nfa1_awaddr),
+        .S_AXI_AWVALID         (s_axi_nfa1_awvalid),
+        .S_AXI_WDATA           (s_axi_nfa1_wdata),
+        .S_AXI_WSTRB           (s_axi_nfa1_wstrb),
+        .S_AXI_WVALID          (s_axi_nfa1_wvalid),
+        .S_AXI_BREADY          (s_axi_nfa1_bready),
+        .S_AXI_ARADDR          (s_axi_nfa1_araddr),
+        .S_AXI_ARVALID         (s_axi_nfa1_arvalid),
+        .S_AXI_RREADY          (s_axi_nfa1_rready),
+        .S_AXI_ARREADY         (s_axi_nfa1_arready),
+        .S_AXI_RDATA           (s_axi_nfa1_rdata),
+        .S_AXI_RRESP           (s_axi_nfa1_rresp),
+        .S_AXI_RVALID          (s_axi_nfa1_rvalid),
+        .S_AXI_WREADY          (s_axi_nfa1_wready),
+        .S_AXI_BRESP           (s_axi_nfa1_bresp),
+        .S_AXI_BVALID          (s_axi_nfa1_bvalid),
+        .S_AXI_AWREADY         (s_axi_nfa1_awready),
         // 10GE block clk & rst 
         .clk156                (cmac_clk[1]),  
         .areset_clk156         (cmac1_rst), 

@@ -213,24 +213,16 @@ module top #(
   wire [2:0]  m_axil_awprot;
   wire        m_axil_awvalid;
   wire        m_axil_awready;
-
-  //-- AXI Master Write Data Channel
   wire [31:0] m_axil_wdata;
   wire  [3:0] m_axil_wstrb = 4'hf;
   wire        m_axil_wvalid;
   wire        m_axil_wready;
-
-  //-- AXI Master Write Response Channel
   wire        m_axil_bvalid;
   wire        m_axil_bready;
-
-  //-- AXI Master Read Address Channel
   wire [31:0] m_axil_araddr;
   wire [2:0]  m_axil_arprot;
   wire        m_axil_arvalid;
   wire        m_axil_arready;
-
-  //-- AXI Master Read Data Channel
   wire [31:0] m_axil_rdata;
   wire [1:0]  m_axil_rresp;
   wire        m_axil_rvalid;
@@ -243,29 +235,61 @@ module top #(
   wire [2:0]  s_axil_awprot;
   wire        s_axil_awvalid;
   wire        s_axil_awready;
-
-  //-- AXI Master Write Data Channel
   wire [31:0] s_axil_wdata;
   wire  [3:0] s_axil_wstrb;
   wire        s_axil_wvalid;
   wire        s_axil_wready;
-
-  //-- AXI Master Write Response Channel
   wire        s_axil_bvalid;
   wire        s_axil_bready;
-
-  //-- AXI Master Read Address Channel
   wire [31:0] s_axil_araddr;
   wire [2:0]  s_axil_arprot;
   wire        s_axil_arvalid;
   wire        s_axil_arready;
-
-  //-- AXI Master Read Data Channel
   wire [31:0] s_axil_rdata;
   wire [1:0]  s_axil_rresp;
   wire        s_axil_rvalid;
   wire        s_axil_rready;
   wire [1:0]  s_axil_bresp;
+
+  wire [31:0] s_axil_dp0_awaddr;
+  wire [2:0]  s_axil_dp0_awprot;
+  wire        s_axil_dp0_awvalid;
+  wire        s_axil_dp0_awready;
+  wire [31:0] s_axil_dp0_wdata;
+  wire  [3:0] s_axil_dp0_wstrb;
+  wire        s_axil_dp0_wvalid;
+  wire        s_axil_dp0_wready;
+  wire        s_axil_dp0_bvalid;
+  wire        s_axil_dp0_bready;
+  wire [31:0] s_axil_dp0_araddr;
+  wire [2:0]  s_axil_dp0_arprot;
+  wire        s_axil_dp0_arvalid;
+  wire        s_axil_dp0_arready;
+  wire [31:0] s_axil_dp0_rdata;
+  wire [1:0]  s_axil_dp0_rresp;
+  wire        s_axil_dp0_rvalid;
+  wire        s_axil_dp0_rready;
+  wire [1:0]  s_axil_dp0_bresp;
+
+  wire [31:0] s_axil_dp1_awaddr;
+  wire [2:0]  s_axil_dp1_awprot;
+  wire        s_axil_dp1_awvalid;
+  wire        s_axil_dp1_awready;
+  wire [31:0] s_axil_dp1_wdata;
+  wire  [3:0] s_axil_dp1_wstrb;
+  wire        s_axil_dp1_wvalid;
+  wire        s_axil_dp1_wready;
+  wire        s_axil_dp1_bvalid;
+  wire        s_axil_dp1_bready;
+  wire [31:0] s_axil_dp1_araddr;
+  wire [2:0]  s_axil_dp1_arprot;
+  wire        s_axil_dp1_arvalid;
+  wire        s_axil_dp1_arready;
+  wire [31:0] s_axil_dp1_rdata;
+  wire [1:0]  s_axil_dp1_rresp;
+  wire        s_axil_dp1_rvalid;
+  wire        s_axil_dp1_rready;
+  wire [1:0]  s_axil_dp1_bresp;
 
   wire [C_DATA_WIDTH-1:0]         axis_dma_o_0_tdata,  axis_dma_o_1_tdata;
   wire                            axis_dma_o_0_tvalid, axis_dma_o_1_tvalid;
@@ -314,23 +338,23 @@ module top #(
     .axi_resetn  (!core_rst),
 
     // Slave AXI Port
-    .S_AXI_AWADDR                  (s_axil_awaddr),
-    .S_AXI_AWVALID                 (s_axil_awvalid),
-    .S_AXI_WDATA                   (s_axil_wdata),
-    .S_AXI_WSTRB                   (s_axil_wstrb),
-    .S_AXI_WVALID                  (s_axil_wvalid),
-    .S_AXI_BREADY                  (s_axil_bready),
-    .S_AXI_ARADDR                  (s_axil_araddr),
-    .S_AXI_ARVALID                 (s_axil_arvalid),
-    .S_AXI_RREADY                  (s_axil_rready),
-    .S_AXI_ARREADY                 (s_axil_arready),
-    .S_AXI_RDATA                   (s_axil_rdata),
-    .S_AXI_RRESP                   (s_axil_rresp),
-    .S_AXI_RVALID                  (s_axil_rvalid),
-    .S_AXI_WREADY                  (s_axil_wready),
-    .S_AXI_BRESP                   (s_axil_bresp),
-    .S_AXI_BVALID                  (s_axil_bvalid),
-    .S_AXI_AWREADY                 (s_axil_awready),
+    .S_AXI_AWADDR                  (s_axil_dp0_awaddr),
+    .S_AXI_AWVALID                 (s_axil_dp0_awvalid),
+    .S_AXI_WDATA                   (s_axil_dp0_wdata),
+    .S_AXI_WSTRB                   (s_axil_dp0_wstrb),
+    .S_AXI_WVALID                  (s_axil_dp0_wvalid),
+    .S_AXI_BREADY                  (s_axil_dp0_bready),
+    .S_AXI_ARADDR                  (s_axil_dp0_araddr),
+    .S_AXI_ARVALID                 (s_axil_dp0_arvalid),
+    .S_AXI_RREADY                  (s_axil_dp0_rready),
+    .S_AXI_ARREADY                 (s_axil_dp0_arready),
+    .S_AXI_RDATA                   (s_axil_dp0_rdata),
+    .S_AXI_RRESP                   (s_axil_dp0_rresp),
+    .S_AXI_RVALID                  (s_axil_dp0_rvalid),
+    .S_AXI_WREADY                  (s_axil_dp0_wready),
+    .S_AXI_BRESP                   (s_axil_dp0_bresp),
+    .S_AXI_BVALID                  (s_axil_dp0_bvalid),
+    .S_AXI_AWREADY                 (s_axil_dp0_awready),
     
     // Interface to and from DMA
     .s_axis_dma_tdata(axis_dma_i_0_tdata),
@@ -381,23 +405,23 @@ module top #(
 		// Slave AXI Port
 		// TODO: Need an AXI crossbar to connect these two modules
 		// Want each at a different base address.
-		.S_AXI_AWADDR                  (s_axil_awaddr),
-		.S_AXI_AWVALID                 (s_axil_awvalid),
-		.S_AXI_WDATA                   (s_axil_wdata),
-		.S_AXI_WSTRB                   (s_axil_wstrb),
-		.S_AXI_WVALID                  (s_axil_wvalid),
-		.S_AXI_BREADY                  (s_axil_bready),
-		.S_AXI_ARADDR                  (s_axil_araddr),
-		.S_AXI_ARVALID                 (s_axil_arvalid),
-		.S_AXI_RREADY                  (s_axil_rready),
-		.S_AXI_ARREADY                 (s_axil_arready),
-		.S_AXI_RDATA                   (s_axil_rdata),
-		.S_AXI_RRESP                   (s_axil_rresp),
-		.S_AXI_RVALID                  (s_axil_rvalid),
-		.S_AXI_WREADY                  (s_axil_wready),
-		.S_AXI_BRESP                   (s_axil_bresp),
-		.S_AXI_BVALID                  (s_axil_bvalid),
-		.S_AXI_AWREADY                 (s_axil_awready),
+		.S_AXI_AWADDR                  (s_axil_dp1_awaddr),
+		.S_AXI_AWVALID                 (s_axil_dp1_awvalid),
+		.S_AXI_WDATA                   (s_axil_dp1_wdata),
+		.S_AXI_WSTRB                   (s_axil_dp1_wstrb),
+		.S_AXI_WVALID                  (s_axil_dp1_wvalid),
+		.S_AXI_BREADY                  (s_axil_dp1_bready),
+		.S_AXI_ARADDR                  (s_axil_dp1_araddr),
+		.S_AXI_ARVALID                 (s_axil_dp1_arvalid),
+		.S_AXI_RREADY                  (s_axil_dp1_rready),
+		.S_AXI_ARREADY                 (s_axil_dp1_arready),
+		.S_AXI_RDATA                   (s_axil_dp1_rdata),
+		.S_AXI_RRESP                   (s_axil_dp1_rresp),
+		.S_AXI_RVALID                  (s_axil_dp1_rvalid),
+		.S_AXI_WREADY                  (s_axil_dp1_wready),
+		.S_AXI_BRESP                   (s_axil_dp1_bresp),
+		.S_AXI_BVALID                  (s_axil_dp1_bvalid),
+		.S_AXI_AWREADY                 (s_axil_dp1_awready),
 		
 		// Interface to and from DMA
 		.s_axis_dma_tdata(axis_dma_i_1_tdata),
@@ -430,6 +454,49 @@ module top #(
 		.m_axis_phy_tready(axis_phy_o_1_tready),
 		.m_axis_phy_tlast(axis_phy_o_1_tlast)
     );
+
+  axi_crossbar_0 u_interconnect(
+		.aclk          (axi_clk),
+		.aresetn       (axi_aresetn),
+		.s_axi_awaddr  (s_axi_awaddr),
+		.s_axi_awprot  (3'b010),
+		.s_axi_awvalid (s_axil_awvalid),
+		.s_axi_awready (s_axil_awready),
+		.s_axi_wdata   (s_axil_wdata  ),
+		.s_axi_wstrb   (4'hf),
+		.s_axi_wvalid  (s_axil_wvalid ),
+		.s_axi_wready  (s_axil_wready ),
+		.s_axi_bresp   (s_axil_bresp  ),
+		.s_axi_bvalid  (s_axil_bvalid ),
+		.s_axi_bready  (s_axil_bready ),
+		.s_axi_araddr  (s_axil_araddr[31:0]),
+		.s_axi_arprot  (3'b010),
+		.s_axi_arvalid (s_axil_arvalid ),
+		.s_axi_arready (s_axil_arready ),
+		.s_axi_rdata   (s_axil_rdata   ),
+		.s_axi_rresp   (s_axil_rresp   ),
+		.s_axi_rvalid  (s_axil_rvalid  ),
+		.s_axi_rready  (s_axil_rready  ),
+		.m_axi_awaddr  ({s_axil_dp1_awaddr[31:0] ,s_axil_dp0_awaddr[31:0]}),
+		.m_axi_awprot  (),
+		.m_axi_awvalid ({s_axil_dp1_awvalid,s_axil_dp0_awvalid}),
+		.m_axi_awready ({s_axil_dp1_awready,s_axil_dp0_awready}),
+		.m_axi_wdata   ({s_axil_dp1_wdata  ,s_axil_dp0_wdata  }),
+		.m_axi_wstrb   ({s_axil_dp1_wstrb  ,s_axil_dp0_wstrb  }),
+		.m_axi_wvalid  ({s_axil_dp1_wvalid ,s_axil_dp0_wvalid }),
+		.m_axi_wready  ({s_axil_dp1_wready ,s_axil_dp0_wready }),
+		.m_axi_bresp   ({s_axil_dp1_bresp  ,s_axil_dp0_bresp  }),
+		.m_axi_bvalid  ({s_axil_dp1_bvalid ,s_axil_dp0_bvalid }),
+		.m_axi_bready  ({s_axil_dp1_bready ,s_axil_dp0_bready }),
+		.m_axi_araddr  ({s_axil_dp1_araddr ,s_axil_dp0_araddr }),
+		.m_axi_arprot  (),
+		.m_axi_arvalid ({s_axil_dp1_arvalid,s_axil_dp0_arvalid}),
+		.m_axi_arready ({s_axil_dp1_arready,s_axil_dp0_arready}),
+		.m_axi_rdata   ({s_axil_dp1_rdata  ,s_axil_dp0_rdata  }),
+		.m_axi_rresp   ({s_axil_dp1_rresp  ,s_axil_dp0_rresp  }),
+		.m_axi_rvalid  ({s_axil_dp1_rvalid ,s_axil_dp0_rvalid }),
+		.m_axi_rready  ({s_axil_dp1_rready ,s_axil_dp0_rready }) 
+	);
 
   axi_clock_converter_0 u_clk_conv (
     .s_axi_aclk    (axil_aclk_250m),
