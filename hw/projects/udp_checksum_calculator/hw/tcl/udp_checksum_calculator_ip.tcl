@@ -65,7 +65,7 @@ set_property ip_repo_paths ${repo_dir} [current_fileset]
 #####################################
 # Design Parameters on NF_DATAPATH
 #####################################
-set datapath_width_bit    1024
+set datapath_width_bit    512
 update_ip_catalog
 
 #####################################

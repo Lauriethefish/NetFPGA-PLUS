@@ -34,19 +34,19 @@ module udp_tree_summer
 );
     localparam NUM_SECTIONS = $clog2(C_M_AXIS_DATA_WIDTH/16);
 
-    wire [C_M_AXIS_DATA_WIDTH - 1:0] int_axis_tdata [NUM_SECTIONS:0];
-    wire [$bits(inter_structs::udp_header):0] int_axis_orig_header [NUM_SECTIONS:0];
-    wire [((C_M_AXIS_DATA_WIDTH / 8)) - 1:0] int_axis_tkeep [NUM_SECTIONS:0];
-    wire [C_M_AXIS_TUSER_WIDTH-1:0] int_axis_tuser [NUM_SECTIONS:0];
-    wire int_axis_tvalid [NUM_SECTIONS:0];
-    wire int_axis_tready [NUM_SECTIONS:0];
-    wire int_axis_tlast [NUM_SECTIONS:0];
+    wire [C_M_AXIS_DATA_WIDTH - 1:0] int_axis_tdata [NUM_SECTIONS+1];
+    wire [$bits(inter_structs::udp_header):0] int_axis_orig_header [NUM_SECTIONS+1];
+    wire [((C_M_AXIS_DATA_WIDTH / 8)) - 1:0] int_axis_tkeep [NUM_SECTIONS+1];
+    wire [C_M_AXIS_TUSER_WIDTH-1:0] int_axis_tuser [NUM_SECTIONS+1];
+    wire int_axis_tvalid [NUM_SECTIONS+1];
+    wire int_axis_tready [NUM_SECTIONS+1];
+    wire int_axis_tlast [NUM_SECTIONS+1];
     // Use for holding partial sums computed in each stage of calculation
     // Phase 1 needs C_M_AXIS_DATA_WIDTH/16/2
     // Phase 2 needs C_M_AXIS_DATA_WIDTH/16/4
     // Phase 3 needs C_M_AXIS_DATA_WIDTH/16/8
     // Overall need C_M_AXIS_DATA_WIDTH/16
-    reg [SUM_WIDTH-1:0] int_axis_tpartial_sum [C_M_AXIS_DATA_WIDTH/16-1-1:0];
+    reg [SUM_WIDTH-1:0] int_axis_tpartial_sum [C_M_AXIS_DATA_WIDTH/16-1];
 
 
     // 1024 bits means 1024/16 = 64 x 16 bit words
