@@ -419,10 +419,9 @@ set_property generate_synth_checkpoint false [get_files clk_wiz_1.xci]
 reset_target all [get_ips clk_wiz_1]
 generate_target all [get_ips clk_wiz_1]
 
-read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/nf_datapath.v"
-read_verilog -sv "${public_repo_dir}/common/hdl/top_wrapper.sv"
-read_verilog -sv "${public_repo_dir}/common/hdl/nf_attachment.sv"
-read_verilog     "${public_repo_dir}/common/hdl/top.v"
+read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/top_wrapper.sv"
+read_verilog "$::env(NF_DESIGN_DIR)/hw/hdl/top.v"
+read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/nf_datapath.sv"
 
 #Setting Synthesis options
 create_run -flow {Vivado Synthesis 2020} synth

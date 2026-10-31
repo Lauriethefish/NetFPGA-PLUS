@@ -33,12 +33,16 @@ add_cells_to_pblock [get_pblocks pblock_cmac_subsystem] [get_cells -quiet {u_top
 resize_pblock [get_pblocks pblock_cmac_subsystem] -add {SLR2}
 
 create_pblock pblock_nf_datapath
-add_cells_to_pblock [get_pblocks pblock_nf_datapath] [get_cells -quiet [list nf_datapath_0]]
-add_cells_to_pblock [get_pblocks pblock_nf_datapath] [get_cells -quiet [list u_top_wrapper/u_nf_attachment]]
+add_cells_to_pblock [get_pblocks pblock_nf_datapath] [get_cells -quiet [list datapath_0]]
+add_cells_to_pblock [get_pblocks pblock_nf_datapath] [get_cells -quiet [list datapath_1]]
+add_cells_to_pblock [get_pblocks pblock_nf_datapath] [get_cells -quiet [list u_top_wrapper/u_nf_attachment_0]]
+add_cells_to_pblock [get_pblocks pblock_nf_datapath] [get_cells -quiet [list u_top_wrapper/u_nf_attachment_1]]
+add_cells_to_pblock [get_pblocks pblock_nf_datapath] [get_cells -quiet [list u_top_wrapper/u_clk_conv]]
+add_cells_to_pblock [get_pblocks pblock_nf_datapath] [get_cells -quiet [list u_clk_conv]]
 resize_pblock [get_pblocks pblock_nf_datapath] -add {SLR1}
 
 # This false paths should be removed (ToDo)
-set_false_path -from [get_cells  u_top_wrapper/u_nf_attachment/u_nf_attachment_0/inst/tx_fifo_rst/sync1_r_reg[5]]
-set_false_path -from [get_cells  u_top_wrapper/u_nf_attachment/u_nf_attachment_1/inst/tx_fifo_rst/sync1_r_reg[5]]
-set_false_path -from [get_cells  u_top_wrapper/u_nf_attachment/u_nf_attachment_0/inst/rx_fifo_rst/sync1_r_reg[5]]
-set_false_path -from [get_cells  u_top_wrapper/u_nf_attachment/u_nf_attachment_1/inst/rx_fifo_rst/sync1_r_reg[5]]
+#set_false_path -from [get_cells  u_top_wrapper/u_nf_attachment/u_nf_attachment_0/inst/tx_fifo_rst/sync1_r_reg[5]]
+#set_false_path -from [get_cells  u_top_wrapper/u_nf_attachment/u_nf_attachment_1/inst/tx_fifo_rst/sync1_r_reg[5]]
+#set_false_path -from [get_cells  u_top_wrapper/u_nf_attachment/u_nf_attachment_0/inst/rx_fifo_rst/sync1_r_reg[5]]
+#set_false_path -from [get_cells  u_top_wrapper/u_nf_attachment/u_nf_attachment_1/inst/rx_fifo_rst/sync1_r_reg[5]]
