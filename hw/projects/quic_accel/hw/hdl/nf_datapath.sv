@@ -149,5 +149,54 @@ module nf_datapath #(
       .m_axis_tlast (m_axis_dma_tlast)
     );
 
+    reg [31:0] num_packets_tx;
+
+    always_ff @(posedge axis_aclk) begin
+        if(!axis_resetn) begin
+            num_packets_tx <= 0;
+        end else begin
+            if(s_axis_phy_tvalid && s_axis_phy_tready && s_axis_phy_tlast) begin
+                num_packets_tx <= num_packets_tx + 1;
+            end
+        end
+    end
+
+    wire [31:0] reg_read_values[1];
+    assign reg_read_values[0] = num_packets_tx;
+
+    axil_register_bank 
+    #(
+        .NUM_REGISTERS(1)
+    )
+    axil_regs
+    (
+        // General ports
+        .clk(axis_aclk),
+        .resetn(axis_resetn),
+
+        .reg_read_values(reg_read_values),
+        .reg_write_values(),
+        .reg_is_writing(),
+
+        .S_AXI_ACLK(axi_aclk),
+        .S_AXI_ARESETN(axi_resetn),
+        .S_AXI_AWADDR(S_AXI_AWADDR),
+        .S_AXI_AWVALID(S_AXI_AWVALID),
+        .S_AXI_WDATA(S_AXI_WDATA),
+        .S_AXI_WSTRB(S_AXI_WSTRB),
+        .S_AXI_WVALID(S_AXI_WVALID),
+        .S_AXI_BREADY(S_AXI_BREADY),
+        .S_AXI_ARADDR(S_AXI_ARADDR),
+        .S_AXI_ARVALID(S_AXI_ARVALID),
+        .S_AXI_RREADY(S_AXI_RREADY),
+        .S_AXI_ARREADY(S_AXI_ARREADY),
+        .S_AXI_RDATA(S_AXI_RDATA),
+        .S_AXI_RRESP(S_AXI_RRESP),
+        .S_AXI_RVALID(S_AXI_RVALID),
+        .S_AXI_WREADY(S_AXI_WREADY),
+        .S_AXI_BRESP(S_AXI_BRESP),
+        .S_AXI_BVALID(S_AXI_BVALID),
+        .S_AXI_AWREADY(S_AXI_AWREADY)
+    );
     
 endmodule

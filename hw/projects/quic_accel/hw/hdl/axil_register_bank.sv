@@ -37,7 +37,7 @@
 //
 
 `timescale 1ns/1ns
-module axi_register_bank #
+module axil_register_bank #
 (
 parameter C_BASE_ADDRESS        = 32'h00000000,
 parameter C_S_AXI_DATA_WIDTH    = 32,
@@ -50,9 +50,12 @@ parameter NUM_REGISTERS = 1
     input       resetn,
 
     // Values that will be read from registers
-    input      [C_S_AXI_DATA_WIDTH : 0]       reg_read_values[0:NUM_REGISTERS-1],
+    input      [C_S_AXI_DATA_WIDTH-1 : 0]       reg_read_values[NUM_REGISTERS],
     // Values most recently written to registers
-    output reg [C_S_AXI_DATA_WIDTH : 0]       reg_write_values[0:NUM_REGISTERS-1],
+    output reg [C_S_AXI_DATA_WIDTH-1 : 0]       reg_write_values[NUM_REGISTERS],
+    // Indicates whether reg_write_values is being updated on clock edge.
+    // Can be used to implement behaviours such as resetting to 0 on write.
+    output wire reg_is_writing[NUM_REGISTERS],
 
     // AXI Lite ports
     input                                     S_AXI_ACLK,
@@ -278,20 +281,23 @@ parameter NUM_REGISTERS = 1
 
     wire [7:0] write_regnum = axi_awaddr[C_S_AXI_ADDR_WIDTH-1:$clog2(C_S_AXI_DATA_WIDTH/8)];
 
-    //R/W register, not cleared
-    always @(posedge clk) begin
-        if (!resetn_sync) begin
-            cpu2ip_flip_reg <= #1 `REG_FLIP_DEFAULT;
-            cpu2ip_debug_reg <= #1 `REG_DEBUG_DEFAULT;
-        end
-        else begin
-           if (wren && write_regnum < NUM_REGISTERS) //write event
-                for ( byte_index = 0; byte_index <= (`REG_FLIP_WIDTH/8-1); byte_index = byte_index +1)
-                    if (S_AXI_WSTRB[byte_index] == 1) begin
-                        reg_write_values[write_regnum][byte_index*8 +: 8] <=  S_AXI_WDATA[byte_index*8 +: 8]; //dynamic register;
+    generate
+        for(genvar i = 0; i < NUM_REGISTERS; i++) begin
+            assign reg_is_writing[i] = wren && write_regnum == i;
+
+            always @(posedge clk) begin
+                if(!resetn_sync) begin
+                    reg_write_values[i] <= '0;
+                end else begin
+                    if (reg_is_writing[i]) //write event
+                        for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8-1); byte_index = byte_index +1)
+                            if (S_AXI_WSTRB[byte_index] == 1) begin
+                                reg_write_values[i][byte_index*8 +: 8] <=  S_AXI_WDATA[byte_index*8 +: 8]; //dynamic register;
                     end
+                end
+            end
         end
-    end
+    endgenerate
 
 
 

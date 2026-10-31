@@ -146,46 +146,25 @@
  //----------------------------------------------------------------------------------------------------------------//
  // AXI Lite interface                                                                                                 //
  //----------------------------------------------------------------------------------------------------------------//
-  wire [31:0]   M0_AXI_araddr , M1_AXI_araddr , M2_AXI_araddr;
-  wire [2:0]    M0_AXI_arprot , M1_AXI_arprot , M2_AXI_arprot;
-  wire          M0_AXI_arready, M1_AXI_arready, M2_AXI_arready;
-  wire          M0_AXI_arvalid, M1_AXI_arvalid, M2_AXI_arvalid;
-  wire [31:0]   M0_AXI_awaddr , M1_AXI_awaddr , M2_AXI_awaddr;
-  wire [2:0]    M0_AXI_awprot , M1_AXI_awprot , M2_AXI_awprot;
-  wire          M0_AXI_awready, M1_AXI_awready, M2_AXI_awready;
-  wire          M0_AXI_awvalid, M1_AXI_awvalid, M2_AXI_awvalid;
-  wire          M0_AXI_bready , M1_AXI_bready , M2_AXI_bready;
-  wire [1:0]    M0_AXI_bresp  , M1_AXI_bresp  , M2_AXI_bresp;
-  wire          M0_AXI_bvalid , M1_AXI_bvalid , M2_AXI_bvalid;
-  wire [31:0]   M0_AXI_rdata  , M1_AXI_rdata  , M2_AXI_rdata;
-  wire          M0_AXI_rready , M1_AXI_rready , M2_AXI_rready;
-  wire [1:0]    M0_AXI_rresp  , M1_AXI_rresp  , M2_AXI_rresp;
-  wire          M0_AXI_rvalid , M1_AXI_rvalid , M2_AXI_rvalid;
-  wire [31:0]   M0_AXI_wdata  , M1_AXI_wdata  , M2_AXI_wdata;
-  wire          M0_AXI_wready , M1_AXI_wready , M2_AXI_wready;
-  wire [3:0]    M0_AXI_wstrb  , M1_AXI_wstrb  , M2_AXI_wstrb;
-  wire          M0_AXI_wvalid , M1_AXI_wvalid , M2_AXI_wvalid;
-  
-  wire [31:0]   M3_AXI_araddr , M4_AXI_araddr , M5_AXI_araddr;
-  wire [2:0]    M3_AXI_arprot , M4_AXI_arprot , M5_AXI_arprot;
-  wire          M3_AXI_arready, M4_AXI_arready, M5_AXI_arready;
-  wire          M3_AXI_arvalid, M4_AXI_arvalid, M5_AXI_arvalid;
-  wire [31:0]   M3_AXI_awaddr , M4_AXI_awaddr , M5_AXI_awaddr;
-  wire [2:0]    M3_AXI_awprot , M4_AXI_awprot , M5_AXI_awprot;
-  wire          M3_AXI_awready, M4_AXI_awready, M5_AXI_awready;
-  wire          M3_AXI_awvalid, M4_AXI_awvalid, M5_AXI_awvalid;
-  wire          M3_AXI_bready , M4_AXI_bready , M5_AXI_bready;
-  wire [1:0]    M3_AXI_bresp  , M4_AXI_bresp  , M5_AXI_bresp;
-  wire          M3_AXI_bvalid , M4_AXI_bvalid , M5_AXI_bvalid;
-  wire [31:0]   M3_AXI_rdata  , M4_AXI_rdata  , M5_AXI_rdata;
-  wire          M3_AXI_rready , M4_AXI_rready , M5_AXI_rready;
-  wire [1:0]    M3_AXI_rresp  , M4_AXI_rresp  , M5_AXI_rresp;
-  wire          M3_AXI_rvalid , M4_AXI_rvalid , M5_AXI_rvalid;
-  wire [31:0]   M3_AXI_wdata  , M4_AXI_wdata  , M5_AXI_wdata;
-  wire          M3_AXI_wready , M4_AXI_wready , M5_AXI_wready;
-  wire [3:0]    M3_AXI_wstrb  , M4_AXI_wstrb  , M5_AXI_wstrb;
-  wire          M3_AXI_wvalid , M4_AXI_wvalid , M5_AXI_wvalid;
-
+  wire [31:0]   M0_AXI_araddr , M1_AXI_araddr ;
+  wire [2:0]    M0_AXI_arprot , M1_AXI_arprot ;
+  wire          M0_AXI_arready, M1_AXI_arready;
+  wire          M0_AXI_arvalid, M1_AXI_arvalid;
+  wire [31:0]   M0_AXI_awaddr , M1_AXI_awaddr ;
+  wire [2:0]    M0_AXI_awprot , M1_AXI_awprot ;
+  wire          M0_AXI_awready, M1_AXI_awready;
+  wire          M0_AXI_awvalid, M1_AXI_awvalid;
+  wire          M0_AXI_bready , M1_AXI_bready ;
+  wire [1:0]    M0_AXI_bresp  , M1_AXI_bresp  ;
+  wire          M0_AXI_bvalid , M1_AXI_bvalid ; 
+  wire [31:0]   M0_AXI_rdata  , M1_AXI_rdata  ;
+  wire          M0_AXI_rready , M1_AXI_rready ; 
+  wire [1:0]    M0_AXI_rresp  , M1_AXI_rresp  ;
+  wire          M0_AXI_rvalid , M1_AXI_rvalid ; 
+  wire [31:0]   M0_AXI_wdata  , M1_AXI_wdata  ;
+  wire          M0_AXI_wready , M1_AXI_wready ; 
+  wire [3:0]    M0_AXI_wstrb  , M1_AXI_wstrb  ;
+  wire          M0_AXI_wvalid , M1_AXI_wvalid ; 
   wire [31:0]   S00_AXI_araddr;
   wire [2:0]    S00_AXI_arprot /*= 3'b010*/;
   wire          S00_AXI_arready;
@@ -279,23 +258,23 @@
 	.axi_resetn                     (axi_aresetn),
 
     // Slave AXI Port
-	.S_AXI_AWADDR                  (S00_AXI_awaddr),
-	.S_AXI_AWVALID                 (S00_AXI_awvalid),
-	.S_AXI_WDATA                   (S00_AXI_wdata),
-	.S_AXI_WSTRB                   (S00_AXI_wstrb),
-	.S_AXI_WVALID                  (S00_AXI_wvalid),
-	.S_AXI_BREADY                  (S00_AXI_bready),
-	.S_AXI_ARADDR                  (S00_AXI_araddr),
-	.S_AXI_ARVALID                 (S00_AXI_arvalid),
-	.S_AXI_RREADY                  (S00_AXI_rready),
-	.S_AXI_ARREADY                 (S00_AXI_arready),
-	.S_AXI_RDATA                   (S00_AXI_rdata),
-	.S_AXI_RRESP                   (S00_AXI_rresp),
-	.S_AXI_RVALID                  (S00_AXI_rvalid),
-	.S_AXI_WREADY                  (S00_AXI_wready),
-	.S_AXI_BRESP                   (S00_AXI_bresp),
-	.S_AXI_BVALID                  (S00_AXI_bvalid),
-	.S_AXI_AWREADY                 (S00_AXI_awready),
+	.S_AXI_AWADDR                  (M0_AXI_awaddr),
+	.S_AXI_AWVALID                 (M0_AXI_awvalid),
+	.S_AXI_WDATA                   (M0_AXI_wdata),
+	.S_AXI_WSTRB                   (M0_AXI_wstrb),
+	.S_AXI_WVALID                  (M0_AXI_wvalid),
+	.S_AXI_BREADY                  (M0_AXI_bready),
+	.S_AXI_ARADDR                  (M0_AXI_araddr),
+	.S_AXI_ARVALID                 (M0_AXI_arvalid),
+	.S_AXI_RREADY                  (M0_AXI_rready),
+	.S_AXI_ARREADY                 (M0_AXI_arready),
+	.S_AXI_RDATA                   (M0_AXI_rdata),
+	.S_AXI_RRESP                   (M0_AXI_rresp),
+	.S_AXI_RVALID                  (M0_AXI_rvalid),
+	.S_AXI_WREADY                  (M0_AXI_wready),
+	.S_AXI_BRESP                   (M0_AXI_bresp),
+	.S_AXI_BVALID                  (M0_AXI_bvalid),
+	.S_AXI_AWREADY                 (M0_AXI_awready),
     
     // Interface to and from DMA
     .s_axis_dma_tdata(axis_dma_i_0_tdata),
@@ -344,25 +323,23 @@
 		.axi_resetn                     (axi_aresetn),
 
 		// Slave AXI Port
-		// TODO: Need an AXI crossbar to connect these two modules
-		// Want each at a different base address.
-		.S_AXI_AWADDR                  (S00_AXI_awaddr),
-		.S_AXI_AWVALID                 (S00_AXI_awvalid),
-		.S_AXI_WDATA                   (S00_AXI_wdata),
-		.S_AXI_WSTRB                   (S00_AXI_wstrb),
-		.S_AXI_WVALID                  (S00_AXI_wvalid),
-		.S_AXI_BREADY                  (S00_AXI_bready),
-		.S_AXI_ARADDR                  (S00_AXI_araddr),
-		.S_AXI_ARVALID                 (S00_AXI_arvalid),
-		.S_AXI_RREADY                  (S00_AXI_rready),
-		.S_AXI_ARREADY                 (S00_AXI_arready),
-		.S_AXI_RDATA                   (S00_AXI_rdata),
-		.S_AXI_RRESP                   (S00_AXI_rresp),
-		.S_AXI_RVALID                  (S00_AXI_rvalid),
-		.S_AXI_WREADY                  (S00_AXI_wready),
-		.S_AXI_BRESP                   (S00_AXI_bresp),
-		.S_AXI_BVALID                  (S00_AXI_bvalid),
-		.S_AXI_AWREADY                 (S00_AXI_awready),
+		.S_AXI_AWADDR                  (M1_AXI_awaddr),
+		.S_AXI_AWVALID                 (M1_AXI_awvalid),
+		.S_AXI_WDATA                   (M1_AXI_wdata),
+		.S_AXI_WSTRB                   (M1_AXI_wstrb),
+		.S_AXI_WVALID                  (M1_AXI_wvalid),
+		.S_AXI_BREADY                  (M1_AXI_bready),
+		.S_AXI_ARADDR                  (M1_AXI_araddr),
+		.S_AXI_ARVALID                 (M1_AXI_arvalid),
+		.S_AXI_RREADY                  (M1_AXI_rready),
+		.S_AXI_ARREADY                 (M1_AXI_arready),
+		.S_AXI_RDATA                   (M1_AXI_rdata),
+		.S_AXI_RRESP                   (M1_AXI_rresp),
+		.S_AXI_RVALID                  (M1_AXI_rvalid),
+		.S_AXI_WREADY                  (M1_AXI_wready),
+		.S_AXI_BRESP                   (M1_AXI_bresp),
+		.S_AXI_BVALID                  (M1_AXI_bvalid),
+		.S_AXI_AWREADY                 (M1_AXI_awready),
 		
 		// Interface to and from DMA
 		.s_axis_dma_tdata(axis_dma_i_1_tdata),
@@ -575,7 +552,49 @@
 		.m_axis_pipe_tvalid    (axis_phy_i_1_tvalid),
 		.m_axis_pipe_tready    (axis_phy_i_1_tready)
 	);
-
+	
+	axi_crossbar_0 u_interconnect(
+		.aclk          (axi_clk),
+		.aresetn       (axi_aresetn),
+		.s_axi_awaddr  (S00_AXI_awaddr),
+		.s_axi_awprot  (3'b010),
+		.s_axi_awvalid (S00_AXI_awvalid),
+		.s_axi_awready (S00_AXI_awready),
+		.s_axi_wdata   (S00_AXI_wdata  ),
+		.s_axi_wstrb   (4'hf),
+		.s_axi_wvalid  (S00_AXI_wvalid ),
+		.s_axi_wready  (S00_AXI_wready ),
+		.s_axi_bresp   (S00_AXI_bresp  ),
+		.s_axi_bvalid  (S00_AXI_bvalid ),
+		.s_axi_bready  (S00_AXI_bready ),
+		.s_axi_araddr  (S00_AXI_araddr[31:0]),
+		.s_axi_arprot  (3'b010),
+		.s_axi_arvalid (S00_AXI_arvalid ),
+		.s_axi_arready (S00_AXI_arready ),
+		.s_axi_rdata   (S00_AXI_rdata   ),
+		.s_axi_rresp   (S00_AXI_rresp   ),
+		.s_axi_rvalid  (S00_AXI_rvalid  ),
+		.s_axi_rready  (S00_AXI_rready  ),
+		.m_axi_awaddr  ({M1_AXI_awaddr[31:0] ,M0_AXI_awaddr[31:0]}),
+		.m_axi_awprot  (),
+		.m_axi_awvalid ({M1_AXI_awvalid,M0_AXI_awvalid}),
+		.m_axi_awready ({M1_AXI_awready,M0_AXI_awready}),
+		.m_axi_wdata   ({M1_AXI_wdata  ,M0_AXI_wdata  }),
+		.m_axi_wstrb   ({M1_AXI_wstrb  ,M0_AXI_wstrb  }),
+		.m_axi_wvalid  ({M1_AXI_wvalid ,M0_AXI_wvalid }),
+		.m_axi_wready  ({M1_AXI_wready ,M0_AXI_wready }),
+		.m_axi_bresp   ({M1_AXI_bresp  ,M0_AXI_bresp  }),
+		.m_axi_bvalid  ({M1_AXI_bvalid ,M0_AXI_bvalid }),
+		.m_axi_bready  ({M1_AXI_bready ,M0_AXI_bready }),
+		.m_axi_araddr  ({M1_AXI_araddr ,M0_AXI_araddr }),
+		.m_axi_arprot  (),
+		.m_axi_arvalid ({M1_AXI_arvalid,M0_AXI_arvalid}),
+		.m_axi_arready ({M1_AXI_arready,M0_AXI_arready}),
+		.m_axi_rdata   ({M1_AXI_rdata  ,M0_AXI_rdata  }),
+		.m_axi_rresp   ({M1_AXI_rresp  ,M0_AXI_rresp  }),
+		.m_axi_rvalid  ({M1_AXI_rvalid ,M0_AXI_rvalid }),
+		.m_axi_rready  ({M1_AXI_rready ,M0_AXI_rready }) 
+	);
 
 	axi_sim_transactor_ip axi_sim_transactor_i (
 		.axi_aclk      (axi_clk),

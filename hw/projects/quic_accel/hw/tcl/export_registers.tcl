@@ -32,6 +32,7 @@
 # The structure of each item is as follows {<Prefix name> <ID> <has registers> <library name>}
 
 set DEF_LIST {
+	{QUIC_ACCEL 0 1 ../../projects/quic_accel/data/quic_accel_reg_defines.txt} \
 }
 
 set target_path $::env(NF_DESIGN_DIR)/test

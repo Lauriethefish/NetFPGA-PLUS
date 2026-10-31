@@ -98,7 +98,13 @@ if not isHW():
     nftest_send_phy('nf0', pkts_sent) 
     nftest_expect_dma('nf0', pkts_expected) 
 
-print("")
-
 nftest_barrier()
-nftest_finish([])
+
+if isHW():
+    rres1=nftest_regread_expect(NFPLUS_QUIC_ACCEL_0_NUM_TX(), NUM_PKTS)
+    mres=[rres1]
+else:
+    nftest_regread_expect(NFPLUS_QUIC_ACCEL_0_NUM_TX(), NUM_PKTS)
+    mres=[]
+
+nftest_finish(mres)
