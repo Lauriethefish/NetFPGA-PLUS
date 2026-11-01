@@ -181,6 +181,9 @@ module top #(
     end
   end
 
+  wire core_clk;
+  wire locked;
+
   reg [9:0] core_rst_cnt = 10'd0;
   reg core_rst_reg;
   always @ (posedge core_clk) begin
@@ -197,9 +200,6 @@ module top #(
 
   wire axis_aclk, axil_aclk_250m;
   wire axis_rst, axil_rst_250m;
-
-  wire core_clk;
-  wire locked;
 
   clk_wiz_1 u_clk_wiz_1 (
     .clk_out1(core_clk),
@@ -456,9 +456,9 @@ module top #(
     );
 
   axi_crossbar_0 u_interconnect(
-		.aclk          (axi_clk),
-		.aresetn       (axi_aresetn),
-		.s_axi_awaddr  (s_axi_awaddr),
+		.aclk          (core_clk),
+		.aresetn       (!core_rst),
+		.s_axi_awaddr  (s_axil_awaddr),
 		.s_axi_awprot  (3'b010),
 		.s_axi_awvalid (s_axil_awvalid),
 		.s_axi_awready (s_axil_awready),
