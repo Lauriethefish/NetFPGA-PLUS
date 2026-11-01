@@ -113,15 +113,6 @@ module udp_checksum_calculator
     // NB this accounts for the pseudo header due to the udp_pseudo_header_inserter module.
     wire [31:0] transfer_checksum;
     assign transfer_checksum = s_axis_checksum;
-    generate
-        for(genvar i = 0; i < BUFFER_SIZE; i++) begin
-            always_ff @(posedge axis_aclk) begin
-                if(!axis_resetn) begin
-                    buffered_stream[i] <= '0;
-                end
-            end
-        end
-    endgenerate
 
     always_ff @(posedge axis_aclk) begin
         if(!axis_resetn) begin
@@ -129,6 +120,9 @@ module udp_checksum_calculator
             buffer_pos <= 0;
             buffer_len <= 0;
             running_checksum <= 0;
+            for(int i = 0; i < BUFFER_SIZE; i++) begin
+                buffered_stream[i] <= '0;
+            end
         end else begin
             if(state == 0) begin
                 if(s_axis_tvalid) begin
