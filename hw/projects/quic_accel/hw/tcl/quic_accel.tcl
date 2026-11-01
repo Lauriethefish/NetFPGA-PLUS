@@ -311,6 +311,14 @@ set_property generate_synth_checkpoint false [get_files axi_crossbar_1.xci]
 reset_target all [get_ips axi_crossbar_1]
 generate_target all [get_ips axi_crossbar_1]
 
+# TODO: The tuser width here is hardcoded
+create_ip -name axis_register_slice -vendor xilinx.com -library ip -version 1.1 -module_name axis_register_slice_1
+set_property -dict [list     \
+CONFIG.HAS_TKEEP {1}         \
+CONFIG.REG_CONFIG {12}       \
+CONFIG.TDATA_NUM_BYTES {${datapath_width_bit}/8}  \
+CONFIG.TUSER_WIDTH {128} ] [get_ips axis_register_slice_1]
+
 create_ip -name axi_clock_converter -vendor xilinx.com -library ip -module_name axi_clock_converter_0
 set_property -dict {
     CONFIG.PROTOCOL {AXI4LITE}

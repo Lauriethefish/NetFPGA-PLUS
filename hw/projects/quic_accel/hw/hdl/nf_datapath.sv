@@ -95,20 +95,73 @@ module nf_datapath #(
     output                                     m_axis_dma_tlast,
 
     // Interface to and from Ethernet (CMAC)
-    input [C_AXIS_DATA_WIDTH - 1:0]         s_axis_phy_tdata,
-    input [((C_AXIS_DATA_WIDTH / 8)) - 1:0] s_axis_phy_tkeep,
-    input [C_AXIS_TUSER_WIDTH-1:0]          s_axis_phy_tuser,
-    input                                     s_axis_phy_tvalid,
-    output                                    s_axis_phy_tready,
-    input                                     s_axis_phy_tlast,
+    input [C_AXIS_DATA_WIDTH - 1:0]         s_axis_phy_tdata_raw,
+    input [((C_AXIS_DATA_WIDTH / 8)) - 1:0] s_axis_phy_tkeep_raw,
+    input [C_AXIS_TUSER_WIDTH-1:0]          s_axis_phy_tuser_raw,
+    input                                     s_axis_phy_tvalid_raw,
+    output                                    s_axis_phy_tready_raw,
+    input                                     s_axis_phy_tlast_raw,
 
 
-    output [C_AXIS_DATA_WIDTH - 1:0]         m_axis_phy_tdata,
-    output [((C_AXIS_DATA_WIDTH / 8)) - 1:0] m_axis_phy_tkeep,
-    output [C_AXIS_TUSER_WIDTH-1:0]          m_axis_phy_tuser,
-    output                                     m_axis_phy_tvalid,
-    input                                      m_axis_phy_tready,
-    output                                     m_axis_phy_tlast
+    output [C_AXIS_DATA_WIDTH - 1:0]         m_axis_phy_tdata_raw,
+    output [((C_AXIS_DATA_WIDTH / 8)) - 1:0] m_axis_phy_tkeep_raw,
+    output [C_AXIS_TUSER_WIDTH-1:0]          m_axis_phy_tuser_raw,
+    output                                     m_axis_phy_tvalid_raw,
+    input                                      m_axis_phy_tready_raw,
+    output                                     m_axis_phy_tlast_raw
+    );
+
+    // Register inputs and outputs to CMAC subsystem using SLR-crossing
+    // axis_register_slice.
+    // The CMAC subsystem has a high clock frequency so the interface to it
+    // needs to be as clean as possible.
+
+    wire [C_AXIS_DATA_WIDTH - 1:0]         s_axis_phy_tdata;
+    wire [((C_AXIS_DATA_WIDTH / 8)) - 1:0] s_axis_phy_tkeep;
+    wire [C_AXIS_TUSER_WIDTH-1:0]          s_axis_phy_tuser;
+    wire                                   s_axis_phy_tvalid;
+    wire                                   s_axis_phy_tready;
+    wire                                   s_axis_phy_tlast;
+
+    wire [C_AXIS_DATA_WIDTH - 1:0]         m_axis_phy_tdata;
+    wire [((C_AXIS_DATA_WIDTH / 8)) - 1:0] m_axis_phy_tkeep;
+    wire [C_AXIS_TUSER_WIDTH-1:0]          m_axis_phy_tuser;
+    wire                                   m_axis_phy_tvalid;
+    wire                                   m_axis_phy_tready;
+    wire                                   m_axis_phy_tlast;
+
+    axis_register_slice_1 out_reg_slice (
+        .aclk(axis_aclk),
+        .aresetn(axis_resetn),
+        .m_axis_tvalid(s_axis_phy_tvalid),
+        .m_axis_tready(s_axis_phy_tready),
+        .m_axis_tdata (s_axis_phy_tdata),
+        .m_axis_tkeep (s_axis_phy_tkeep),
+        .m_axis_tlast (s_axis_phy_tlast),
+        .m_axis_tuser (s_axis_phy_tuser),
+        .s_axis_tvalid(s_axis_phy_tvalid_raw),
+        .s_axis_tready(s_axis_phy_tready_raw),
+        .s_axis_tdata (s_axis_phy_tdata_raw),
+        .s_axis_tkeep (s_axis_phy_tkeep_raw),
+        .s_axis_tlast (s_axis_phy_tlast_raw),
+        .s_axis_tuser (s_axis_phy_tuser_raw)
+    );
+
+    axis_register_slice_1 out_reg_slice (
+        .aclk(axis_aclk),
+        .aresetn(axis_resetn),
+        .m_axis_tvalid(m_axis_phy_tvalid_raw),
+        .m_axis_tready(m_axis_phy_tready_raw),
+        .m_axis_tdata (m_axis_phy_tdata_raw),
+        .m_axis_tkeep (m_axis_phy_tkeep_raw),
+        .m_axis_tlast (m_axis_phy_tlast_raw),
+        .m_axis_tuser (m_axis_phy_tuser_raw),
+        .s_axis_tvalid(m_axis_phy_tvalid),
+        .s_axis_tready(m_axis_phy_tready),
+        .s_axis_tdata (m_axis_phy_tdata),
+        .s_axis_tkeep (m_axis_phy_tkeep),
+        .s_axis_tlast (m_axis_phy_tlast),
+        .s_axis_tuser (m_axis_phy_tuser)
     );
    
     // Use checksum calculator on receiving end

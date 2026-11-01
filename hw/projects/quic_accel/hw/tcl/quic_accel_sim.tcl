@@ -116,6 +116,14 @@ set_property -dict [list CONFIG.STIM_FILE $::env(NF_DESIGN_DIR)/test/reg_stim.ax
 reset_target all [get_ips axi_sim_transactor_ip]
 generate_target all [get_ips axi_sim_transactor_ip]
 
+# TODO: The tuser width here is hardcoded
+create_ip -name axis_register_slice -vendor xilinx.com -library ip -version 1.1 -module_name axis_register_slice_1
+set_property -dict [list     \
+CONFIG.HAS_TKEEP {1}         \
+CONFIG.REG_CONFIG {12}       \
+CONFIG.TDATA_NUM_BYTES {${datapath_width_bit}/8}  \
+CONFIG.TUSER_WIDTH {128} ] [get_ips axis_register_slice_1]
+
 
 create_ip -name axi_crossbar -vendor xilinx.com -library ip -module_name axi_crossbar_0
 set_property -dict [list \
