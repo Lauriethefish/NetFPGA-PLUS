@@ -418,6 +418,7 @@ set_property generate_synth_checkpoint false [get_files clk_wiz_1.xci]
 reset_target all [get_ips clk_wiz_1]
 generate_target all [get_ips clk_wiz_1]
 
+read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/axil_register_bank.sv"
 read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/top_wrapper.sv"
 read_verilog "$::env(NF_DESIGN_DIR)/hw/hdl/top.v"
 read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/nf_datapath.sv"
@@ -434,7 +435,7 @@ set_property steps.phys_opt_design.is_enabled true [get_runs impl_1]
 set_property STEPS.PHYS_OPT_DESIGN.ARGS.DIRECTIVE ExploreWithHoldFix [get_runs impl_1]
 #set_property STEPS.PLACE_DESIGN.ARGS.DIRECTIVE AggressiveExplore [get_runs impl_1]
 # Spread logic out more widely to fix congestion we've been experiencing.
-set_property STEPS.PLACE_DESIGN.ARGS.DIRECTIVE AltSpreadLogic_high [get_runs impl_1]
+#set_property STEPS.PLACE_DESIGN.ARGS.DIRECTIVE AltSpreadLogic_high [get_runs impl_1]
 set_property STEPS.POST_ROUTE_PHYS_OPT_DESIGN.is_enabled true [get_runs impl_1]
 
 #set_property STEPS.POST_ROUTE_PHYS_OPT_DESIGN.ARGS.DIRECTIVE Explore [get_runs impl_1]

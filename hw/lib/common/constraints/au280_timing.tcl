@@ -24,22 +24,22 @@ foreach cmac_clk [get_clocks -of_object [get_nets u_top_wrapper/cmac_clk*]] {
     set_max_delay -datapath_only -from $cmac_clk -to $axis_aclk 3.103
 }
 
-#create_pblock pblock_qdma_subsystem
-#add_cells_to_pblock [get_pblocks pblock_qdma_subsystem] [get_cells -quiet [list u_top_wrapper/xilinx_nic_shell/inst/qdma_subsystem_inst]]
-#resize_pblock [get_pblocks pblock_qdma_subsystem] -add {SLR0}
+create_pblock pblock_qdma_subsystem
+add_cells_to_pblock [get_pblocks pblock_qdma_subsystem] [get_cells -quiet [list u_top_wrapper/xilinx_nic_shell/inst/qdma_subsystem_inst]]
+resize_pblock [get_pblocks pblock_qdma_subsystem] -add {SLR0}
 
-#create_pblock pblock_cmac_subsystem
-#add_cells_to_pblock [get_pblocks pblock_cmac_subsystem] [get_cells -quiet {u_top_wrapper/xilinx_nic_shell/inst/cmac_port*.cmac_subsystem_inst}]
-#resize_pblock [get_pblocks pblock_cmac_subsystem] -add {SLR2}
+create_pblock pblock_cmac_subsystem
+add_cells_to_pblock [get_pblocks pblock_cmac_subsystem] [get_cells -quiet {u_top_wrapper/xilinx_nic_shell/inst/cmac_port*.cmac_subsystem_inst}]
+add_cells_to_pblock [get_pblocks pblock_cmac_subsystem] [get_cells -quiet [list u_top_wrapper/u_nf_attachment_0]]
+add_cells_to_pblock [get_pblocks pblock_cmac_subsystem] [get_cells -quiet [list u_top_wrapper/u_nf_attachment_1]]
+resize_pblock [get_pblocks pblock_cmac_subsystem] -add {SLR2}
 
-#create_pblock pblock_nf_datapath
-#add_cells_to_pblock [get_pblocks pblock_nf_datapath] [get_cells -quiet [list datapath_0]]
-#add_cells_to_pblock [get_pblocks pblock_nf_datapath] [get_cells -quiet [list datapath_1]]
-#add_cells_to_pblock [get_pblocks pblock_nf_datapath] [get_cells -quiet [list u_top_wrapper/u_nf_attachment_0]]
-#add_cells_to_pblock [get_pblocks pblock_nf_datapath] [get_cells -quiet [list u_top_wrapper/u_nf_attachment_1]]
-#add_cells_to_pblock [get_pblocks pblock_nf_datapath] [get_cells -quiet [list u_top_wrapper/u_clk_conv]]
-#add_cells_to_pblock [get_pblocks pblock_nf_datapath] [get_cells -quiet [list u_clk_conv]]
-#resize_pblock [get_pblocks pblock_nf_datapath] -add {SLR1}
+create_pblock pblock_nf_datapath
+add_cells_to_pblock [get_pblocks pblock_nf_datapath] [get_cells -quiet [list datapath_0]]
+add_cells_to_pblock [get_pblocks pblock_nf_datapath] [get_cells -quiet [list datapath_1]]
+add_cells_to_pblock [get_pblocks pblock_nf_datapath] [get_cells -quiet [list u_top_wrapper/u_clk_conv]]
+add_cells_to_pblock [get_pblocks pblock_nf_datapath] [get_cells -quiet [list u_clk_conv]]
+resize_pblock [get_pblocks pblock_nf_datapath] -add {SLR1}
 
 # This false paths should be removed (ToDo)
 #set_false_path -from [get_cells  u_top_wrapper/u_nf_attachment/u_nf_attachment_0/inst/tx_fifo_rst/sync1_r_reg[5]]
