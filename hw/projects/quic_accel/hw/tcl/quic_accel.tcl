@@ -323,7 +323,6 @@ create_ip -name axis_register_slice -vendor xilinx.com -library ip -version 1.1 
 
 set_property CONFIG.HAS_TKEEP 1 [get_ips axis_register_slice_1]
 set_property CONFIG.HAS_TLAST 1 [get_ips axis_register_slice_1]
-set_property CONFIG.REG_CONFIG 12 [get_ips axis_register_slice_1]
 set_property CONFIG.TDATA_NUM_BYTES ${datapath_width_byte} [get_ips axis_register_slice_1]
 set_property CONFIG.TUSER_WIDTH 128 [get_ips axis_register_slice_1]
 
