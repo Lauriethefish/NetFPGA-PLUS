@@ -45,6 +45,7 @@ set_param general.maxThreads 8
 # Design Parameters on NF_DATAPATHs
 #####################################
 set datapath_width_bit    512
+set datapath_width_byte   [expr {${datapath_width_bit}/8}]
 #####################################
 # Project Settings
 #####################################
@@ -79,6 +80,7 @@ reset_target all [get_ips nf_mac_attachment_ip]
 generate_target all [get_ips nf_mac_attachment_ip]
 
 create_ip -name barrier -vendor NetFPGA -library NetFPGA -module_name barrier_ip
+set_property CONFIG.NUM_PORTS 3 [get_ips barrier_ip]
 reset_target all [get_ips barrier_ip]
 generate_target all [get_ips barrier_ip]
 
@@ -116,13 +118,16 @@ set_property -dict [list CONFIG.STIM_FILE $::env(NF_DESIGN_DIR)/test/reg_stim.ax
 reset_target all [get_ips axi_sim_transactor_ip]
 generate_target all [get_ips axi_sim_transactor_ip]
 
+puts $datapath_width_byte
+
 # TODO: The tuser width here is hardcoded
 create_ip -name axis_register_slice -vendor xilinx.com -library ip -version 1.1 -module_name axis_register_slice_1
-set_property -dict [list     \
-CONFIG.HAS_TKEEP {1}         \
-CONFIG.REG_CONFIG {12}       \
-CONFIG.TDATA_NUM_BYTES {${datapath_width_bit}/8}  \
-CONFIG.TUSER_WIDTH {128} ] [get_ips axis_register_slice_1]
+
+set_property CONFIG.HAS_TKEEP 1 [get_ips axis_register_slice_1]
+set_property CONFIG.HAS_TLAST 1 [get_ips axis_register_slice_1]
+set_property CONFIG.REG_CONFIG 12 [get_ips axis_register_slice_1]
+set_property CONFIG.TDATA_NUM_BYTES ${datapath_width_byte} [get_ips axis_register_slice_1]
+set_property CONFIG.TUSER_WIDTH 128 [get_ips axis_register_slice_1]
 
 
 create_ip -name axi_crossbar -vendor xilinx.com -library ip -module_name axi_crossbar_0

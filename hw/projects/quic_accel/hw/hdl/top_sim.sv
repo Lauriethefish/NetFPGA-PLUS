@@ -292,20 +292,20 @@
     .m_axis_dma_tlast(axis_dma_o_0_tlast),
 
     // Interface to and from Ethernet (CMAC)
-    .s_axis_phy_tdata(axis_phy_i_0_tdata),
-    .s_axis_phy_tkeep(axis_phy_i_0_tkeep),
-    .s_axis_phy_tuser(axis_phy_i_0_tuser),
-    .s_axis_phy_tvalid(axis_phy_i_0_tvalid),
-    .s_axis_phy_tready(axis_phy_i_0_tready),
-    .s_axis_phy_tlast(axis_phy_i_0_tlast),
+    .s_axis_phy_tdata_raw(axis_phy_i_0_tdata),
+    .s_axis_phy_tkeep_raw(axis_phy_i_0_tkeep),
+    .s_axis_phy_tuser_raw(axis_phy_i_0_tuser),
+    .s_axis_phy_tvalid_raw(axis_phy_i_0_tvalid),
+    .s_axis_phy_tready_raw(axis_phy_i_0_tready),
+    .s_axis_phy_tlast_raw(axis_phy_i_0_tlast),
 
 
-    .m_axis_phy_tdata(axis_phy_o_0_tdata),
-    .m_axis_phy_tkeep(axis_phy_o_0_tkeep),
-    .m_axis_phy_tuser(axis_phy_o_0_tuser),
-    .m_axis_phy_tvalid(axis_phy_o_0_tvalid),
-    .m_axis_phy_tready(axis_phy_o_0_tready),
-    .m_axis_phy_tlast(axis_phy_o_0_tlast)
+    .m_axis_phy_tdata_raw(axis_phy_o_0_tdata),
+    .m_axis_phy_tkeep_raw(axis_phy_o_0_tkeep),
+    .m_axis_phy_tuser_raw(axis_phy_o_0_tuser),
+    .m_axis_phy_tvalid_raw(axis_phy_o_0_tvalid),
+    .m_axis_phy_tready_raw(axis_phy_o_0_tready),
+    .m_axis_phy_tlast_raw(axis_phy_o_0_tlast)
     );
 
 	nf_datapath #(
@@ -357,20 +357,20 @@
 		.m_axis_dma_tlast(axis_dma_o_1_tlast),
 
 		// Interface to and from Ethernet (CMAC)
-		.s_axis_phy_tdata(axis_phy_i_1_tdata),
-		.s_axis_phy_tkeep(axis_phy_i_1_tkeep),
-		.s_axis_phy_tuser(axis_phy_i_1_tuser),
-		.s_axis_phy_tvalid(axis_phy_i_1_tvalid),
-		.s_axis_phy_tready(axis_phy_i_1_tready),
-		.s_axis_phy_tlast(axis_phy_i_1_tlast),
+		.s_axis_phy_tdata_raw(axis_phy_i_1_tdata),
+		.s_axis_phy_tkeep_raw(axis_phy_i_1_tkeep),
+		.s_axis_phy_tuser_raw(axis_phy_i_1_tuser),
+		.s_axis_phy_tvalid_raw(axis_phy_i_1_tvalid),
+		.s_axis_phy_tready_raw(axis_phy_i_1_tready),
+		.s_axis_phy_tlast_raw(axis_phy_i_1_tlast),
 
 
-		.m_axis_phy_tdata(axis_phy_o_1_tdata),
-		.m_axis_phy_tkeep(axis_phy_o_1_tkeep),
-		.m_axis_phy_tuser(axis_phy_o_1_tuser),
-		.m_axis_phy_tvalid(axis_phy_o_1_tvalid),
-		.m_axis_phy_tready(axis_phy_o_1_tready),
-		.m_axis_phy_tlast(axis_phy_o_1_tlast)
+		.m_axis_phy_tdata_raw(axis_phy_o_1_tdata),
+		.m_axis_phy_tkeep_raw(axis_phy_o_1_tkeep),
+		.m_axis_phy_tuser_raw(axis_phy_o_1_tuser),
+		.m_axis_phy_tvalid_raw(axis_phy_o_1_tvalid),
+		.m_axis_phy_tready_raw(axis_phy_o_1_tready),
+		.m_axis_phy_tlast_raw(axis_phy_o_1_tlast)
     );
 
 	axis_sim_stim_ip0 axis_sim_stim_0 (
@@ -421,9 +421,9 @@
 		.M_AXIS_TREADY   (axis_dma_stim_tready),
 		.M_AXIS_TLAST    (axis_dma_stim_tlast),
 
-		.counter         (counter4),
-		.activity_stim   (activity_stim4),
-		.barrier_req     (barrier_req4),
+		.counter         (counter2),
+		.activity_stim   (activity_stim2),
+		.barrier_req     (barrier_req2),
 		.barrier_proceed (barrier_proceed)
 	);
 
@@ -465,8 +465,8 @@
 		.s_axis_tready(axis_dma_rec_tready),
 		.s_axis_tlast (axis_dma_rec_tlast),
 	
-		.counter (counter4),
-		.activity_rec(activity_rec4)
+		.counter (counter2),
+		.activity_rec(activity_rec2)
 	);
 
 	nf_mac_attachment_ip u_nf_attachment_0 (
@@ -629,30 +629,35 @@
 	);
 
 	barrier_ip barrier_i (
-		.activity_stim ({activity_stim4, activity_stim3, activity_stim2, activity_stim1, activity_stim0}), 
-		.activity_rec ({activity_rec4, activity_rec3, activity_rec2, activity_rec1, activity_rec0}),
+		.activity_stim ({activity_stim2, activity_stim1, activity_stim0}), 
+		.activity_rec ({activity_rec2, activity_rec1, activity_rec0}),
 		.activity_trans_sim (activity_trans_sim),
 		.activity_trans_log (activity_trans_log),
-		.barrier_req ({barrier_req4, barrier_req3, barrier_req2, barrier_req1, barrier_req0}), 
+		.barrier_req ({barrier_req2, barrier_req1, barrier_req0}), 
 		.barrier_req_trans (barrier_req_trans),
 		.barrier_proceed (barrier_proceed)
 	);
 
+	wire [7:0] axis_dma_stim_tuser_src;
+	assign axis_dma_stim_tuser_src = axis_dma_stim_tuser[23:16];
+
 	// Multiplex the DMA stim to the two different datapths.
 	// Fairly simple, just set valid based upon the tuser
 	assign axis_dma_i_0_tdata = axis_dma_stim_tdata;
-	assign axis_dma_i_0_tvalid = (axis_dma_stim_tuser[1]) ? axis_dma_stim_tvalid : 1'b0;
+	assign axis_dma_i_0_tvalid = (axis_dma_stim_tuser_src[1]) ? axis_dma_stim_tvalid : 1'b0;
 	assign axis_dma_i_0_tlast = axis_dma_stim_tlast;
 	assign axis_dma_i_0_tuser = axis_dma_stim_tuser;
 	assign axis_dma_i_0_tkeep = axis_dma_stim_tkeep;
-	assign axis_dma_stim_tready = axis_dma_i_0_tready;
+	// Choose appropriate tready depending on the destination
+	// Definitely not tready if stim not tvalid.
+	assign axis_dma_stim_tready = axis_dma_stim_tvalid ? ((axis_dma_stim_tuser_src[1]) ? axis_dma_i_0_tready
+		: ((axis_dma_stim_tuser_src[3]) ? axis_dma_i_1_tready : 1'b0)) : 1'b0;
 
 	assign axis_dma_i_1_tdata = axis_dma_stim_tdata;
-	assign axis_dma_i_1_tvalid = (axis_dma_stim_tuser[3]) ? axis_dma_stim_tvalid : 1'b0;
+	assign axis_dma_i_1_tvalid = (axis_dma_stim_tuser_src[3]) ? axis_dma_stim_tvalid : 1'b0;
 	assign axis_dma_i_1_tlast = axis_dma_stim_tlast;
 	assign axis_dma_i_1_tuser = axis_dma_stim_tuser;
 	assign axis_dma_i_1_tkeep = axis_dma_stim_tkeep;
-	assign axis_dma_stim_tready = axis_dma_i_1_tready;
 
 	// Multiplex the DMA output (two streams) into a single stream for recording
 	// In comparison more difficult as we must decide when to take from each.

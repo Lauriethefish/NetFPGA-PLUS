@@ -372,20 +372,20 @@ module top #(
     .m_axis_dma_tlast(axis_dma_o_0_tlast),
 
     // Interface to and from Ethernet (CMAC)
-    .s_axis_phy_tdata(axis_phy_i_0_tdata),
-    .s_axis_phy_tkeep(axis_phy_i_0_tkeep),
-    .s_axis_phy_tuser(axis_phy_i_0_tuser),
-    .s_axis_phy_tvalid(axis_phy_i_0_tvalid),
-    .s_axis_phy_tready(axis_phy_i_0_tready),
-    .s_axis_phy_tlast(axis_phy_i_0_tlast),
+    .s_axis_phy_tdata_raw(axis_phy_i_0_tdata),
+    .s_axis_phy_tkeep_raw(axis_phy_i_0_tkeep),
+    .s_axis_phy_tuser_raw(axis_phy_i_0_tuser),
+    .s_axis_phy_tvalid_raw(axis_phy_i_0_tvalid),
+    .s_axis_phy_tready_raw(axis_phy_i_0_tready),
+    .s_axis_phy_tlast_raw(axis_phy_i_0_tlast),
 
 
-    .m_axis_phy_tdata(axis_phy_o_0_tdata),
-    .m_axis_phy_tkeep(axis_phy_o_0_tkeep),
-    .m_axis_phy_tuser(axis_phy_o_0_tuser),
-    .m_axis_phy_tvalid(axis_phy_o_0_tvalid),
-    .m_axis_phy_tready(axis_phy_o_0_tready),
-    .m_axis_phy_tlast(axis_phy_o_0_tlast)
+    .m_axis_phy_tdata_raw(axis_phy_o_0_tdata),
+    .m_axis_phy_tkeep_raw(axis_phy_o_0_tkeep),
+    .m_axis_phy_tuser_raw(axis_phy_o_0_tuser),
+    .m_axis_phy_tvalid_raw(axis_phy_o_0_tvalid),
+    .m_axis_phy_tready_raw(axis_phy_o_0_tready),
+    .m_axis_phy_tlast_raw(axis_phy_o_0_tlast)
     );
 
 	nf_datapath #(
@@ -439,20 +439,20 @@ module top #(
 		.m_axis_dma_tlast(axis_dma_o_1_tlast),
 
 		// Interface to and from Ethernet (CMAC)
-		.s_axis_phy_tdata(axis_phy_i_1_tdata),
-		.s_axis_phy_tkeep(axis_phy_i_1_tkeep),
-		.s_axis_phy_tuser(axis_phy_i_1_tuser),
-		.s_axis_phy_tvalid(axis_phy_i_1_tvalid),
-		.s_axis_phy_tready(axis_phy_i_1_tready),
-		.s_axis_phy_tlast(axis_phy_i_1_tlast),
+		.s_axis_phy_tdata_raw(axis_phy_i_1_tdata),
+		.s_axis_phy_tkeep_raw(axis_phy_i_1_tkeep),
+		.s_axis_phy_tuser_raw(axis_phy_i_1_tuser),
+		.s_axis_phy_tvalid_raw(axis_phy_i_1_tvalid),
+		.s_axis_phy_tready_raw(axis_phy_i_1_tready),
+		.s_axis_phy_tlast_raw(axis_phy_i_1_tlast),
 
 
-		.m_axis_phy_tdata(axis_phy_o_1_tdata),
-		.m_axis_phy_tkeep(axis_phy_o_1_tkeep),
-		.m_axis_phy_tuser(axis_phy_o_1_tuser),
-		.m_axis_phy_tvalid(axis_phy_o_1_tvalid),
-		.m_axis_phy_tready(axis_phy_o_1_tready),
-		.m_axis_phy_tlast(axis_phy_o_1_tlast)
+		.m_axis_phy_tdata_raw(axis_phy_o_1_tdata),
+		.m_axis_phy_tkeep_raw(axis_phy_o_1_tkeep),
+		.m_axis_phy_tuser_raw(axis_phy_o_1_tuser),
+		.m_axis_phy_tvalid_raw(axis_phy_o_1_tvalid),
+		.m_axis_phy_tready_raw(axis_phy_o_1_tready),
+		.m_axis_phy_tlast_raw(axis_phy_o_1_tlast)
     );
 
   axi_crossbar_0 u_interconnect(

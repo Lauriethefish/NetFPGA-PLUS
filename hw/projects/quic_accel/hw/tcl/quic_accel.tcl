@@ -44,6 +44,7 @@ set_param board.repoPaths $::env(BOARD_FILE_PATH)
 # Design Parameters on NF_DATAPATH(s)
 #####################################
 set datapath_width_bit    512
+set datapath_width_byte   [expr {${datapath_width_bit}/8}]
 set datapath_freq_mhz     250
 #####################################
 # Project Settings
@@ -313,11 +314,22 @@ generate_target all [get_ips axi_crossbar_1]
 
 # TODO: The tuser width here is hardcoded
 create_ip -name axis_register_slice -vendor xilinx.com -library ip -version 1.1 -module_name axis_register_slice_1
-set_property -dict [list     \
-CONFIG.HAS_TKEEP {1}         \
-CONFIG.REG_CONFIG {12}       \
-CONFIG.TDATA_NUM_BYTES {${datapath_width_bit}/8}  \
-CONFIG.TUSER_WIDTH {128} ] [get_ips axis_register_slice_1]
+
+set_property CONFIG.HAS_TKEEP 1 [get_ips axis_register_slice_1]
+set_property CONFIG.HAS_TLAST 1 [get_ips axis_register_slice_1]
+set_property CONFIG.REG_CONFIG 12 [get_ips axis_register_slice_1]
+set_property CONFIG.TDATA_NUM_BYTES ${datapath_width_byte} [get_ips axis_register_slice_1]
+set_property CONFIG.TUSER_WIDTH 128 [get_ips axis_register_slice_1]
+
+# Separate axis_register_slice for padding out the space between the CMAC and the MAC attachment.
+create_ip -name axis_register_slice -vendor xilinx.com -library ip -version 1.1 -module_name axis_register_slice_cmac
+
+set_property CONFIG.HAS_TKEEP 1 [get_ips axis_register_slice_cmac]
+set_property CONFIG.HAS_TLAST 1 [get_ips axis_register_slice_cmac]
+set_property CONFIG.TDATA_NUM_BYTES ${datapath_width_byte} [get_ips axis_register_slice_cmac]
+set_property CONFIG.TUSER_WIDTH 1 [get_ips axis_register_slice_cmac]
+
+
 
 create_ip -name axi_clock_converter -vendor xilinx.com -library ip -module_name axi_clock_converter_0
 set_property -dict {
