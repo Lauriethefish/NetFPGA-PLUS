@@ -173,6 +173,36 @@ module top_wrapper #(
 
   wire [1:0] cmac_clk;
 
+  reg [31:0] axis_dma_i_0_count, axis_dma_i_1_count;
+  reg [31:0] axis_dma_o_0_count, axis_dma_o_1_count;
+  reg [31:0] core_clk_counter;
+
+  wire [31:0] reg_read_values[6];
+  assign reg_read_values[0] = 32'hABCDABCD;
+  assign reg_read_values[1] = core_clk_counter;
+  assign reg_read_values[2] = axis_dma_i_0_count;
+  assign reg_read_values[3] = axis_dma_i_1_count;
+  assign reg_read_values[4] = axis_dma_o_0_count;
+  assign reg_read_values[5] = axis_dma_o_1_count;
+
+
+  always_ff @(posedge core_clk) begin
+      if(core_rst) begin
+        axis_dma_i_0_count <= 0;
+        axis_dma_i_1_count <= 0;
+        axis_dma_o_0_count <= 0;
+        axis_dma_o_1_count <= 0;
+        core_clk_counter <= 0;
+      end else begin
+        axis_dma_i_0_count <= axis_dma_i_0_count + (axis_dma_i_0_tvalid && axis_dma_i_0_tready);
+        axis_dma_i_1_count <= axis_dma_i_1_count + (axis_dma_i_1_tvalid && axis_dma_i_1_tready);
+        axis_dma_o_0_count <= axis_dma_o_0_count + (axis_dma_o_0_tvalid && axis_dma_o_0_tready);
+        axis_dma_o_1_count <= axis_dma_o_1_count + (axis_dma_o_1_tvalid && axis_dma_o_1_tready);
+        // Just to check for signs of life
+        core_clk_counter <= core_clk_counter + 1;
+      end
+  end
+
   wire                            axis_cmac_i_0_tvalid, axis_cmac_i_1_tvalid;
   wire [C_TDATA_WIDTH-1:0]        axis_cmac_i_0_tdata , axis_cmac_i_1_tdata ;
   wire [(C_TDATA_WIDTH/8)-1:0]    axis_cmac_i_0_tkeep , axis_cmac_i_1_tkeep ;
@@ -199,23 +229,37 @@ module top_wrapper #(
   wire                            axis_cmac_o_0_buf_tlast ,     axis_cmac_o_1_buf_tlast ;
   wire                            axis_cmac_o_0_buf_tready ,    axis_cmac_o_1_buf_tready ;
 
-  wire [15:0]                    axis_dma_o_0_tuser_size, axis_dma_o_1_tuser_size;
-  wire [15:0]                    axis_dma_o_0_tuser_src , axis_dma_o_1_tuser_src ;
-  wire [15:0]                    axis_dma_o_0_tuser_dst , axis_dma_o_1_tuser_dst ;
+  wire [15:0]                    axis_dma_o_0_raw_tuser_size, axis_dma_o_1_raw_tuser_size;
+  wire [15:0]                    axis_dma_o_0_raw_tuser_src , axis_dma_o_1_raw_tuser_src ;
+  wire [15:0]                    axis_dma_o_0_raw_tuser_dst , axis_dma_o_1_raw_tuser_dst ;
 
-  wire [15:0]                    axis_dma_i_0_tuser_size, axis_dma_i_1_tuser_size;
-  wire [15:0]                    axis_dma_i_0_tuser_src , axis_dma_i_1_tuser_src ;
-  wire [15:0]                    axis_dma_i_0_tuser_dst , axis_dma_i_1_tuser_dst ;
+  wire [15:0]                    axis_dma_i_0_raw_tuser_size, axis_dma_i_1_raw_tuser_size;
+  wire [15:0]                    axis_dma_i_0_raw_tuser_src , axis_dma_i_1_raw_tuser_src ;
+  wire [15:0]                    axis_dma_i_0_raw_tuser_dst , axis_dma_i_1_raw_tuser_dst ;
 
-  assign axis_dma_i_0_tuser = {axis_dma_i_0_tuser_dst[7:0], axis_dma_i_0_tuser_src[7:0], axis_dma_i_0_tuser_size};
-  assign axis_dma_i_1_tuser = {axis_dma_i_1_tuser_dst[7:0], axis_dma_i_1_tuser_src[7:0], axis_dma_i_1_tuser_size};
+  wire                            axis_dma_o_0_raw_tvalid,     axis_dma_o_1_raw_tvalid;
+  wire [C_TDATA_WIDTH-1:0]        axis_dma_o_0_raw_tdata ,     axis_dma_o_1_raw_tdata ;
+  wire [(C_TDATA_WIDTH/8)-1:0]    axis_dma_o_0_raw_tkeep ,     axis_dma_o_1_raw_tkeep ;
+  wire [C_TUSER_WIDTH-1:0]        axis_dma_o_0_raw_tuser ,     axis_dma_o_1_raw_tuser ;
+  wire                            axis_dma_o_0_raw_tlast ,     axis_dma_o_1_raw_tlast ;
+  wire                            axis_dma_o_0_raw_tready ,    axis_dma_o_1_raw_tready ;
 
-  assign axis_dma_o_0_tuser_dst = 2'b01;
-  assign axis_dma_o_1_tuser_dst = 2'b10;
-  assign axis_dma_o_0_tuser_src = axis_dma_o_0_tuser[23:16];
-  assign axis_dma_o_1_tuser_src = axis_dma_o_1_tuser[23:16];
-  assign axis_dma_o_0_tuser_size = axis_dma_o_0_tuser[15:0];
-  assign axis_dma_o_1_tuser_size = axis_dma_o_1_tuser[15:0];
+  wire                            axis_dma_i_0_raw_tvalid,     axis_dma_i_1_raw_tvalid;
+  wire [C_TDATA_WIDTH-1:0]        axis_dma_i_0_raw_tdata ,     axis_dma_i_1_raw_tdata ;
+  wire [(C_TDATA_WIDTH/8)-1:0]    axis_dma_i_0_raw_tkeep ,     axis_dma_i_1_raw_tkeep ;
+  wire [C_TUSER_WIDTH-1:0]        axis_dma_i_0_raw_tuser ,     axis_dma_i_1_raw_tuser ;
+  wire                            axis_dma_i_0_raw_tlast ,     axis_dma_i_1_raw_tlast ;
+  wire                            axis_dma_i_0_raw_tready ,    axis_dma_i_1_raw_tready ;
+
+  assign axis_dma_i_0_raw_tuser = {axis_dma_i_0_raw_tuser_dst[7:0], axis_dma_i_0_raw_tuser_src[7:0], axis_dma_i_0_raw_tuser_size};
+  assign axis_dma_i_1_raw_tuser = {axis_dma_i_1_raw_tuser_dst[7:0], axis_dma_i_1_raw_tuser_src[7:0], axis_dma_i_1_raw_tuser_size};
+
+  assign axis_dma_o_0_raw_tuser_dst = 2'b01;
+  assign axis_dma_o_1_raw_tuser_dst = 2'b10;
+  assign axis_dma_o_0_raw_tuser_src = axis_dma_o_0_tuser[23:16];
+  assign axis_dma_o_1_raw_tuser_src = axis_dma_o_1_tuser[23:16];
+  assign axis_dma_o_0_raw_tuser_size = axis_dma_o_0_tuser[15:0];
+  assign axis_dma_o_1_raw_tuser_size = axis_dma_o_1_tuser[15:0];
 
   wire                     m0_axil_awvalid;
   wire              [31:0] m0_axil_awaddr;
@@ -287,6 +331,95 @@ module top_wrapper #(
   wire               [1:0] s_axil_nfa1_rresp;
   wire                     s_axil_nfa1_rready;
   wire               [3:0] s_axil_nfa1_wstrb;
+
+  wire                     s_axil_nfadma0_awvalid;
+  wire              [31:0] s_axil_nfadma0_awaddr;
+  wire                     s_axil_nfadma0_awready;
+  wire                     s_axil_nfadma0_wvalid;
+  wire              [31:0] s_axil_nfadma0_wdata;
+  wire                     s_axil_nfadma0_wready;
+  wire                     s_axil_nfadma0_bvalid;
+  wire               [1:0] s_axil_nfadma0_bresp;
+  wire                     s_axil_nfadma0_bready;
+  wire                     s_axil_nfadma0_arvalid;
+  wire              [31:0] s_axil_nfadma0_araddr;
+  wire                     s_axil_nfadma0_arready;
+  wire                     s_axil_nfadma0_rvalid;
+  wire              [31:0] s_axil_nfadma0_rdata;
+  wire               [1:0] s_axil_nfadma0_rresp;
+  wire                     s_axil_nfadma0_rready;
+  wire               [3:0] s_axil_nfadma0_wstrb;
+
+  wire                     s_axil_nfadma1_awvalid;
+  wire              [31:0] s_axil_nfadma1_awaddr;
+  wire                     s_axil_nfadma1_awready;
+  wire                     s_axil_nfadma1_wvalid;
+  wire              [31:0] s_axil_nfadma1_wdata;
+  wire                     s_axil_nfadma1_wready;
+  wire                     s_axil_nfadma1_bvalid;
+  wire               [1:0] s_axil_nfadma1_bresp;
+  wire                     s_axil_nfadma1_bready;
+  wire                     s_axil_nfadma1_arvalid;
+  wire              [31:0] s_axil_nfadma1_araddr;
+  wire                     s_axil_nfadma1_arready;
+  wire                     s_axil_nfadma1_rvalid;
+  wire              [31:0] s_axil_nfadma1_rdata;
+  wire               [1:0] s_axil_nfadma1_rresp;
+  wire                     s_axil_nfadma1_rready;
+  wire               [3:0] s_axil_nfadma1_wstrb;
+
+  wire                     s_axil_log_awvalid;
+  wire              [31:0] s_axil_log_awaddr;
+  wire                     s_axil_log_awready;
+  wire                     s_axil_log_wvalid;
+  wire              [31:0] s_axil_log_wdata;
+  wire                     s_axil_log_wready;
+  wire                     s_axil_log_bvalid;
+  wire               [1:0] s_axil_log_bresp;
+  wire                     s_axil_log_bready;
+  wire                     s_axil_log_arvalid;
+  wire              [31:0] s_axil_log_araddr;
+  wire                     s_axil_log_arready;
+  wire                     s_axil_log_rvalid;
+  wire              [31:0] s_axil_log_rdata;
+  wire               [1:0] s_axil_log_rresp;
+  wire                     s_axil_log_rready;
+  wire               [3:0] s_axil_log_wstrb;
+
+  axil_register_bank 
+  #(
+      .NUM_REGISTERS(6)
+  )
+  axil_regs
+  (
+      // General ports
+      .clk(core_clk),
+      .resetn(!core_rst),
+
+      .reg_read_values(reg_read_values),
+      .reg_write_values(),
+      .reg_is_writing(),
+
+      .S_AXI_ACLK(core_clk),
+      .S_AXI_ARESETN(!core_rst),
+      .S_AXI_AWADDR (s_axil_log_awaddr),
+      .S_AXI_AWVALID(s_axil_log_awvalid),
+      .S_AXI_WDATA  (s_axil_log_wdata),
+      .S_AXI_WSTRB  (s_axil_log_wstrb),
+      .S_AXI_WVALID (s_axil_log_wvalid),
+      .S_AXI_BREADY (s_axil_log_bready),
+      .S_AXI_ARADDR (s_axil_log_araddr),
+      .S_AXI_ARVALID(s_axil_log_arvalid),
+      .S_AXI_RREADY (s_axil_log_rready),
+      .S_AXI_ARREADY(s_axil_log_arready),
+      .S_AXI_RDATA  (s_axil_log_rdata),
+      .S_AXI_RRESP  (s_axil_log_rresp),
+      .S_AXI_RVALID (s_axil_log_rvalid),
+      .S_AXI_WREADY (s_axil_log_wready),
+      .S_AXI_BRESP  (s_axil_log_bresp),
+      .S_AXI_BVALID (s_axil_log_bvalid),
+      .S_AXI_AWREADY(s_axil_log_awready)
+  );
 
   wire [31:0] user_rst_done = 32'hffff_fffe;
 
@@ -385,7 +518,7 @@ module top_wrapper #(
     .m_axi_rready  (s_axil_rready )
   );
 
-  axi_crossbar_0 u_interconnect(
+  axi_crossbar_1 u_interconnect(
 		.aclk          (core_clk),
 		.aresetn       (!core_rst),
 		.s_axi_awaddr  (s_axil_awaddr),
@@ -407,26 +540,148 @@ module top_wrapper #(
 		.s_axi_rresp   (s_axil_rresp   ),
 		.s_axi_rvalid  (s_axil_rvalid  ),
 		.s_axi_rready  (s_axil_rready  ),
-		.m_axi_awaddr  ({s_axil_nfa1_awaddr[31:0] ,s_axil_nfa0_awaddr[31:0]}),
 		.m_axi_awprot  (),
-		.m_axi_awvalid ({s_axil_nfa1_awvalid,s_axil_nfa0_awvalid}),
-		.m_axi_awready ({s_axil_nfa1_awready,s_axil_nfa0_awready}),
-		.m_axi_wdata   ({s_axil_nfa1_wdata  ,s_axil_nfa0_wdata  }),
-		.m_axi_wstrb   ({s_axil_nfa1_wstrb  ,s_axil_nfa0_wstrb  }),
-		.m_axi_wvalid  ({s_axil_nfa1_wvalid ,s_axil_nfa0_wvalid }),
-		.m_axi_wready  ({s_axil_nfa1_wready ,s_axil_nfa0_wready }),
-		.m_axi_bresp   ({s_axil_nfa1_bresp  ,s_axil_nfa0_bresp  }),
-		.m_axi_bvalid  ({s_axil_nfa1_bvalid ,s_axil_nfa0_bvalid }),
-		.m_axi_bready  ({s_axil_nfa1_bready ,s_axil_nfa0_bready }),
-		.m_axi_araddr  ({s_axil_nfa1_araddr ,s_axil_nfa0_araddr }),
-		.m_axi_arprot  (),
-		.m_axi_arvalid ({s_axil_nfa1_arvalid,s_axil_nfa0_arvalid}),
-		.m_axi_arready ({s_axil_nfa1_arready,s_axil_nfa0_arready}),
-		.m_axi_rdata   ({s_axil_nfa1_rdata  ,s_axil_nfa0_rdata  }),
-		.m_axi_rresp   ({s_axil_nfa1_rresp  ,s_axil_nfa0_rresp  }),
-		.m_axi_rvalid  ({s_axil_nfa1_rvalid ,s_axil_nfa0_rvalid }),
-		.m_axi_rready  ({s_axil_nfa1_rready ,s_axil_nfa0_rready }) 
+    .m_axi_awaddr  ({s_axil_nfa1_awaddr[31:0] ,s_axil_nfa0_awaddr[31:0], s_axil_log_awaddr[31:0], s_axil_nfadma0_awaddr[31:0], s_axil_nfadma1_awaddr[31:0]}),
+		.m_axi_awvalid ({s_axil_nfa1_awvalid,      s_axil_nfa0_awvalid,      s_axil_log_awvalid     , s_axil_nfadma0_awvalid,      s_axil_nfadma1_awvalid}),
+		.m_axi_awready ({s_axil_nfa1_awready,      s_axil_nfa0_awready,      s_axil_log_awready     , s_axil_nfadma0_awready,      s_axil_nfadma1_awready}),
+		.m_axi_wdata   ({s_axil_nfa1_wdata  ,      s_axil_nfa0_wdata  ,      s_axil_log_wdata       , s_axil_nfadma0_wdata,        s_axil_nfadma1_wdata}),
+		.m_axi_wstrb   ({s_axil_nfa1_wstrb  ,      s_axil_nfa0_wstrb  ,      s_axil_log_wstrb       , s_axil_nfadma0_wstrb,        s_axil_nfadma1_wstrb}),
+		.m_axi_wvalid  ({s_axil_nfa1_wvalid ,      s_axil_nfa0_wvalid ,      s_axil_log_wvalid      , s_axil_nfadma0_wvalid,       s_axil_nfadma1_wvalid}),
+		.m_axi_wready  ({s_axil_nfa1_wready ,      s_axil_nfa0_wready ,      s_axil_log_wready      , s_axil_nfadma0_wready,       s_axil_nfadma1_wready}),
+		.m_axi_bresp   ({s_axil_nfa1_bresp  ,      s_axil_nfa0_bresp  ,      s_axil_log_bresp       , s_axil_nfadma0_bresp,        s_axil_nfadma1_bresp}),
+		.m_axi_bvalid  ({s_axil_nfa1_bvalid ,      s_axil_nfa0_bvalid ,      s_axil_log_bvalid      , s_axil_nfadma0_bvalid,       s_axil_nfadma1_bvalid}),
+		.m_axi_bready  ({s_axil_nfa1_bready ,      s_axil_nfa0_bready ,      s_axil_log_bready      , s_axil_nfadma0_bready,       s_axil_nfadma1_bready}),
+		.m_axi_araddr  ({s_axil_nfa1_araddr ,      s_axil_nfa0_araddr,       s_axil_log_araddr      , s_axil_nfadma0_araddr,       s_axil_nfadma1_araddr}),
+		.m_axi_arvalid ({s_axil_nfa1_arvalid,      s_axil_nfa0_arvalid,      s_axil_log_arvalid     , s_axil_nfadma0_arvalid,      s_axil_nfadma1_arvalid}),
+		.m_axi_arready ({s_axil_nfa1_arready,      s_axil_nfa0_arready,      s_axil_log_arready     , s_axil_nfadma0_arready,      s_axil_nfadma1_arready}),
+		.m_axi_rdata   ({s_axil_nfa1_rdata  ,      s_axil_nfa0_rdata  ,      s_axil_log_rdata       , s_axil_nfadma0_rdata,        s_axil_nfadma1_rdata}),
+		.m_axi_rresp   ({s_axil_nfa1_rresp  ,      s_axil_nfa0_rresp  ,      s_axil_log_rresp       , s_axil_nfadma0_rresp,        s_axil_nfadma1_rresp}),
+		.m_axi_rvalid  ({s_axil_nfa1_rvalid ,      s_axil_nfa0_rvalid ,      s_axil_log_rvalid      , s_axil_nfadma0_rvalid,       s_axil_nfadma1_rvalid}),
+		.m_axi_rready  ({s_axil_nfa1_rready ,      s_axil_nfa0_rready ,      s_axil_log_rready      , s_axil_nfadma0_rready,       s_axil_nfadma1_rready}) 
+    .m_axi_arprot  (),
 	);
+
+  nf_mac_attachment_dma_ip u_nf_attachment_dma_0 (
+    .S_AXI_ACLK            (core_clk),
+    .S_AXI_ARESETN         (!core_rst),
+    .S_AXI_AWADDR          (s_axil_nfadma0_awaddr),
+    .S_AXI_AWVALID         (s_axil_nfadma0_awvalid),
+    .S_AXI_WDATA           (s_axil_nfadma0_wdata),
+    .S_AXI_WSTRB           (s_axil_nfadma0_wstrb),
+    .S_AXI_WVALID          (s_axil_nfadma0_wvalid),
+    .S_AXI_BREADY          (s_axil_nfadma0_bready),
+    .S_AXI_ARADDR          (s_axil_nfadma0_araddr),
+    .S_AXI_ARVALID         (s_axil_nfadma0_arvalid),
+    .S_AXI_RREADY          (s_axil_nfadma0_rready),
+    .S_AXI_ARREADY         (s_axil_nfadma0_arready),
+    .S_AXI_RDATA           (s_axil_nfadma0_rdata),
+    .S_AXI_RRESP           (s_axil_nfadma0_rresp),
+    .S_AXI_RVALID          (s_axil_nfadma0_rvalid),
+    .S_AXI_WREADY          (s_axil_nfadma0_wready),
+    .S_AXI_BRESP           (s_axil_nfadma0_bresp),
+    .S_AXI_BVALID          (s_axil_nfadma0_bvalid),
+    .S_AXI_AWREADY         (s_axil_nfadma0_awready),
+    // 10GE block clk & rst
+    .clk156                (axis_aclk),
+    .areset_clk156         (axis_rst),
+    // RX MAC 64b@clk156 (no backpressure) -> rx_queue 64b@axis_clk
+    .m_axis_mac_tdata      (axis_dma_i_0_raw_tdata),
+    .m_axis_mac_tkeep      (axis_dma_i_0_raw_tkeep),
+    .m_axis_mac_tvalid     (axis_dma_i_0_raw_tvalid),
+    .m_axis_mac_tuser_err  (1'b1),   // valid frame
+    .m_axis_mac_tuser      (axis_dma_i_0_raw_tuser),
+    .m_axis_mac_tlast      (axis_dma_i_0_raw_tlast),
+    // tx_queue 64b@axis_clk -> mac 64b@clk156
+    .s_axis_mac_tdata      (axis_dma_o_0_raw_tdata),
+    .s_axis_mac_tkeep      (axis_dma_o_0_raw_tkeep),
+    .s_axis_mac_tvalid     (axis_dma_o_0_raw_tvalid),
+    .s_axis_mac_tuser_err  (),       //underrun
+    .s_axis_mac_tuser      (axis_dma_o_0_raw_tuser),
+    .s_axis_mac_tlast      (axis_dma_o_0_raw_tlast),
+    .s_axis_mac_tready     (axis_dma_o_0_raw_tready),
+
+    // TX/RX DATA channels
+    .interface_number      (8'd0),
+
+    // NFPLUS pipeline clk & rst
+    .axis_aclk             (core_clk),
+    .axis_aresetn          (!core_rst),
+    // input from ref pipeline 256b -> MAC
+    .s_axis_pipe_tdata     (axis_dma_o_0_tdata),
+    .s_axis_pipe_tkeep     (axis_dma_o_0_tkeep),
+    .s_axis_pipe_tlast     (axis_dma_o_0_tlast),
+    .s_axis_pipe_tuser     (axis_dma_o_0_tuser),
+    .s_axis_pipe_tvalid    (axis_dma_o_0_tvalid),
+    .s_axis_pipe_tready    (axis_dma_o_0_tready),
+    // output to ref pipeline 256b -> DMA
+    .m_axis_pipe_tdata     (axis_dma_i_0_tdata),
+    .m_axis_pipe_tkeep     (axis_dma_i_0_tkeep),
+    .m_axis_pipe_tlast     (axis_dma_i_0_tlast),
+    .m_axis_pipe_tuser     (axis_dma_i_0_tuser),
+    .m_axis_pipe_tvalid    (axis_dma_i_0_tvalid),
+    .m_axis_pipe_tready    (axis_dma_i_0_tready)
+  );
+
+  nf_mac_attachment_dma_ip u_nf_attachment_dma_1 (
+    .S_AXI_ACLK            (core_clk),
+    .S_AXI_ARESETN         (!core_rst),
+    .S_AXI_AWADDR          (s_axil_nfadma1_awaddr),
+    .S_AXI_AWVALID         (s_axil_nfadma1_awvalid),
+    .S_AXI_WDATA           (s_axil_nfadma1_wdata),
+    .S_AXI_WSTRB           (s_axil_nfadma1_wstrb),
+    .S_AXI_WVALID          (s_axil_nfadma1_wvalid),
+    .S_AXI_BREADY          (s_axil_nfadma1_bready),
+    .S_AXI_ARADDR          (s_axil_nfadma1_araddr),
+    .S_AXI_ARVALID         (s_axil_nfadma1_arvalid),
+    .S_AXI_RREADY          (s_axil_nfadma1_rready),
+    .S_AXI_ARREADY         (s_axil_nfadma1_arready),
+    .S_AXI_RDATA           (s_axil_nfadma1_rdata),
+    .S_AXI_RRESP           (s_axil_nfadma1_rresp),
+    .S_AXI_RVALID          (s_axil_nfadma1_rvalid),
+    .S_AXI_WREADY          (s_axil_nfadma1_wready),
+    .S_AXI_BRESP           (s_axil_nfadma1_bresp),
+    .S_AXI_BVALID          (s_axil_nfadma1_bvalid),
+    .S_AXI_AWREADY         (s_axil_nfadma1_awready),
+    // 10GE block clk & rst
+    .clk156                (axis_aclk),
+    .areset_clk156         (axis_rst),
+    // RX MAC 64b@clk156 (no backpressure) -> rx_queue 64b@axis_clk
+    .m_axis_mac_tdata      (axis_dma_i_1_raw_tdata),
+    .m_axis_mac_tkeep      (axis_dma_i_1_raw_tkeep),
+    .m_axis_mac_tvalid     (axis_dma_i_1_raw_tvalid),
+    .m_axis_mac_tuser_err  (1'b1),   // valid frame
+    .m_axis_mac_tuser      (axis_dma_i_1_raw_tuser),
+    .m_axis_mac_tlast      (axis_dma_i_1_raw_tlast),
+    // tx_queue 64b@axis_clk -> mac 64b@clk156
+    .s_axis_mac_tdata      (axis_dma_o_1_raw_tdata),
+    .s_axis_mac_tkeep      (axis_dma_o_1_raw_tkeep),
+    .s_axis_mac_tvalid     (axis_dma_o_1_raw_tvalid),
+    .s_axis_mac_tuser_err  (),       //underrun
+    .s_axis_mac_tuser      (axis_dma_o_1_raw_tuser),
+    .s_axis_mac_tlast      (axis_dma_o_1_raw_tlast),
+    .s_axis_mac_tready     (axis_dma_o_1_raw_tready),
+
+    // TX/RX DATA channels
+    .interface_number      (8'd0),
+
+    // NFPLUS pipeline clk & rst
+    .axis_aclk             (core_clk),
+    .axis_aresetn          (!core_rst),
+    // input from ref pipeline 256b -> MAC
+    .s_axis_pipe_tdata     (axis_dma_o_1_tdata),
+    .s_axis_pipe_tkeep     (axis_dma_o_1_tkeep),
+    .s_axis_pipe_tlast     (axis_dma_o_1_tlast),
+    .s_axis_pipe_tuser     (axis_dma_o_1_tuser),
+    .s_axis_pipe_tvalid    (axis_dma_o_1_tvalid),
+    .s_axis_pipe_tready    (axis_dma_o_1_tready),
+    // output to ref pipeline 256b -> DMA
+    .m_axis_pipe_tdata     (axis_dma_i_1_tdata),
+    .m_axis_pipe_tkeep     (axis_dma_i_1_tkeep),
+    .m_axis_pipe_tlast     (axis_dma_i_1_tlast),
+    .m_axis_pipe_tuser     (axis_dma_i_1_tuser),
+    .m_axis_pipe_tvalid    (axis_dma_i_1_tvalid),
+    .m_axis_pipe_tready    (axis_dma_i_1_tready)
+  );
 
   nf_mac_attachment_ip u_nf_attachment_0 (
       .S_AXI_ACLK            (core_clk),
@@ -780,23 +1035,23 @@ module top_wrapper #(
     .m_axil_box1_rready                (m_axil_rready ),
 
      // QDMA subsystem interfaces to the box running at 250MHz
-    .m_axis_qdma_h2c_tvalid    ({axis_dma_i_1_tvalid, axis_dma_i_0_tvalid }),
-    .m_axis_qdma_h2c_tdata     ({axis_dma_i_1_tdata , axis_dma_i_0_tdata  }),
-    .m_axis_qdma_h2c_tkeep     ({axis_dma_i_1_tkeep , axis_dma_i_0_tkeep  }),
-    .m_axis_qdma_h2c_tlast     ({axis_dma_i_1_tlast , axis_dma_i_0_tlast  }),
-    .m_axis_qdma_h2c_tuser_size({axis_dma_i_1_tuser_size, axis_dma_i_0_tuser_size}),
-    .m_axis_qdma_h2c_tuser_src ({axis_dma_i_1_tuser_src, axis_dma_i_0_tuser_src}),
-    .m_axis_qdma_h2c_tuser_dst ({axis_dma_i_1_tuser_dst, axis_dma_i_0_tuser_dst}),
-    .m_axis_qdma_h2c_tready    ({axis_dma_i_1_tready, axis_dma_i_0_tready}),
+    .m_axis_qdma_h2c_tvalid    ({axis_dma_i_1_raw_tvalid,     axis_dma_i_0_raw_tvalid }),
+    .m_axis_qdma_h2c_tdata     ({axis_dma_i_1_raw_tdata ,     axis_dma_i_0_raw_tdata  }),
+    .m_axis_qdma_h2c_tkeep     ({axis_dma_i_1_raw_tkeep ,     axis_dma_i_0_raw_tkeep  }),
+    .m_axis_qdma_h2c_tlast     ({axis_dma_i_1_raw_tlast ,     axis_dma_i_0_raw_tlast  }),
+    .m_axis_qdma_h2c_tuser_size({axis_dma_i_1_raw_tuser_size, axis_dma_i_0_raw_tuser_size}),
+    .m_axis_qdma_h2c_tuser_src ({axis_dma_i_1_raw_tuser_src,  axis_dma_i_0_raw_tuser_src}),
+    .m_axis_qdma_h2c_tuser_dst ({axis_dma_i_1_raw_tuser_dst,  axis_dma_i_0_raw_tuser_dst}),
+    .m_axis_qdma_h2c_tready    ({axis_dma_i_1_raw_tready,     axis_dma_i_0_raw_tready}),
 
-    .s_axis_qdma_c2h_tvalid    ({axis_dma_o_1_tvalid, axis_dma_o_0_tvalid }),
-    .s_axis_qdma_c2h_tdata     ({axis_dma_o_1_tdata , axis_dma_o_0_tdata  }),
-    .s_axis_qdma_c2h_tkeep     ({axis_dma_o_1_tkeep , axis_dma_o_0_tkeep  }),
-    .s_axis_qdma_c2h_tlast     ({axis_dma_o_1_tlast , axis_dma_o_0_tlast  }),
-    .s_axis_qdma_c2h_tuser_size({axis_dma_o_1_tuser_size, axis_dma_o_0_tuser_size}),
-    .s_axis_qdma_c2h_tuser_src ({axis_dma_o_1_tuser_src, axis_dma_o_0_tuser_src}),
-    .s_axis_qdma_c2h_tuser_dst ({axis_dma_o_1_tuser_dst, axis_dma_o_0_tuser_dst}),
-    .s_axis_qdma_c2h_tready    ({axis_dma_o_1_tready, axis_dma_o_0_tready}),
+    .s_axis_qdma_c2h_tvalid    ({axis_dma_o_1_raw_tvalid,     axis_dma_o_0_raw_tvalid }),
+    .s_axis_qdma_c2h_tdata     ({axis_dma_o_1_raw_tdata ,     axis_dma_o_0_raw_tdata  }),
+    .s_axis_qdma_c2h_tkeep     ({axis_dma_o_1_raw_tkeep ,     axis_dma_o_0_raw_tkeep  }),
+    .s_axis_qdma_c2h_tlast     ({axis_dma_o_1_raw_tlast ,     axis_dma_o_0_raw_tlast  }),
+    .s_axis_qdma_c2h_tuser_size({axis_dma_o_1_raw_tuser_size, axis_dma_o_0_raw_tuser_size}),
+    .s_axis_qdma_c2h_tuser_src ({axis_dma_o_1_raw_tuser_src,  axis_dma_o_0_raw_tuser_src}),
+    .s_axis_qdma_c2h_tuser_dst ({axis_dma_o_1_raw_tuser_dst,  axis_dma_o_0_raw_tuser_dst}),
+    .s_axis_qdma_c2h_tready    ({axis_dma_o_1_raw_tready,     axis_dma_o_0_raw_tready}),
 
     // CMAC subsystem CMAC-side interfaces to the box running at 322MHz
     .s_axis_cmac_tx_tvalid   ({axis_cmac_o_1_tvalid,    axis_cmac_o_0_tvalid}),
