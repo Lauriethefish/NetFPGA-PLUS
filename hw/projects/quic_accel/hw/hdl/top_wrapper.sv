@@ -194,10 +194,10 @@ module top_wrapper #(
         axis_dma_o_1_count <= 0;
         core_clk_counter <= 0;
       end else begin
-        axis_dma_i_0_count <= axis_dma_i_0_count + (axis_dma_i_0_tvalid && axis_dma_i_0_tready);
-        axis_dma_i_1_count <= axis_dma_i_1_count + (axis_dma_i_1_tvalid && axis_dma_i_1_tready);
-        axis_dma_o_0_count <= axis_dma_o_0_count + (axis_dma_o_0_tvalid && axis_dma_o_0_tready);
-        axis_dma_o_1_count <= axis_dma_o_1_count + (axis_dma_o_1_tvalid && axis_dma_o_1_tready);
+        axis_dma_i_0_count <= axis_dma_i_0_count + (axis_dma_i_0_tvalid && axis_dma_i_0_tready && axis_dma_i_0_tlast);
+        axis_dma_i_1_count <= axis_dma_i_1_count + (axis_dma_i_1_tvalid && axis_dma_i_1_tready && axis_dma_i_1_tlast);
+        axis_dma_o_0_count <= axis_dma_o_0_count + (axis_dma_o_0_tvalid && axis_dma_o_0_tready && axis_dma_o_0_tlast);
+        axis_dma_o_1_count <= axis_dma_o_1_count + (axis_dma_o_1_tvalid && axis_dma_o_1_tready && axis_dma_o_1_tlast);
         // Just to check for signs of life
         core_clk_counter <= core_clk_counter + 1;
       end

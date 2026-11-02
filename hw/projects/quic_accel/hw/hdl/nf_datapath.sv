@@ -210,6 +210,8 @@ module nf_datapath #(
         if(!axis_resetn) begin
             num_packets_rx <= 0;
             num_packets_tx <= 0;
+            num_packets_rx_raw <= 0;
+            num_packets_tx_raw <= 0;
         end else begin
             if(s_axis_phy_tvalid && s_axis_phy_tready && s_axis_phy_tlast) begin
                 num_packets_rx <= num_packets_rx + 1;
