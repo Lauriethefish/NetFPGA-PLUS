@@ -557,8 +557,8 @@ module top_wrapper #(
 		.m_axi_rdata   ({s_axil_nfa1_rdata  ,      s_axil_nfa0_rdata  ,      s_axil_log_rdata       , s_axil_nfadma0_rdata,        s_axil_nfadma1_rdata}),
 		.m_axi_rresp   ({s_axil_nfa1_rresp  ,      s_axil_nfa0_rresp  ,      s_axil_log_rresp       , s_axil_nfadma0_rresp,        s_axil_nfadma1_rresp}),
 		.m_axi_rvalid  ({s_axil_nfa1_rvalid ,      s_axil_nfa0_rvalid ,      s_axil_log_rvalid      , s_axil_nfadma0_rvalid,       s_axil_nfadma1_rvalid}),
-		.m_axi_rready  ({s_axil_nfa1_rready ,      s_axil_nfa0_rready ,      s_axil_log_rready      , s_axil_nfadma0_rready,       s_axil_nfadma1_rready}) 
-    .m_axi_arprot  (),
+		.m_axi_rready  ({s_axil_nfa1_rready ,      s_axil_nfa0_rready ,      s_axil_log_rready      , s_axil_nfadma0_rready,       s_axil_nfadma1_rready}),
+    .m_axi_arprot  ()
 	);
 
   nf_mac_attachment_dma_ip u_nf_attachment_dma_0 (
