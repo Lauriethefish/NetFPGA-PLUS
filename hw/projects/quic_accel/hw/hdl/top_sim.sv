@@ -638,8 +638,31 @@
 		.barrier_proceed (barrier_proceed)
 	);
 
-	wire [7:0] axis_dma_stim_tuser_src;
-	assign axis_dma_stim_tuser_src = axis_dma_stim_tuser[23:16];
+	reg is_first_transfer;
+	reg [7:0] axis_dma_stim_tuser_src_last;
+
+	wire [7:0] axis_dma_stim_tuser_src_current;
+	assign axis_dma_stim_tuser_src_current = axis_dma_stim_tuser[23:16];
+
+	wire [7:0] axis_dma_stim_tuser_src = is_first_transfer ? axis_dma_stim_tuser_src_current : axis_dma_stim_tuser_src_last;
+
+	always_ff @(posedge clk_200) begin
+		if(sys_rst_n_c) begin
+			// Check an axis_dma transfer occurs
+			if(axis_dma_stim_tvalid && axis_dma_stim_tready) begin
+				if(is_first_transfer) begin
+					axis_dma_stim_tuser_src_last <= axis_dma_stim_tuser_src_current;
+				end
+
+				// Next transfer is first iff this one is last.
+				is_first_transfer <= axis_dma_stim_tlast;
+			end
+		end else begin
+			is_first_transfer <= 1'b1;
+			axis_dma_stim_tuser_src_last <= '0;
+		end
+
+	end
 
 	// Multiplex the DMA stim to the two different datapths.
 	// Fairly simple, just set valid based upon the tuser
