@@ -94,7 +94,7 @@ class pktExpect(Thread):
     #              notifies background thread to compare packet lists
     ############################
     def addPkt(self,pkt):
-        print(f"Sniffed packet on NIC: {pkt} of checksum {pkt.getlayer(2)[UDP].chksum}")
+        print(f"Sniffed packet on NIC ({self.device}): {pkt} of checksum {pkt.getlayer(2)[UDP].chksum}")
         self.lock.acquire()
         self.pkts.append(pkt)
         self.count += 1
@@ -283,6 +283,7 @@ class pktSend(Thread):
     #              delays so scapy doesn't drop packets
     ############################
     def sendPkt(self, pkt):
+        print(f"Sending packet on device {self.device}")
         self.lock.acquire()
         self.toSend.append(pkt)
         self.sendcount += 1
