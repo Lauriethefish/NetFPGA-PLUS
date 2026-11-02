@@ -147,7 +147,7 @@ module nf_datapath #(
         .s_axis_tuser (s_axis_phy_tuser_raw)
     );
 
-    axis_register_slice_1 out_reg_slice (
+    axis_register_slice_1 in_reg_slice (
         .aclk(axis_aclk),
         .aresetn(axis_resetn),
         .m_axis_tvalid(m_axis_phy_tvalid_raw),
@@ -172,16 +172,15 @@ module nf_datapath #(
     assign m_axis_phy_tlast = s_axis_dma_tlast;
     assign s_axis_dma_tready = m_axis_phy_tready;
 
-/*
     assign m_axis_dma_tdata = s_axis_phy_tdata;
     assign m_axis_dma_tkeep = s_axis_phy_tkeep;
     assign m_axis_dma_tuser = s_axis_phy_tuser;
     assign m_axis_dma_tvalid = s_axis_phy_tvalid;
     assign m_axis_dma_tlast = s_axis_phy_tlast;
-    assign s_axis_phy_tready = m_axis_dma_tready;*/
+    assign s_axis_phy_tready = m_axis_dma_tready;
     
 
-    udp_checksum_setter_ip
+    /*udp_checksum_setter_ip
     set_checksum
     (
       .axis_aclk(axis_aclk), 
@@ -200,26 +199,35 @@ module nf_datapath #(
       .m_axis_tvalid(m_axis_dma_tvalid), 
       .m_axis_tready(m_axis_dma_tready), 
       .m_axis_tlast (m_axis_dma_tlast)
-    );
+    );*/
 
+    reg [31:0] num_packets_rx;
     reg [31:0] num_packets_tx;
 
     always_ff @(posedge axis_aclk) begin
         if(!axis_resetn) begin
+            num_packets_rx <= 0;
             num_packets_tx <= 0;
         end else begin
             if(s_axis_phy_tvalid && s_axis_phy_tready && s_axis_phy_tlast) begin
+                num_packets_rx <= num_packets_rx + 1;
+            end
+
+            if(s_axis_dma_tvalid && s_axis_dma_tready && s_axis_dma_tlast) begin
                 num_packets_tx <= num_packets_tx + 1;
             end
         end
     end
 
-    wire [31:0] reg_read_values[1];
-    assign reg_read_values[0] = num_packets_tx;
+    wire [31:0] reg_read_values[3];
+    // Debug value to check the memory map is correct
+    assign reg_read_values[0] = 32'hffdafafaff;
+    assign reg_read_values[1] = num_packets_tx;
+    assign reg_read_values[2] = num_packets_rx;
 
     axil_register_bank 
     #(
-        .NUM_REGISTERS(1)
+        .NUM_REGISTERS(3)
     )
     axil_regs
     (
