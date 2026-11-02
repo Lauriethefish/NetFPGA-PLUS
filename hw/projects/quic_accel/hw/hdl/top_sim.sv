@@ -165,6 +165,26 @@
   wire          M0_AXI_wready , M1_AXI_wready ; 
   wire [3:0]    M0_AXI_wstrb  , M1_AXI_wstrb  ;
   wire          M0_AXI_wvalid , M1_AXI_wvalid ; 
+
+    wire [31:0] M2_AXI_araddr , M3_AXI_araddr ;
+  wire [2:0]    M2_AXI_arprot , M3_AXI_arprot ;
+  wire          M2_AXI_arready, M3_AXI_arready;
+  wire          M2_AXI_arvalid, M3_AXI_arvalid;
+  wire [31:0]   M2_AXI_awaddr , M3_AXI_awaddr ;
+  wire [2:0]    M2_AXI_awprot , M3_AXI_awprot ;
+  wire          M2_AXI_awready, M3_AXI_awready;
+  wire          M2_AXI_awvalid, M3_AXI_awvalid;
+  wire          M2_AXI_bready , M3_AXI_bready ;
+  wire [1:0]    M2_AXI_bresp  , M3_AXI_bresp  ;
+  wire          M2_AXI_bvalid , M3_AXI_bvalid ; 
+  wire [31:0]   M2_AXI_rdata  , M3_AXI_rdata  ;
+  wire          M2_AXI_rready , M3_AXI_rready ; 
+  wire [1:0]    M2_AXI_rresp  , M3_AXI_rresp  ;
+  wire          M2_AXI_rvalid , M3_AXI_rvalid ; 
+  wire [31:0]   M2_AXI_wdata  , M3_AXI_wdata  ;
+  wire          M2_AXI_wready , M3_AXI_wready ; 
+  wire [3:0]    M2_AXI_wstrb  , M3_AXI_wstrb  ;
+  wire          M2_AXI_wvalid , M3_AXI_wvalid ; 
   wire [31:0]   S00_AXI_araddr;
   wire [2:0]    S00_AXI_arprot /*= 3'b010*/;
   wire          S00_AXI_arready;
@@ -470,6 +490,26 @@
 	);
 
 	nf_mac_attachment_ip u_nf_attachment_0 (
+		.S_AXI_ACLK            (axi_clk),
+		.S_AXI_ARESETN         (axi_resetn),
+		.S_AXI_AWADDR          (M2_AXI_AWADDR),
+		.S_AXI_AWVALID         (M2_AXI_AWVALID),
+		.S_AXI_WDATA           (M2_AXI_WDATA),
+		.S_AXI_WSTRB           (M2_AXI_WSTRB),
+		.S_AXI_WVALID          (M2_AXI_WVALID),
+		.S_AXI_BREADY          (M2_AXI_BREADY),
+		.S_AXI_ARADDR          (M2_AXI_ARADDR),
+		.S_AXI_ARVALID         (M2_AXI_ARVALID),
+		.S_AXI_RREADY          (M2_AXI_RREADY),
+		.S_AXI_ARREADY         (M2_AXI_ARREADY),
+		.S_AXI_RDATA           (M2_AXI_RDATA),
+		.S_AXI_RRESP           (M2_AXI_RRESP),
+		.S_AXI_RVALID          (M2_AXI_RVALID),
+		.S_AXI_WREADY          (M2_AXI_WREADY),
+		.S_AXI_BRESP           (M2_AXI_BRESP),
+		.S_AXI_BVALID          (M2_AXI_BVALID),
+		.S_AXI_AWREADY         (M2_AXI_AWREADY),
+
 		// 10GE block clk & rst 
 		.clk156                (clk_200),  
 		.areset_clk156         (!sys_rst_n_c), 
@@ -512,6 +552,25 @@
 	);
 
 	nf_mac_attachment_ip u_nf_attachment_1 (
+		.S_AXI_ACLK            (axi_clk),
+		.S_AXI_ARESETN         (axi_resetn),
+		.S_AXI_AWADDR          (M3_AXI_AWADDR),
+		.S_AXI_AWVALID         (M3_AXI_AWVALID),
+		.S_AXI_WDATA           (M3_AXI_WDATA),
+		.S_AXI_WSTRB           (M3_AXI_WSTRB),
+		.S_AXI_WVALID          (M3_AXI_WVALID),
+		.S_AXI_BREADY          (M3_AXI_BREADY),
+		.S_AXI_ARADDR          (M3_AXI_ARADDR),
+		.S_AXI_ARVALID         (M3_AXI_ARVALID),
+		.S_AXI_RREADY          (M3_AXI_RREADY),
+		.S_AXI_ARREADY         (M3_AXI_ARREADY),
+		.S_AXI_RDATA           (M3_AXI_RDATA),
+		.S_AXI_RRESP           (M3_AXI_RRESP),
+		.S_AXI_RVALID          (M3_AXI_RVALID),
+		.S_AXI_WREADY          (M3_AXI_WREADY),
+		.S_AXI_BRESP           (M3_AXI_BRESP),
+		.S_AXI_BVALID          (M3_AXI_BVALID),
+		.S_AXI_AWREADY         (M3_AXI_AWREADY),
 		// 10GE block clk & rst 
 		.clk156                (clk_200),  
 		.areset_clk156         (!sys_rst_n_c), 
@@ -575,25 +634,25 @@
 		.s_axi_rresp   (S00_AXI_rresp   ),
 		.s_axi_rvalid  (S00_AXI_rvalid  ),
 		.s_axi_rready  (S00_AXI_rready  ),
-		.m_axi_awaddr  ({M1_AXI_awaddr[31:0] ,M0_AXI_awaddr[31:0]}),
 		.m_axi_awprot  (),
-		.m_axi_awvalid ({M1_AXI_awvalid,M0_AXI_awvalid}),
-		.m_axi_awready ({M1_AXI_awready,M0_AXI_awready}),
-		.m_axi_wdata   ({M1_AXI_wdata  ,M0_AXI_wdata  }),
-		.m_axi_wstrb   ({M1_AXI_wstrb  ,M0_AXI_wstrb  }),
-		.m_axi_wvalid  ({M1_AXI_wvalid ,M0_AXI_wvalid }),
-		.m_axi_wready  ({M1_AXI_wready ,M0_AXI_wready }),
-		.m_axi_bresp   ({M1_AXI_bresp  ,M0_AXI_bresp  }),
-		.m_axi_bvalid  ({M1_AXI_bvalid ,M0_AXI_bvalid }),
-		.m_axi_bready  ({M1_AXI_bready ,M0_AXI_bready }),
-		.m_axi_araddr  ({M1_AXI_araddr ,M0_AXI_araddr }),
-		.m_axi_arprot  (),
-		.m_axi_arvalid ({M1_AXI_arvalid,M0_AXI_arvalid}),
-		.m_axi_arready ({M1_AXI_arready,M0_AXI_arready}),
-		.m_axi_rdata   ({M1_AXI_rdata  ,M0_AXI_rdata  }),
-		.m_axi_rresp   ({M1_AXI_rresp  ,M0_AXI_rresp  }),
-		.m_axi_rvalid  ({M1_AXI_rvalid ,M0_AXI_rvalid }),
-		.m_axi_rready  ({M1_AXI_rready ,M0_AXI_rready }) 
+		.m_axi_awaddr  ({M3_AXI_awaddr[31:0], M2_AXI_awaddr[31:0], M1_AXI_awaddr[31:0] ,M0_AXI_awaddr[31:0]}),
+		.m_axi_awvalid ({M3_AXI_awvalid,      M2_AXI_awvalid,      M1_AXI_awvalid,      M0_AXI_awvalid}),
+		.m_axi_awready ({M3_AXI_awready,      M2_AXI_awready,      M1_AXI_awready,      M0_AXI_awready}),
+		.m_axi_wdata   ({M3_AXI_wdata,        M2_AXI_wdata,        M1_AXI_wdata  ,      M0_AXI_wdata  }),
+		.m_axi_wstrb   ({M3_AXI_wstrb,        M2_AXI_wstrb,        M1_AXI_wstrb  ,      M0_AXI_wstrb  }),
+		.m_axi_wvalid  ({M3_AXI_wvalid,       M2_AXI_wvalid,       M1_AXI_wvalid ,      M0_AXI_wvalid }),
+		.m_axi_wready  ({M3_AXI_wready,       M2_AXI_wready,       M1_AXI_wready ,      M0_AXI_wready }),
+		.m_axi_bresp   ({M3_AXI_bresp,        M2_AXI_bresp,        M1_AXI_bresp  ,      M0_AXI_bresp  }),
+		.m_axi_bvalid  ({M3_AXI_bvalid,       M2_AXI_bvalid,       M1_AXI_bvalid ,      M0_AXI_bvalid }),
+		.m_axi_bready  ({M3_AXI_bready,       M2_AXI_bready,       M1_AXI_bready ,      M0_AXI_bready }),
+		.m_axi_araddr  ({M3_AXI_araddr,       M2_AXI_araddr,       M1_AXI_araddr ,      M0_AXI_araddr }),
+		.m_axi_arvalid ({M3_AXI_arvalid,      M2_AXI_arvalid,      M1_AXI_arvalid,      M0_AXI_arvalid}),
+		.m_axi_arready ({M3_AXI_arready,      M2_AXI_arready,      M1_AXI_arready,      M0_AXI_arready}),
+		.m_axi_rdata   ({M3_AXI_rdata,        M2_AXI_rdata,        M1_AXI_rdata  ,      M0_AXI_rdata  }),
+		.m_axi_rresp   ({M3_AXI_rresp,        M2_AXI_rresp,        M1_AXI_rresp  ,      M0_AXI_rresp  }),
+		.m_axi_rvalid  ({M3_AXI_rvalid,       M2_AXI_rvalid,       M1_AXI_rvalid ,      M0_AXI_rvalid }),
+		.m_axi_rready  ({M3_AXI_rready,       M2_AXI_rready,       M1_AXI_rready ,      M0_AXI_rready }),
+		.m_axi_arprot  ()
 	);
 
 	axi_sim_transactor_ip axi_sim_transactor_i (
