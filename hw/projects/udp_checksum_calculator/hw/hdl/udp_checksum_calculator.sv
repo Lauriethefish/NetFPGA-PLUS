@@ -179,6 +179,11 @@ module udp_checksum_calculator
         if(!axis_resetn) begin
             running_checksum <= 0;
             is_first_output_transfer <= 1;
+            m_axis_tdata <= '0;
+            m_axis_tuser <= '0;
+            m_axis_tkeep <= '0;
+            m_axis_tlast <= '0;
+            m_axis_tvalid <= '0;
         end else begin
             if(make_out_transfer) begin
                 m_axis_tdata <= buffered_tdata_with_header_update;
