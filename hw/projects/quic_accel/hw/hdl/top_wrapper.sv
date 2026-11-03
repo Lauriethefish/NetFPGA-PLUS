@@ -251,6 +251,12 @@ module top_wrapper #(
   wire                            axis_dma_i_0_raw_tlast ,     axis_dma_i_1_raw_tlast ;
   wire                            axis_dma_i_0_raw_tready ,    axis_dma_i_1_raw_tready ;
 
+  // NF mac attachment doesn't support an input tready as the CMAC doesn't have
+  // one. So for now set tready == 1, treating the DMA as though it has no
+  // backpressure, even though it does.
+  assign axis_dma_i_0_raw_tready = 1'b1;
+  assign axis_dma_i_1_raw_tready = 1'b1;
+
   assign axis_dma_i_0_raw_tuser = {axis_dma_i_0_raw_tuser_dst[7:0], axis_dma_i_0_raw_tuser_src[7:0], axis_dma_i_0_raw_tuser_size};
   assign axis_dma_i_1_raw_tuser = {axis_dma_i_1_raw_tuser_dst[7:0], axis_dma_i_1_raw_tuser_src[7:0], axis_dma_i_1_raw_tuser_size};
 
