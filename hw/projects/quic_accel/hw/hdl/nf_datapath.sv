@@ -205,6 +205,7 @@ module nf_datapath #(
     reg [31:0] num_packets_tx;
     reg [31:0] num_packets_rx_raw;
     reg [31:0] num_packets_tx_raw;
+    reg [31:0] num_packets_tx_tvalid;
 
     always_ff @(posedge axis_aclk) begin
         if(!axis_resetn) begin
@@ -212,6 +213,7 @@ module nf_datapath #(
             num_packets_tx <= 0;
             num_packets_rx_raw <= 0;
             num_packets_tx_raw <= 0;
+            num_packets_tx_tvalid <= 0;
         end else begin
             if(s_axis_phy_tvalid && s_axis_phy_tready && s_axis_phy_tlast) begin
                 num_packets_rx <= num_packets_rx + 1;
@@ -225,23 +227,28 @@ module nf_datapath #(
                 num_packets_tx <= num_packets_tx + 1;
             end
 
+            if(s_axis_dma_tvalid) begin
+                num_packets_tx_tvalid <= num_packets_tx_tvalid + 1;
+            end
+
             if(m_axis_phy_tvalid_raw && m_axis_phy_tready_raw && m_axis_phy_tlast_raw) begin
                 num_packets_tx_raw <= num_packets_tx_raw + 1;
             end
         end
     end
 
-    wire [31:0] reg_read_values[5];
+    wire [31:0] reg_read_values[6];
     // Debug value to check the memory map is correct
     assign reg_read_values[0] = 32'hffdafafa;
     assign reg_read_values[1] = num_packets_tx;
     assign reg_read_values[2] = num_packets_rx;
     assign reg_read_values[3] = num_packets_tx_raw;
     assign reg_read_values[4] = num_packets_rx_raw;
+    assign reg_read_values[5] = num_packets_tx_tvalid;
 
     axil_register_bank 
     #(
-        .NUM_REGISTERS(5)
+        .NUM_REGISTERS(6)
     )
     axil_regs
     (
