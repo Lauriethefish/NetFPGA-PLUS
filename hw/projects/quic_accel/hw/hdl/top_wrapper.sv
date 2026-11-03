@@ -748,7 +748,7 @@ module top_wrapper #(
 
     axis_register_slice_cmac port0_out_slice (
         .aclk(cmac_clk[0]),
-        .aresetn(cmac0_rst),
+        .aresetn(!cmac0_rst),
         .m_axis_tvalid(axis_cmac_o_0_tvalid),
         .m_axis_tuser(axis_cmac_o_0_tuser_err),
         .m_axis_tready(axis_cmac_o_0_tready),
@@ -766,7 +766,7 @@ module top_wrapper #(
 
     axis_register_slice_cmac port1_out_slice (
         .aclk(cmac_clk[1]),
-        .aresetn(cmac1_rst),
+        .aresetn(!cmac1_rst),
         .m_axis_tvalid(axis_cmac_o_1_tvalid),
         .m_axis_tuser(axis_cmac_o_1_tuser_err),
         .m_axis_tready(axis_cmac_o_1_tready),
@@ -784,7 +784,7 @@ module top_wrapper #(
 
     axis_register_slice_cmac port0_in_slice (
         .aclk(cmac_clk[0]),
-        .aresetn(cmac0_rst),
+        .aresetn(!cmac0_rst),
         .m_axis_tvalid(axis_cmac_i_0_buf_tvalid),
         .m_axis_tuser(axis_cmac_i_0_buf_tuser_err),
         .m_axis_tready('1),
@@ -802,7 +802,7 @@ module top_wrapper #(
 
     axis_register_slice_cmac port1_in_slice (
         .aclk(cmac_clk[1]),
-        .aresetn(cmac1_rst),
+        .aresetn(!cmac1_rst),
         .m_axis_tvalid(axis_cmac_i_1_buf_tvalid),
         .m_axis_tready('1),
         .m_axis_tdata (axis_cmac_i_1_buf_tdata),
