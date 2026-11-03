@@ -799,7 +799,7 @@ module top_wrapper #(
         .m_axis_tlast (axis_cmac_i_0_buf_tlast),
 
         .s_axis_tvalid(axis_cmac_i_0_tvalid),
-        .s_axis_tready('1),
+        .s_axis_tready(),
         .s_axis_tuser(axis_cmac_i_0_tuser_err),
         .s_axis_tdata (axis_cmac_i_0_tdata),
         .s_axis_tkeep (axis_cmac_i_0_tkeep),
@@ -817,7 +817,7 @@ module top_wrapper #(
         .m_axis_tuser(axis_cmac_i_1_buf_tuser_err),
 
         .s_axis_tvalid(axis_cmac_i_1_tvalid),
-        .s_axis_tready('1),
+        .s_axis_tready(),
         .s_axis_tdata (axis_cmac_i_1_tdata),
         .s_axis_tkeep (axis_cmac_i_1_tkeep),
         .s_axis_tlast (axis_cmac_i_1_tlast),
