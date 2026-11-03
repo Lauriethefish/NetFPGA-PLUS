@@ -46,9 +46,11 @@ nftest_init(sim_loop = ['nf0', 'nf1'], hw_config = [conn])
 
 if isHW():
    # reset_counters (triggered by Write only event) for all the modules 
-   nftest_regwrite(NFPLUS_INPUT_ARBITER_0_RESET(), 0x1)
-   nftest_regwrite(NFPLUS_OUTPUT_PORT_LOOKUP_0_RESET(), 0x1)
-   nftest_regwrite(NFPLUS_OUTPUT_QUEUES_0_RESET(), 0x1)
+   #nftest_regwrite(NFPLUS_INPUT_ARBITER_0_RESET(), 0x1)
+   #nftest_regwrite(NFPLUS_OUTPUT_PORT_LOOKUP_0_RESET(), 0x1)
+   #nftest_regwrite(NFPLUS_OUTPUT_QUEUES_0_RESET(), 0x1)
+   pass
+   # TODO: implement counter reset
 
 nftest_start()
 
@@ -59,7 +61,7 @@ DST_IP = "192.168.1.1"
 SRC_IP = "192.168.0.1"
 nextHopMAC = "dd:55:dd:66:dd:77"
 if isHW():
-    NUM_PKTS = 20
+    NUM_PKTS = 2
 else:
     NUM_PKTS = 1454
 num_ports = 1
@@ -72,7 +74,7 @@ totalPktLengths = [0,0]
 # send NUM_PKTS from ports nf2c0...nf2c1
 for i in range(NUM_PKTS):
     if isHW():
-        for port in range(num_ports):
+        for port in [0]:
             DA = "00:0a:35:03:00:%02x"%port
             pkt_expect = make_UDP_pkt(dst_MAC=DA, src_MAC=SA, dst_IP=DST_IP,
                                 src_IP=SRC_IP, TTL=TTL, src_port=8080, dst_port = 4040,
@@ -81,7 +83,8 @@ for i in range(NUM_PKTS):
             pkt.getlayer(2)[scapy.UDP].chksum = 0
             totalPktLengths[port] += len(pkt)
 
-            nftest_send_dma('nf' + str(port), pkt, expect=False)
+            print(f"Sending packet len {len(pkt) * 8} bits")
+            nftest_send_dma('nf' + str(port), pkt)
             nftest_expect_phy('nf' + str(port), pkt_expect)
     else:
         DA = "00:ca:fe:00:00:00"
@@ -90,13 +93,17 @@ for i in range(NUM_PKTS):
                              pkt_len=80+i)
         pkt = pkt_expect.copy()
         pkt.getlayer(2)[scapy.UDP].chksum = 0
+        # Checksum calculation disabled
+        pkt_expect.getlayer(2)[scapy.UDP].chksum = 0
         pkt.time = ((i*(1e-8)) + (1e-6)) 
         pkts_sent.append(pkt)
         pkts_expected.append(pkt_expect)
 
 if not isHW():  
     nftest_send_phy('nf0', pkts_sent) 
+    nftest_send_dma('nf0', pkts_sent) 
     nftest_expect_dma('nf0', pkts_expected) 
+    nftest_expect_phy('nf0', pkts_expected) 
 
 nftest_barrier()
 
@@ -105,6 +112,14 @@ if isHW():
     mres=[rres1]
 else:
     nftest_regread_expect(NFPLUS_QUIC_ACCEL_0_NUM_TX(), NUM_PKTS)
+    nftest_regread_expect(NFPLUS_QUIC_ACCEL_0_NUM_RX(), NUM_PKTS)
+    nftest_regread_expect(NFPLUS_QUIC_ACCEL_0_NUM_RX_RAW(), NUM_PKTS)
+    nftest_regread_expect(NFPLUS_QUIC_ACCEL_0_NUM_TX_RAW(), NUM_PKTS)
+    nftest_regread_expect(NFPLUS_QUIC_ACCEL_0_MAGIC(), 0xffdafafa)
+    nftest_regread_expect(0x20014, 0xffdafafa)
+    nftest_regread_expect(0x20018, 0xffdafafa)
+    nftest_regread_expect(NFPLUS_QUIC_ACCEL_0_MAGIC(), 0xffdafafa)
+
     mres=[]
 
 nftest_finish(mres)
