@@ -93,16 +93,14 @@ for i in range(NUM_PKTS):
                              pkt_len=80+i)
         pkt = pkt_expect.copy()
         pkt.getlayer(2)[scapy.UDP].chksum = 0
-        # Checksum calculation disabled
-        pkt_expect.getlayer(2)[scapy.UDP].chksum = 0
+        # When checksum calculation enabled, comment out the below line
+        #pkt_expect.getlayer(2)[scapy.UDP].chksum = 0
         pkt.time = ((i*(1e-8)) + (1e-6)) 
         pkts_sent.append(pkt)
         pkts_expected.append(pkt_expect)
 
 if not isHW():  
-    nftest_send_phy('nf0', pkts_sent) 
     nftest_send_dma('nf0', pkts_sent) 
-    nftest_expect_dma('nf0', pkts_expected) 
     nftest_expect_phy('nf0', pkts_expected) 
 
 nftest_barrier()

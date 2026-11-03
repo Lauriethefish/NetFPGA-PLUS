@@ -164,13 +164,14 @@ module nf_datapath #(
         .s_axis_tuser (m_axis_phy_tuser)
     );
    
-    // Use checksum calculator on receiving end
+    // Connect physical transmission through the udp checksum setter IP
+   /*
     assign m_axis_phy_tdata = s_axis_dma_tdata;
     assign m_axis_phy_tkeep = s_axis_dma_tkeep;
     assign m_axis_phy_tuser = s_axis_dma_tuser;
     assign m_axis_phy_tvalid = s_axis_dma_tvalid;
     assign m_axis_phy_tlast = s_axis_dma_tlast;
-    assign s_axis_dma_tready = m_axis_phy_tready;
+    assign s_axis_dma_tready = m_axis_phy_tready;*/
 
     assign m_axis_dma_tdata = s_axis_phy_tdata;
     assign m_axis_dma_tkeep = s_axis_phy_tkeep;
@@ -180,26 +181,26 @@ module nf_datapath #(
     assign s_axis_phy_tready = m_axis_dma_tready;
     
 
-    /*udp_checksum_setter_ip
+    udp_checksum_setter_ip
     set_checksum
     (
       .axis_aclk(axis_aclk), 
       .axis_resetn(axis_resetn), 
       
-      .s_axis_tdata (s_axis_phy_tdata), 
-      .s_axis_tkeep (s_axis_phy_tkeep), 
-      .s_axis_tuser (s_axis_phy_tuser), 
-      .s_axis_tvalid(s_axis_phy_tvalid),
-      .s_axis_tready(s_axis_phy_tready), 
-      .s_axis_tlast (s_axis_phy_tlast),
+      .s_axis_tdata (s_axis_dma_tdata), 
+      .s_axis_tkeep (s_axis_dma_tkeep), 
+      .s_axis_tuser (s_axis_dma_tuser), 
+      .s_axis_tvalid(s_axis_dma_tvalid),
+      .s_axis_tready(s_axis_dma_tready), 
+      .s_axis_tlast (s_axis_dma_tlast),
 
-      .m_axis_tdata (m_axis_dma_tdata), 
-      .m_axis_tkeep (m_axis_dma_tkeep), 
-      .m_axis_tuser (m_axis_dma_tuser), 
-      .m_axis_tvalid(m_axis_dma_tvalid), 
-      .m_axis_tready(m_axis_dma_tready), 
-      .m_axis_tlast (m_axis_dma_tlast)
-    );*/
+      .m_axis_tdata (m_axis_phy_tdata), 
+      .m_axis_tkeep (m_axis_phy_tkeep), 
+      .m_axis_tuser (m_axis_phy_tuser), 
+      .m_axis_tvalid(m_axis_phy_tvalid), 
+      .m_axis_tready(m_axis_phy_tready), 
+      .m_axis_tlast (m_axis_phy_tlast)
+    );
 
     reg [31:0] num_packets_rx;
     reg [31:0] num_packets_tx;
