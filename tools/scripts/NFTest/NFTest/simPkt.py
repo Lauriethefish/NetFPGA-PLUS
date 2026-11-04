@@ -139,11 +139,12 @@ def barrier():
     simLib.fregstim().write("B " + "%d\n"%CMD_BARRIER_REG)
     for i in range(NUM_PORTS):
         simLib.fregstim().write("# Interface " + "%d\n"%(i)) 
-        simLib.fregstim().write("N " + "%d\n"%(numExpectedPktsPHY[i]))
-        simLib.fregstim().write("S " + "%d\n"%(numSendPktsPHY[i]))
-    simLib.fregstim().write("# DMA\n")
-    simLib.fregstim().write("N " + "%d\n"%(numExpectedPktsDMA[i])) 
-    simLib.fregstim().write("S " + "%d\n"%(numSendPktsDMA[i]))
+        simLib.fregstim().write("N " + "%d\n"%(0))
+        simLib.fregstim().write("S " + "%d\n"%(0))
+    for i in range(NUM_PORTS):
+        simLib.fregstim().write(f"# DMA {i}\n")
+        simLib.fregstim().write("N " + "%d\n"%(0)) 
+        simLib.fregstim().write("S " + "%d\n"%(0))
 
     resetBarrier()
 
