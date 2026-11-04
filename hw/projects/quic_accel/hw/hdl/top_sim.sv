@@ -672,8 +672,8 @@
 		.S_AXI_BVALID          (M4_AXI_BVALID),
 		.S_AXI_AWREADY         (M4_AXI_AWREADY),
 		// 10GE block clk & rst
-		.clk156                (core_clk),
-		.areset_clk156         (!core_rst),
+		.clk156                (clk_200),
+		.areset_clk156         (!sys_rst_n_c),
 		// RX MAC 64b@clk156 (no backpressure) -> rx_queue 64b@axis_clk
 		.m_axis_mac_tdata      (axis_dma_i_0_raw_tdata),
 		.m_axis_mac_tkeep      (axis_dma_i_0_raw_tkeep),
@@ -694,8 +694,8 @@
 		.interface_number      (8'd0),
 
 		// NFPLUS pipeline clk & rst
-		.axis_aclk             (core_clk),
-		.axis_aresetn          (!core_rst),
+		.axis_aclk             (clk_200),
+		.axis_aresetn          (sys_rst_n_c),
 		// input from ref pipeline 256b -> MAC
 		.s_axis_pipe_tdata     (axis_dma_o_0_tdata),
 		.s_axis_pipe_tkeep     (axis_dma_o_0_tkeep),
@@ -733,8 +733,8 @@
 		.S_AXI_BVALID          (M5_AXI_BVALID),
 		.S_AXI_AWREADY         (M5_AXI_AWREADY),
 		// 10GE block clk & rst
-		.clk156                (core_clk),
-		.areset_clk156         (!core_rst),
+		.clk156                (clk_200),
+		.areset_clk156         (!sys_rst_n_c),
 		// RX MAC 64b@clk156 (no backpressure) -> rx_queue 64b@axis_clk
 		.m_axis_mac_tdata      (axis_dma_i_1_raw_tdata),
 		.m_axis_mac_tkeep      (axis_dma_i_1_raw_tkeep),
@@ -755,8 +755,8 @@
 		.interface_number      (8'd0),
 
 		// NFPLUS pipeline clk & rst
-		.axis_aclk             (core_clk),
-		.axis_aresetn          (!core_rst),
+		.axis_aclk             (clk_200),
+		.axis_aresetn          (sys_rst_n_c),
 		// input from ref pipeline 256b -> MAC
 		.s_axis_pipe_tdata     (axis_dma_o_1_tdata),
 		.s_axis_pipe_tkeep     (axis_dma_o_1_tkeep),
