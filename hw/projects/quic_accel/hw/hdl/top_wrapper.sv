@@ -229,6 +229,20 @@ module top_wrapper #(
   wire                            axis_cmac_o_0_buf_tlast ,     axis_cmac_o_1_buf_tlast ;
   wire                            axis_cmac_o_0_buf_tready ,    axis_cmac_o_1_buf_tready ;
 
+  wire                            axis_cmac_o_1_macbuf_tvalid;
+  wire [C_TDATA_WIDTH-1:0]        axis_cmac_o_1_macbuf_tdata ;
+  wire [(C_TDATA_WIDTH/8)-1:0]    axis_cmac_o_1_macbuf_tkeep ;
+  wire                            axis_cmac_o_1_macbuf_tuser_err ;
+  wire                            axis_cmac_o_1_macbuf_tlast ;
+  wire                            axis_cmac_o_1_macbuf_tready ;
+
+  wire                            axis_cmac_i_1_macbuf_tvalid;
+  wire [C_TDATA_WIDTH-1:0]        axis_cmac_i_1_macbuf_tdata ;
+  wire [(C_TDATA_WIDTH/8)-1:0]    axis_cmac_i_1_macbuf_tkeep ;
+  wire                            axis_cmac_i_1_macbuf_tuser_err ;
+  wire                            axis_cmac_i_1_macbuf_tlast ;
+  wire                            axis_cmac_i_1_macbuf_tready ;
+
   wire [15:0]                    axis_dma_o_0_raw_tuser_size, axis_dma_o_1_raw_tuser_size;
   wire [15:0]                    axis_dma_o_0_raw_tuser_src , axis_dma_o_1_raw_tuser_src ;
   wire [15:0]                    axis_dma_o_0_raw_tuser_dst , axis_dma_o_1_raw_tuser_dst ;
@@ -770,22 +784,46 @@ module top_wrapper #(
         .s_axis_tlast (axis_cmac_o_0_buf_tlast)
     );
 
+    axis_register_slice_cmac port1_out_slice_mac (
+        .aclk(cmac_clk[1]),
+        .aresetn(!cmac1_rst),
+        // Output to macbuf_tvalid, which is the next AXI slice
+        .m_axis_tvalid(axis_cmac_o_1_macbuf_tvalid),
+        .m_axis_tuser (axis_cmac_o_1_macbuf_tuser_err),
+        .m_axis_tready(axis_cmac_o_1_macbuf_tready),
+        .m_axis_tdata (axis_cmac_o_1_macbuf_tdata),
+        .m_axis_tkeep (axis_cmac_o_1_macbuf_tkeep),
+        .m_axis_tlast (axis_cmac_o_1_macbuf_tlast),
+
+        .s_axis_tvalid(axis_cmac_o_1_buf_tvalid),
+        .s_axis_tready(axis_cmac_o_1_buf_tready),
+        .s_axis_tuser (axis_cmac_o_1_buf_tuser_err),
+        .s_axis_tdata (axis_cmac_o_1_buf_tdata),
+        .s_axis_tkeep (axis_cmac_o_1_buf_tkeep),
+        .s_axis_tlast (axis_cmac_o_1_buf_tlast)
+    );
+
+    // Constrainted to be very close indeed to the CMAC interface
+    // Avoids timing issues on the TX path (hopefully)
     axis_register_slice_cmac port1_out_slice (
         .aclk(cmac_clk[1]),
         .aresetn(!cmac1_rst),
+        // Finally output to the CMAC
+        // Ensures we definitely have enough pipeline stages
+        // to reach it.
         .m_axis_tvalid(axis_cmac_o_1_tvalid),
-        .m_axis_tuser(axis_cmac_o_1_tuser_err),
+        .m_axis_tuser (axis_cmac_o_1_tuser_err),
         .m_axis_tready(axis_cmac_o_1_tready),
         .m_axis_tdata (axis_cmac_o_1_tdata),
         .m_axis_tkeep (axis_cmac_o_1_tkeep),
         .m_axis_tlast (axis_cmac_o_1_tlast),
 
-        .s_axis_tvalid(axis_cmac_o_1_buf_tvalid),
-        .s_axis_tready(axis_cmac_o_1_buf_tready),
-        .s_axis_tuser(axis_cmac_o_1_buf_tuser_err),
-        .s_axis_tdata (axis_cmac_o_1_buf_tdata),
-        .s_axis_tkeep (axis_cmac_o_1_buf_tkeep),
-        .s_axis_tlast (axis_cmac_o_1_buf_tlast)
+        .s_axis_tvalid(axis_cmac_o_1_macbuf_tvalid),
+        .s_axis_tready(axis_cmac_o_1_macbuf_tready),
+        .s_axis_tuser (axis_cmac_o_1_macbuf_tuser_err),
+        .s_axis_tdata (axis_cmac_o_1_macbuf_tdata),
+        .s_axis_tkeep (axis_cmac_o_1_macbuf_tkeep),
+        .s_axis_tlast (axis_cmac_o_1_macbuf_tlast)
     );
 
     axis_register_slice_cmac port0_in_slice (
@@ -806,22 +844,45 @@ module top_wrapper #(
         .s_axis_tlast (axis_cmac_i_0_tlast)
     );
 
-    axis_register_slice_cmac port1_in_slice (
+    axis_register_slice_cmac port1_in_slice_mac (
         .aclk(cmac_clk[1]),
         .aresetn(!cmac1_rst),
+        // Output to the MAC attachment.
         .m_axis_tvalid(axis_cmac_i_1_buf_tvalid),
-        .m_axis_tready('1),
         .m_axis_tdata (axis_cmac_i_1_buf_tdata),
         .m_axis_tkeep (axis_cmac_i_1_buf_tkeep),
         .m_axis_tlast (axis_cmac_i_1_buf_tlast),
-        .m_axis_tuser(axis_cmac_i_1_buf_tuser_err),
-
-        .s_axis_tvalid(axis_cmac_i_1_tvalid),
+        .m_axis_tuser (axis_cmac_i_1_buf_tuser_err),
+        .m_axis_tready('1),
         .s_axis_tready(),
+
+        // Input from first buffer
+        .s_axis_tvalid(axis_cmac_i_1_macbuf_tvalid),
+        .s_axis_tdata (axis_cmac_i_1_macbuf_tdata),
+        .s_axis_tkeep (axis_cmac_i_1_macbuf_tkeep),
+        .s_axis_tlast (axis_cmac_i_1_macbuf_tlast),
+        .s_axis_tuser (axis_cmac_i_1_macbuf_tuser_err)
+    );
+
+    // Constrained to be very close to the CMAC
+    axis_register_slice_cmac port1_in_slice (
+        .aclk(cmac_clk[1]),
+        .aresetn(!cmac1_rst),
+        // Output to first buffer
+        .m_axis_tvalid(axis_cmac_i_1_macbuf_tvalid),
+        .m_axis_tdata (axis_cmac_i_1_macbuf_tdata),
+        .m_axis_tkeep (axis_cmac_i_1_macbuf_tkeep),
+        .m_axis_tlast (axis_cmac_i_1_macbuf_tlast),
+        .m_axis_tuser (axis_cmac_i_1_macbuf_tuser_err),
+        .m_axis_tready('1),
+        .s_axis_tready(),
+        
+        // Take data from CMAC
+        .s_axis_tvalid(axis_cmac_i_1_tvalid),
         .s_axis_tdata (axis_cmac_i_1_tdata),
         .s_axis_tkeep (axis_cmac_i_1_tkeep),
         .s_axis_tlast (axis_cmac_i_1_tlast),
-        .s_axis_tuser(axis_cmac_i_1_tuser_err)
+        .s_axis_tuser (axis_cmac_i_1_tuser_err)
     );
 
     nf_mac_attachment_ip u_nf_attachment_1 (
