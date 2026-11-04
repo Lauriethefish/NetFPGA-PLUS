@@ -39,6 +39,7 @@ from NFTest import *
 import sys
 import os
 from scapy.layers.all import Ether, IP, TCP, UDP
+from scapy.all import *
 from reg_defines_quic_accel import *
 
 conn = ('../connections/conn', [])
@@ -61,7 +62,7 @@ DST_IP = "192.168.1.1"
 SRC_IP = "192.168.0.1"
 nextHopMAC = "dd:55:dd:66:dd:77"
 if isHW():
-    NUM_PKTS = 2
+    NUM_PKTS = 20
 else:
     NUM_PKTS = 1454
 num_ports = 1
@@ -80,10 +81,11 @@ for i in range(NUM_PKTS):
                                 src_IP=SRC_IP, TTL=TTL, src_port=8080, dst_port = 4040,
                                 pkt_len=80+i)
             pkt = pkt_expect.copy()
-            pkt.getlayer(2)[scapy.UDP].chksum = 0
+            pkt.getlayer(2)[UDP].chksum = 0
             totalPktLengths[port] += len(pkt)
 
-            print(f"Sending packet len {len(pkt) * 8} bits")
+            print(f"Sending packet len {len(pkt)} bytes. Expected checksum: {Ether(raw(pkt_expect))[UDP].chksum}")
+            print(f"Checksum sent: {Ether(raw(pkt))[UDP].chksum}")
             nftest_send_dma('nf' + str(port), pkt)
             nftest_expect_phy('nf' + str(port), pkt_expect)
     else:
@@ -92,7 +94,7 @@ for i in range(NUM_PKTS):
                              src_IP=SRC_IP, TTL=TTL, src_port=8080, dst_port = 4040,
                              pkt_len=80+i)
         pkt = pkt_expect.copy()
-        pkt.getlayer(2)[scapy.UDP].chksum = 0
+        #pkt.getlayer(2)[scapy.UDP].chksum = 0
         # When checksum calculation enabled, comment out the below line
         #pkt_expect.getlayer(2)[scapy.UDP].chksum = 0
         pkt.time = ((i*(1e-8)) + (1e-6)) 
