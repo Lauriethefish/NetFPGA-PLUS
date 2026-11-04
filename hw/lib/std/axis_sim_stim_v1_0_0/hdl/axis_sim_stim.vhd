@@ -118,7 +118,8 @@ begin
         variable ok, dontcare: boolean;
 	variable barrier_count : integer := 0;
 	variable exp_pkts: integer :=0;
-	
+	variable time_at_start : time := 0 ns;
+
     begin
 
         quiescent;                      -- sane initial outputs
@@ -131,6 +132,7 @@ begin
         while ARESETN = '0' loop        -- wait until reset goes away
             wait_cycle;
         end loop;
+		time_at_start := now;
 
 	activity_stim <= '0';
         barrier_req <= '0';
@@ -206,9 +208,9 @@ begin
 		    read_char( l, c );      -- discard operator
          	    parse_int( l, i );
             	    quiescent;
-		    wait for ( i * 1 ns);
-                    wait_cycle;
-
+		    	while ( (now - time_at_start) < i * 1 ns) loop
+					wait_cycle;
+				end loop;
             -- operator +(N): wait for N ns
             	elsif c = '+' then          -- wait for relative time (ns)
                	    read_char( l, c );      -- discard operator

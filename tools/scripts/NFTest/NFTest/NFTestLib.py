@@ -28,6 +28,7 @@
 
 from . import hwPktLib
 from .hwPktLib import scapy
+from scapy.layers.all import Ether, IP, TCP, UDP
 from . import hwRegLib
 from . import simLib
 from . import simReg
@@ -281,8 +282,12 @@ def nftest_send_phy(ifaceName, pkt):
 def nftest_send_dma(ifaceName, pkt):
     sent_dma[ifaceName].append(pkt)
     if sim:
+        if isinstance(pkt,scapy.Ether):
+            pkt = [pkt]
+
         for pkt_s in pkt:
-            pkt_s.tuser_sport = 1 << (int(ifaceName[2:3])%4*2 + 1) # PCI ports are odd-numbered
+            # PCI ports are odd-numbered
+            pkt_s.tuser_sport = 1 << (int(ifaceName[2:3])%4*2 + 1)
 
         for i in range(len(pkt)):
             simPkt.pktSendDMA(int(ifaceName[2:3])+1, pkt)
