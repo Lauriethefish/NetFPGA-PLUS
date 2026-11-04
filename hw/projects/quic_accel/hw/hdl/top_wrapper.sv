@@ -178,12 +178,12 @@ module top_wrapper #(
   reg [31:0] core_clk_counter;
 
   wire [31:0] reg_read_values[6];
-  assign reg_read_values[0] = 32'hABCDABCD;
-  assign reg_read_values[1] = core_clk_counter;
-  assign reg_read_values[2] = axis_dma_i_0_count;
-  assign reg_read_values[3] = axis_dma_i_1_count;
-  assign reg_read_values[4] = axis_dma_o_0_count;
-  assign reg_read_values[5] = axis_dma_o_1_count;
+  assign reg_read_values[0] = 32'hABCDABCD; // 0x0
+  assign reg_read_values[1] = core_clk_counter; // 0x4
+  assign reg_read_values[2] = axis_dma_i_0_count; // 0x8
+  assign reg_read_values[3] = axis_dma_i_1_count; // 0xC
+  assign reg_read_values[4] = axis_dma_o_0_count; // 0x10
+  assign reg_read_values[5] = axis_dma_o_1_count; // 0x14
 
 
   always_ff @(posedge core_clk) begin

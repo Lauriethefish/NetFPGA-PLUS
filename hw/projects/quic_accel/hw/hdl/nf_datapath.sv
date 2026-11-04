@@ -240,12 +240,12 @@ module nf_datapath #(
 
     wire [31:0] reg_read_values[6];
     // Debug value to check the memory map is correct
-    assign reg_read_values[0] = 32'hffdafafa;
-    assign reg_read_values[1] = num_packets_tx;
-    assign reg_read_values[2] = num_packets_rx;
-    assign reg_read_values[3] = num_packets_tx_raw;
-    assign reg_read_values[4] = num_packets_rx_raw;
-    assign reg_read_values[5] = num_packets_tx_tvalid;
+    assign reg_read_values[0] = 32'hffdafafa; // 0x0
+    assign reg_read_values[1] = num_packets_tx; // 0x4
+    assign reg_read_values[2] = num_packets_rx; // 0x8
+    assign reg_read_values[3] = num_packets_tx_raw; // 0xC
+    assign reg_read_values[4] = num_packets_rx_raw; // 0x10
+    assign reg_read_values[5] = num_packets_tx_tvalid; // 0x14
 
     axil_register_bank 
     #(
