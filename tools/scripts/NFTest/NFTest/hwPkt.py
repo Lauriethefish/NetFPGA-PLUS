@@ -36,7 +36,7 @@ import os
 from collections import deque
 from select import select
 from scapy.all import *
-from scapy.layers.all import Ether, IP, TCP, UDP
+from scapy.layers.all import Ether, IP, TCP, UDP, Padding
 from .scapy_sniff_patch import sniff
 
 class pktExpect(Thread):
@@ -94,7 +94,10 @@ class pktExpect(Thread):
     #              notifies background thread to compare packet lists
     ############################
     def addPkt(self,pkt):
-        print(f"Sniffed packet on NIC ({self.device}): {pkt} of checksum {pkt.getlayer(2)[UDP].chksum}")
+        if UDP in pkt.getlayer(2):
+            print(f"Sniffed packet on NIC ({self.device}): {pkt} of checksum {pkt.getlayer(2)[UDP].chksum}")
+        else:
+            print(f"Sniffed packet on NIC ({self.device}): {pkt}")
         self.lock.acquire()
         self.pkts.append(pkt)
         self.count += 1
@@ -148,7 +151,7 @@ class pktExpect(Thread):
     #              certain bytes
     ############################
     def comparePkts(self, pkta, pktb, mask = None):
-        print(f"Comparing {pkta} with {pktb}, mask: {mask}, result: {pkta == pktb}")
+        #print(f"Comparing {pkta} with {pktb}, mask: {mask}, result: {pkta == pktb}")
         if mask:
             pkta = [ord(x) for x in pkta]
             pktb = [ord(x) for x in pktb]
@@ -183,16 +186,18 @@ class pktExpect(Thread):
                     if mask:
                         strmask = str(mask)
                     matches = self.comparePkts(strexp, strpkt, strmask)
-                    if not matches and len(exp) < 60 and self.pkts[i].haslayer(scapy.Padding):
+                    if not matches and len(exp) < 60 and self.pkts[i].haslayer(Padding):
+                        withpadding = ' / '.join([strexp,str(self.pkts[i][Padding])])
+                        #print(f"Comparing with {withpadding} as expected instead. strpkt: {strpkt}")
                         matches = self.comparePkts(
-                                ''.join([strexp,str(self.pkts[i][scapy.Padding])]),
+                                withpadding,
                                 strpkt, strmask)
                     if matches:
-                        print("MATCHED")
+                        #print("MATCHED")
                         self.matched.append(self.pkts[i])
                         self.pkts.remove(self.pkts[i])
                         self.exp_pkts.remove((exp, mask))
-                        print(f"Number expected: {len(self.exp_pkts)}")
+                        #print(f"Number expected: {len(self.exp_pkts)}")
                         numPkts -= 1
                         i -= 1
                         break
