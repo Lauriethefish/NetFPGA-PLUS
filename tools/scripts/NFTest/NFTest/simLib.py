@@ -54,7 +54,7 @@ f_singlestim = []
 f_singleexpect = []
 
 # directory = 'packet_data'
-dma_stim = 'dma_0_stim.axi'
+dma_stim = 'dma_'
 dma_expect = 'dma_'
 ingress_fileHeader = 'nf_interface_' # 'ingress_port_'
 expectPHY_fileHeader = 'nf_interface_' # 'expected_port_'
@@ -71,7 +71,6 @@ def init():
 
     global f_dma; global f_regstim; global f_regexpect
     global f_singlestim, f_singleexpect;
-    f_dma = open(dma_stim,'w')  
     f_regstim = open(reg_stim, 'w')
     f_regexpect = open(reg_expect, 'w')  
     f_singlestim = open(single_stim, 'w')
@@ -88,6 +87,10 @@ def init():
     for i in range(NUM_PORTS):
         filename = dma_expect + str(i) + "_expected.axi"
         f_expectDMA.append(open(filename, 'w'))
+
+    for i in range(NUM_PORTS):
+        filename = dma_stim + str(i) + "_stim.axi"
+        f_dma.append(open(filename, 'w'))
    
 ############################
 # Function: writeFileHeader
@@ -126,7 +129,6 @@ def writeXMLHeader(fp, filePath):
 #   Must be called at the end of every test file.
 ############################
 def close():
-    f_dma.close()
     f_regstim.close()
     f_regexpect.close()
 
@@ -138,6 +140,9 @@ def close():
 
     for i in range(NUM_PORTS):
         f_expectDMA[i].close()
+
+    for i in range(NUM_PORTS):
+        f_dma[i].close()
 
 ############################
 # Function: fregstim(), fregexpect()
@@ -162,11 +167,14 @@ def fsingleexpect():
     return f_singleexpect
 
 ############################
-# Function: fDMA
+# Function: fExpectDMA
+# Argument: port - int - port for which read/write is occurring
+#                   (Should be 1-4, NOT THE INDEX OF ARRAY)
 #  A Getter that returns the file pointer for file with DMA read/write info.
+#
 ############################
-def fDMA():
-    return f_dma
+def fDMA(port):
+    return f_dma[port-1]
 
 
 ############################

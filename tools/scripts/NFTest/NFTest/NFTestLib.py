@@ -263,11 +263,14 @@ def nftest_send_phy(ifaceName, pkt):
         sys.exit(1)
     sent_phy[ifaceName].append(pkt)
     if sim:
+        if isinstance(pkt,scapy.Ether):
+            pkt = [pkt]
+
         for pkt_s in pkt:
             pkt_s.tuser_sport = 1 << (int(ifaceName[2:3])*2) # physical ports are even-numbered
 
         for i in range(len(pkt)):
-            simPkt.pktSendPHY(int(ifaceName[2:3])+1, pkt)
+            simPkt.pktSendPHY(int(ifaceName[2:3])+1, pkt[i])
         f = simLib.fPort(int(ifaceName[2]) + 1)
         axitools.axis_dump( pkt, f, 512, 1e-9 )
     else:
@@ -291,7 +294,7 @@ def nftest_send_dma(ifaceName, pkt):
 
         for i in range(len(pkt)):
             simPkt.pktSendDMA(int(ifaceName[2:3])+1, pkt)
-        f = simLib.fDMA()
+        f = simLib.fDMA(int(ifaceName[2]) + 1)
         axitools.axis_dump( pkt, f, 512, 1e-9 )
     else:
         hwPktLib.send(iface_map[ifaceName], pkt)
@@ -306,6 +309,9 @@ def nftest_send_dma(ifaceName, pkt):
 def nftest_expect_phy(ifaceName, pkt, mask = None):
     expected_phy[ifaceName].append(pkt)
     if sim:
+        if isinstance(pkt,scapy.Ether):
+            pkt = [pkt]
+    
         for i in range(len(pkt)):
             simPkt.pktExpectPHY(int(ifaceName[2:3])+1, pkt, mask)
         f = simLib.fExpectPHY(int(ifaceName[2]) + 1)
@@ -324,6 +330,9 @@ def nftest_expect_phy(ifaceName, pkt, mask = None):
 def nftest_expect_dma(ifaceName, pkt, mask = None):
     expected_dma[ifaceName].append(pkt)
     if sim:
+        if isinstance(pkt,scapy.Ether):
+            pkt = [pkt]
+    
         for i in range(len(pkt)):
             simPkt.pktExpectDMA(int(ifaceName[2:3])+1, pkt, mask)
         f = simLib.fExpectDMA(int(ifaceName[2]) + 1)

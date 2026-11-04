@@ -86,7 +86,7 @@ reset_target all [get_ips nf_mac_attachment_dma_ip]
 generate_target all [get_ips nf_mac_attachment_dma_ip]
 
 create_ip -name barrier -vendor NetFPGA -library NetFPGA -module_name barrier_ip
-set_property CONFIG.NUM_PORTS 3 [get_ips barrier_ip]
+set_property CONFIG.NUM_PORTS 4 [get_ips barrier_ip]
 reset_target all [get_ips barrier_ip]
 generate_target all [get_ips barrier_ip]
 
@@ -105,6 +105,11 @@ set_property -dict [list CONFIG.OUTPUT_FILE $::env(NF_DESIGN_DIR)/test/dma_0_log
 reset_target all [get_ips axis_sim_record_ip2]
 generate_target all [get_ips axis_sim_record_ip2]
 
+create_ip -name axis_sim_record -vendor NetFPGA -library NetFPGA -module_name axis_sim_record_ip3
+set_property -dict [list CONFIG.OUTPUT_FILE $::env(NF_DESIGN_DIR)/test/dma_1_log.axi] [get_ips axis_sim_record_ip3]
+reset_target all [get_ips axis_sim_record_ip3]
+generate_target all [get_ips axis_sim_record_ip3]
+
 
 create_ip -name axis_sim_stim -vendor NetFPGA -library NetFPGA -module_name axis_sim_stim_ip0
 set_property -dict [list CONFIG.input_file $::env(NF_DESIGN_DIR)/test/nf_interface_0_stim.axi] [get_ips axis_sim_stim_ip0]
@@ -118,6 +123,9 @@ create_ip -name axis_sim_stim -vendor NetFPGA -library NetFPGA -module_name axis
 set_property -dict [list CONFIG.input_file $::env(NF_DESIGN_DIR)/test/dma_0_stim.axi] [get_ips axis_sim_stim_ip2]
 generate_target all [get_ips axis_sim_stim_ip2]
 
+create_ip -name axis_sim_stim -vendor NetFPGA -library NetFPGA -module_name axis_sim_stim_ip3
+set_property -dict [list CONFIG.input_file $::env(NF_DESIGN_DIR)/test/dma_1_stim.axi] [get_ips axis_sim_stim_ip3]
+generate_target all [get_ips axis_sim_stim_ip3]
 
 create_ip -name axi_sim_transactor -vendor NetFPGA -library NetFPGA -module_name axi_sim_transactor_ip
 set_property -dict [list CONFIG.STIM_FILE $::env(NF_DESIGN_DIR)/test/reg_stim.axi CONFIG.EXPECT_FILE $::env(NF_DESIGN_DIR)/test/reg_expect.axi CONFIG.LOG_FILE $::env(NF_DESIGN_DIR)/test/reg_stim.log] [get_ips axi_sim_transactor_ip]

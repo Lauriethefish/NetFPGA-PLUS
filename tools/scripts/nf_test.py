@@ -471,36 +471,38 @@ def prepareWorkDir():
     subprocess.call(['cp', '-r', '-p', src_test_dir + '/connections', projDir])
 
 def prepareTestWorkDir(testName):
-	dst_dir = proj_test_dir + '/' + testName
-	src_dir = src_test_dir + '/' + testName
-	# look for a test
-	if args.type == 'sim':
-		print('=== Setting up test in ' + dst_dir)
-	# check if exists, make if doesn't, error if fail
-	if not os.path.exists(dst_dir):
-		try:
-			os.mkdir(dst_dir)
-		except OSError as exc:
-			print('Error: Unable to create test directory ' + dst_dir)
-			print(exc.strerror, exc.filename)
-			sys.exit(1)
-	# cp files to dst_dir
-	if args.type == 'sim':
-		for file in glob.glob(src_dir + '/*'):
-			subprocess.call(['cp', '-r', '-p', file, dst_dir])
-		for i in range(2):
-			subprocess.call(['cp', '-r', '-p', src_test_dir + '/nf_interface_%d_log.axi' %i, dst_dir])
-			subprocess.call(['cp', '-r', '-p', src_test_dir + '/nf_interface_%d_stim.axi' %i, dst_dir])
-			subprocess.call(['cp', '-r', '-p', src_test_dir + '/nf_interface_%d_expected.axi' %i, dst_dir])
-		subprocess.call(['cp', '-r', '-p', src_test_dir + '/dma_0_log.axi', dst_dir])
-		subprocess.call(['cp', '-r', '-p', src_test_dir + '/dma_0_expected.axi', dst_dir])
-		subprocess.call(['cp', '-r', '-p', src_test_dir + '/Makefile', dst_dir])
-		subprocess.call(['cp', '-r', '-p', src_test_dir + '/reg_stim.log', dst_dir])
-		subprocess.call(['cp', '-r', '-p', src_test_dir + '/reg_expect.axi', dst_dir])
-		subprocess.call(['cp', '-r', '-p', src_test_dir + '/reg_stim.axi', dst_dir])
-		subprocess.call(['cp', '-r', '-p', src_test_dir + '/single_expected.axi', dst_dir])
-		subprocess.call(['cp', '-r', '-p', src_test_dir + '/single_stim.axi', dst_dir])
-		subprocess.call(['cp', '-r', '-p', src_test_dir + '/single_log.axi', dst_dir])
+    dst_dir = proj_test_dir + '/' + testName
+    src_dir = src_test_dir + '/' + testName
+    # look for a test
+    if args.type == 'sim':
+        print('=== Setting up test in ' + dst_dir)
+    # check if exists, make if doesn't, error if fail
+    if not os.path.exists(dst_dir):
+        try:
+            os.mkdir(dst_dir)
+        except OSError as exc:
+            print('Error: Unable to create test directory ' + dst_dir)
+            print(exc.strerror, exc.filename)
+            sys.exit(1)
+    # cp files to dst_dir
+    if args.type == 'sim':
+        for file in glob.glob(src_dir + '/*'):
+            subprocess.call(['cp', '-r', '-p', file, dst_dir])
+        for i in range(2):
+            subprocess.call(['cp', '-r', '-p', src_test_dir + '/nf_interface_%d_log.axi' %i, dst_dir])
+            subprocess.call(['cp', '-r', '-p', src_test_dir + '/nf_interface_%d_stim.axi' %i, dst_dir])
+            subprocess.call(['cp', '-r', '-p', src_test_dir + '/nf_interface_%d_expected.axi' %i, dst_dir])
+        subprocess.call(['cp', '-r', '-p', src_test_dir + '/dma_0_log.axi', dst_dir])
+        subprocess.call(['cp', '-r', '-p', src_test_dir + '/dma_0_expected.axi', dst_dir])
+        subprocess.call(['cp', '-r', '-p', src_test_dir + '/dma_1_log.axi', dst_dir])
+        subprocess.call(['cp', '-r', '-p', src_test_dir + '/dma_1_expected.axi', dst_dir])
+        subprocess.call(['cp', '-r', '-p', src_test_dir + '/Makefile', dst_dir])
+        subprocess.call(['cp', '-r', '-p', src_test_dir + '/reg_stim.log', dst_dir])
+        subprocess.call(['cp', '-r', '-p', src_test_dir + '/reg_expect.axi', dst_dir])
+        subprocess.call(['cp', '-r', '-p', src_test_dir + '/reg_stim.axi', dst_dir])
+        subprocess.call(['cp', '-r', '-p', src_test_dir + '/single_expected.axi', dst_dir])
+        subprocess.call(['cp', '-r', '-p', src_test_dir + '/single_stim.axi', dst_dir])
+        subprocess.call(['cp', '-r', '-p', src_test_dir + '/single_log.axi', dst_dir])
 
 def buildSim():
     project = os.path.basename(os.path.abspath(os.environ['NF_DESIGN_DIR']))
