@@ -128,12 +128,12 @@ def make_IP_pkt(pkt_len = 60, **kwargs):
     pkt = make_MAC_hdr(**kwargs)/make_IP_hdr(**kwargs)/generate_load(pkt_len - 34)
     return pkt
 
-def make_UDP_pkt(pkt_len = 66, **kwargs):
-    if pkt_len < 66:
-        pkt_len = 66
+def make_UDP_pkt(pkt_len = 60, **kwargs):
+    if pkt_len < 60:
+        pkt_len = 60
 
     # Account for size of MAC/IP/UDP headers in the payload
-    pkt = make_MAC_hdr(**kwargs)/make_IP_hdr(**kwargs)/make_UDP_hdr(**kwargs)/generate_load(pkt_len - 34 - 32)
+    pkt = make_MAC_hdr(**kwargs)/make_IP_hdr(**kwargs)/make_UDP_hdr(**kwargs)/generate_load(pkt_len - 34 - 8)
     return pkt
 
 ############################
