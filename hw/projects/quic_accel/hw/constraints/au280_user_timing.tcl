@@ -1,0 +1,4 @@
+create_pblock pblock_port1_slices
+resize_pblock pblock_port1_slices -add {SLICE_X59Y659:SLICE_X95Y719 DSP48E2_X8Y258:DSP48E2_X12Y281 RAMB18_X5Y264:RAMB18_X6Y287 RAMB36_X5Y132:RAMB36_X6Y143}
+add_cells_to_pblock pblock_port1_slices [get_cells [list u_top_wrapper/port1_in_slice]]
+add_cells_to_pblock pblock_port1_slices [get_cells [list u_top_wrapper/port1_out_slice]]

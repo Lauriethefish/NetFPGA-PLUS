@@ -79,6 +79,14 @@ set_property generate_synth_checkpoint false [get_files nf_mac_attachment_ip.xci
 reset_target all [get_ips nf_mac_attachment_ip]
 generate_target all [get_ips nf_mac_attachment_ip]
 
+create_ip -name nf_mac_attachment -vendor NetFPGA -library NetFPGA -module_name nf_mac_attachment_dma_ip
+set_property CONFIG.C_M_AXIS_DATA_WIDTH ${datapath_width_bit} [get_ips nf_mac_attachment_dma_ip]
+set_property CONFIG.C_S_AXIS_DATA_WIDTH ${datapath_width_bit} [get_ips nf_mac_attachment_dma_ip]
+set_property CONFIG.C_DEFAULT_VALUE_ENABLE 0 [get_ips nf_mac_attachment_dma_ip]
+set_property generate_synth_checkpoint false [get_files nf_mac_attachment_dma_ip.xci]
+reset_target all [get_ips nf_mac_attachment_dma_ip]
+generate_target all [get_ips nf_mac_attachment_dma_ip]
+
 create_ip -name barrier -vendor NetFPGA -library NetFPGA -module_name barrier_ip
 set_property CONFIG.NUM_PORTS 3 [get_ips barrier_ip]
 reset_target all [get_ips barrier_ip]
@@ -207,8 +215,10 @@ CONFIG.M02_A00_ADDR_WIDTH {16}               \
 CONFIG.M03_A00_ADDR_WIDTH {16}               \
 CONFIG.M00_A00_BASE_ADDR {0x0000000000000000}\
 CONFIG.M01_A00_BASE_ADDR {0x0000000000010000}\
-CONFIG.M02_A00_BASE_ADDR {0x0000000000020000}\
-CONFIG.M03_A00_BASE_ADDR {0x0000000000030000}] [get_ips axi_crossbar_0]
+CONFIG.M02_A00_BASE_ADDR {0x0000000000130000}\
+CONFIG.M03_A00_BASE_ADDR {0x0000000000140000}\
+CONFIG.M04_A00_BASE_ADDR {0x0000000000100000}\
+CONFIG.M05_A00_BASE_ADDR {0x0000000000110000}] [get_ips axi_crossbar_0]
 set_property generate_synth_checkpoint false [get_files axi_crossbar_0.xci]
 reset_target all [get_ips axi_crossbar_0]
 generate_target all [get_ips axi_crossbar_0]

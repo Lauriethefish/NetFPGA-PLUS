@@ -122,6 +122,24 @@
   wire[C_DATA_WIDTH/8-1:0]    axis_phy_stim_1_tkeep , axis_phy_rec_1_tkeep;
   wire                        axis_phy_stim_1_tready, axis_phy_rec_1_tready;
 
+  // Raw == before (or after in the case of output) nf_mac_attachment_dma_ip
+  wire[C_DATA_WIDTH-1:0]      axis_dma_i_0_raw_tdata , axis_dma_o_0_raw_tdata;
+  wire                        axis_dma_i_0_raw_tvalid, axis_dma_o_0_raw_tvalid;
+  wire                        axis_dma_i_0_raw_tlast , axis_dma_o_0_raw_tlast;
+  wire[C_TUSER_WIDTH-1:0]     axis_dma_i_0_raw_tuser , axis_dma_o_0_raw_tuser;
+  wire[C_DATA_WIDTH/8-1:0]    axis_dma_i_0_raw_tkeep , axis_dma_o_0_raw_tkeep;
+  wire                        axis_dma_i_0_raw_tready, axis_dma_o_0_raw_tready;
+  // Input to DMA assumes no backpressure.
+  assign axis_dma_i_0_raw_tready = 1'b1;
+  assign axis_dma_i_1_raw_tready = 1'b1;
+
+  wire[C_DATA_WIDTH-1:0]      axis_dma_i_1_raw_tdata , axis_dma_o_1_raw_tdata;
+  wire                        axis_dma_i_1_raw_tvalid, axis_dma_o_1_raw_tvalid;
+  wire                        axis_dma_i_1_raw_tlast , axis_dma_o_1_raw_tlast;
+  wire[C_TUSER_WIDTH-1:0]     axis_dma_i_1_raw_tuser , axis_dma_o_1_raw_tuser;
+  wire[C_DATA_WIDTH/8-1:0]    axis_dma_i_1_raw_tkeep , axis_dma_o_1_raw_tkeep;
+  wire                        axis_dma_i_1_raw_tready, axis_dma_o_1_raw_tready;
+
   wire[C_DATA_WIDTH-1:0]      axis_dma_i_0_tdata , axis_dma_o_0_tdata;
   wire                        axis_dma_i_0_tvalid, axis_dma_o_0_tvalid;
   wire                        axis_dma_i_0_tlast , axis_dma_o_0_tlast;
@@ -166,7 +184,7 @@
   wire [3:0]    M0_AXI_wstrb  , M1_AXI_wstrb  ;
   wire          M0_AXI_wvalid , M1_AXI_wvalid ; 
 
-    wire [31:0] M2_AXI_araddr , M3_AXI_araddr ;
+  wire [31:0]   M2_AXI_araddr , M3_AXI_araddr ;
   wire [2:0]    M2_AXI_arprot , M3_AXI_arprot ;
   wire          M2_AXI_arready, M3_AXI_arready;
   wire          M2_AXI_arvalid, M3_AXI_arvalid;
@@ -185,6 +203,27 @@
   wire          M2_AXI_wready , M3_AXI_wready ; 
   wire [3:0]    M2_AXI_wstrb  , M3_AXI_wstrb  ;
   wire          M2_AXI_wvalid , M3_AXI_wvalid ; 
+
+  wire [31:0]   M4_AXI_araddr , M5_AXI_araddr ;
+  wire [2:0]    M4_AXI_arprot , M5_AXI_arprot ;
+  wire          M4_AXI_arready, M5_AXI_arready;
+  wire          M4_AXI_arvalid, M5_AXI_arvalid;
+  wire [31:0]   M4_AXI_awaddr , M5_AXI_awaddr ;
+  wire [2:0]    M4_AXI_awprot , M5_AXI_awprot ;
+  wire          M4_AXI_awready, M5_AXI_awready;
+  wire          M4_AXI_awvalid, M5_AXI_awvalid;
+  wire          M4_AXI_bready , M5_AXI_bready ;
+  wire [1:0]    M4_AXI_bresp  , M5_AXI_bresp  ;
+  wire          M4_AXI_bvalid , M5_AXI_bvalid ; 
+  wire [31:0]   M4_AXI_rdata  , M5_AXI_rdata  ;
+  wire          M4_AXI_rready , M5_AXI_rready ; 
+  wire [1:0]    M4_AXI_rresp  , M5_AXI_rresp  ;
+  wire          M4_AXI_rvalid , M5_AXI_rvalid ; 
+  wire [31:0]   M4_AXI_wdata  , M5_AXI_wdata  ;
+  wire          M4_AXI_wready , M5_AXI_wready ; 
+  wire [3:0]    M4_AXI_wstrb  , M5_AXI_wstrb  ;
+  wire          M4_AXI_wvalid , M5_AXI_wvalid ; 
+
   wire [31:0]   S00_AXI_araddr;
   wire [2:0]    S00_AXI_arprot /*= 3'b010*/;
   wire          S00_AXI_arready;
@@ -611,6 +650,128 @@
 		.m_axis_pipe_tvalid    (axis_phy_i_1_tvalid),
 		.m_axis_pipe_tready    (axis_phy_i_1_tready)
 	);
+
+	nf_mac_attachment_dma_ip u_nf_attachment_dma_0 (
+		.S_AXI_ACLK            (axi_clk),
+		.S_AXI_ARESETN         (axi_resetn),
+		.S_AXI_AWADDR          (M4_AXI_AWADDR),
+		.S_AXI_AWVALID         (M4_AXI_AWVALID),
+		.S_AXI_WDATA           (M4_AXI_WDATA),
+		.S_AXI_WSTRB           (M4_AXI_WSTRB),
+		.S_AXI_WVALID          (M4_AXI_WVALID),
+		.S_AXI_BREADY          (M4_AXI_BREADY),
+		.S_AXI_ARADDR          (M4_AXI_ARADDR),
+		.S_AXI_ARVALID         (M4_AXI_ARVALID),
+		.S_AXI_RREADY          (M4_AXI_RREADY),
+		.S_AXI_ARREADY         (M4_AXI_ARREADY),
+		.S_AXI_RDATA           (M4_AXI_RDATA),
+		.S_AXI_RRESP           (M4_AXI_RRESP),
+		.S_AXI_RVALID          (M4_AXI_RVALID),
+		.S_AXI_WREADY          (M4_AXI_WREADY),
+		.S_AXI_BRESP           (M4_AXI_BRESP),
+		.S_AXI_BVALID          (M4_AXI_BVALID),
+		.S_AXI_AWREADY         (M4_AXI_AWREADY),
+		// 10GE block clk & rst
+		.clk156                (core_clk),
+		.areset_clk156         (!core_rst),
+		// RX MAC 64b@clk156 (no backpressure) -> rx_queue 64b@axis_clk
+		.m_axis_mac_tdata      (axis_dma_i_0_raw_tdata),
+		.m_axis_mac_tkeep      (axis_dma_i_0_raw_tkeep),
+		.m_axis_mac_tvalid     (axis_dma_i_0_raw_tvalid),
+		.m_axis_mac_tuser_err  (1'b1),   // valid frame
+		.m_axis_mac_tuser      (axis_dma_i_0_raw_tuser),
+		.m_axis_mac_tlast      (axis_dma_i_0_raw_tlast),
+		// tx_queue 64b@axis_clk -> mac 64b@clk156
+		.s_axis_mac_tdata      (axis_dma_o_0_raw_tdata),
+		.s_axis_mac_tkeep      (axis_dma_o_0_raw_tkeep),
+		.s_axis_mac_tvalid     (axis_dma_o_0_raw_tvalid),
+		.s_axis_mac_tuser_err  (),       //underrun
+		.s_axis_mac_tuser      (axis_dma_o_0_raw_tuser),
+		.s_axis_mac_tlast      (axis_dma_o_0_raw_tlast),
+		.s_axis_mac_tready     (axis_dma_o_0_raw_tready),
+
+		// TX/RX DATA channels
+		.interface_number      (8'd0),
+
+		// NFPLUS pipeline clk & rst
+		.axis_aclk             (core_clk),
+		.axis_aresetn          (!core_rst),
+		// input from ref pipeline 256b -> MAC
+		.s_axis_pipe_tdata     (axis_dma_o_0_tdata),
+		.s_axis_pipe_tkeep     (axis_dma_o_0_tkeep),
+		.s_axis_pipe_tlast     (axis_dma_o_0_tlast),
+		.s_axis_pipe_tuser     (axis_dma_o_0_tuser),
+		.s_axis_pipe_tvalid    (axis_dma_o_0_tvalid),
+		.s_axis_pipe_tready    (axis_dma_o_0_tready),
+		// output to ref pipeline 256b -> DMA
+		.m_axis_pipe_tdata     (axis_dma_i_0_tdata),
+		.m_axis_pipe_tkeep     (axis_dma_i_0_tkeep),
+		.m_axis_pipe_tlast     (axis_dma_i_0_tlast),
+		.m_axis_pipe_tuser     (axis_dma_i_0_tuser),
+		.m_axis_pipe_tvalid    (axis_dma_i_0_tvalid),
+		.m_axis_pipe_tready    (axis_dma_i_0_tready)
+  );
+
+  	nf_mac_attachment_dma_ip u_nf_attachment_dma_1 (
+		.S_AXI_ACLK            (axi_clk),
+		.S_AXI_ARESETN         (axi_resetn),
+		.S_AXI_AWADDR          (M5_AXI_AWADDR),
+		.S_AXI_AWVALID         (M5_AXI_AWVALID),
+		.S_AXI_WDATA           (M5_AXI_WDATA),
+		.S_AXI_WSTRB           (M5_AXI_WSTRB),
+		.S_AXI_WVALID          (M5_AXI_WVALID),
+		.S_AXI_BREADY          (M5_AXI_BREADY),
+		.S_AXI_ARADDR          (M5_AXI_ARADDR),
+		.S_AXI_ARVALID         (M5_AXI_ARVALID),
+		.S_AXI_RREADY          (M5_AXI_RREADY),
+		.S_AXI_ARREADY         (M5_AXI_ARREADY),
+		.S_AXI_RDATA           (M5_AXI_RDATA),
+		.S_AXI_RRESP           (M5_AXI_RRESP),
+		.S_AXI_RVALID          (M5_AXI_RVALID),
+		.S_AXI_WREADY          (M5_AXI_WREADY),
+		.S_AXI_BRESP           (M5_AXI_BRESP),
+		.S_AXI_BVALID          (M5_AXI_BVALID),
+		.S_AXI_AWREADY         (M5_AXI_AWREADY),
+		// 10GE block clk & rst
+		.clk156                (core_clk),
+		.areset_clk156         (!core_rst),
+		// RX MAC 64b@clk156 (no backpressure) -> rx_queue 64b@axis_clk
+		.m_axis_mac_tdata      (axis_dma_i_1_raw_tdata),
+		.m_axis_mac_tkeep      (axis_dma_i_1_raw_tkeep),
+		.m_axis_mac_tvalid     (axis_dma_i_1_raw_tvalid),
+		.m_axis_mac_tuser_err  (1'b1),   // valid frame
+		.m_axis_mac_tuser      (axis_dma_i_1_raw_tuser),
+		.m_axis_mac_tlast      (axis_dma_i_1_raw_tlast),
+		// tx_queue 64b@axis_clk -> mac 64b@clk156
+		.s_axis_mac_tdata      (axis_dma_o_1_raw_tdata),
+		.s_axis_mac_tkeep      (axis_dma_o_1_raw_tkeep),
+		.s_axis_mac_tvalid     (axis_dma_o_1_raw_tvalid),
+		.s_axis_mac_tuser_err  (),       //underrun
+		.s_axis_mac_tuser      (axis_dma_o_1_raw_tuser),
+		.s_axis_mac_tlast      (axis_dma_o_1_raw_tlast),
+		.s_axis_mac_tready     (axis_dma_o_1_raw_tready),
+
+		// TX/RX DATA channels
+		.interface_number      (8'd0),
+
+		// NFPLUS pipeline clk & rst
+		.axis_aclk             (core_clk),
+		.axis_aresetn          (!core_rst),
+		// input from ref pipeline 256b -> MAC
+		.s_axis_pipe_tdata     (axis_dma_o_1_tdata),
+		.s_axis_pipe_tkeep     (axis_dma_o_1_tkeep),
+		.s_axis_pipe_tlast     (axis_dma_o_1_tlast),
+		.s_axis_pipe_tuser     (axis_dma_o_1_tuser),
+		.s_axis_pipe_tvalid    (axis_dma_o_1_tvalid),
+		.s_axis_pipe_tready    (axis_dma_o_1_tready),
+		// output to ref pipeline 256b -> DMA
+		.m_axis_pipe_tdata     (axis_dma_i_1_tdata),
+		.m_axis_pipe_tkeep     (axis_dma_i_1_tkeep),
+		.m_axis_pipe_tlast     (axis_dma_i_1_tlast),
+		.m_axis_pipe_tuser     (axis_dma_i_1_tuser),
+		.m_axis_pipe_tvalid    (axis_dma_i_1_tvalid),
+		.m_axis_pipe_tready    (axis_dma_i_1_tready)
+  );
 	
 	axi_crossbar_0 u_interconnect(
 		.aclk          (axi_clk),
@@ -635,23 +796,23 @@
 		.s_axi_rvalid  (S00_AXI_rvalid  ),
 		.s_axi_rready  (S00_AXI_rready  ),
 		.m_axi_awprot  (),
-		.m_axi_awaddr  ({M3_AXI_awaddr[31:0], M2_AXI_awaddr[31:0], M1_AXI_awaddr[31:0] ,M0_AXI_awaddr[31:0]}),
-		.m_axi_awvalid ({M3_AXI_awvalid,      M2_AXI_awvalid,      M1_AXI_awvalid,      M0_AXI_awvalid}),
-		.m_axi_awready ({M3_AXI_awready,      M2_AXI_awready,      M1_AXI_awready,      M0_AXI_awready}),
-		.m_axi_wdata   ({M3_AXI_wdata,        M2_AXI_wdata,        M1_AXI_wdata  ,      M0_AXI_wdata  }),
-		.m_axi_wstrb   ({M3_AXI_wstrb,        M2_AXI_wstrb,        M1_AXI_wstrb  ,      M0_AXI_wstrb  }),
-		.m_axi_wvalid  ({M3_AXI_wvalid,       M2_AXI_wvalid,       M1_AXI_wvalid ,      M0_AXI_wvalid }),
-		.m_axi_wready  ({M3_AXI_wready,       M2_AXI_wready,       M1_AXI_wready ,      M0_AXI_wready }),
-		.m_axi_bresp   ({M3_AXI_bresp,        M2_AXI_bresp,        M1_AXI_bresp  ,      M0_AXI_bresp  }),
-		.m_axi_bvalid  ({M3_AXI_bvalid,       M2_AXI_bvalid,       M1_AXI_bvalid ,      M0_AXI_bvalid }),
-		.m_axi_bready  ({M3_AXI_bready,       M2_AXI_bready,       M1_AXI_bready ,      M0_AXI_bready }),
-		.m_axi_araddr  ({M3_AXI_araddr,       M2_AXI_araddr,       M1_AXI_araddr ,      M0_AXI_araddr }),
-		.m_axi_arvalid ({M3_AXI_arvalid,      M2_AXI_arvalid,      M1_AXI_arvalid,      M0_AXI_arvalid}),
-		.m_axi_arready ({M3_AXI_arready,      M2_AXI_arready,      M1_AXI_arready,      M0_AXI_arready}),
-		.m_axi_rdata   ({M3_AXI_rdata,        M2_AXI_rdata,        M1_AXI_rdata  ,      M0_AXI_rdata  }),
-		.m_axi_rresp   ({M3_AXI_rresp,        M2_AXI_rresp,        M1_AXI_rresp  ,      M0_AXI_rresp  }),
-		.m_axi_rvalid  ({M3_AXI_rvalid,       M2_AXI_rvalid,       M1_AXI_rvalid ,      M0_AXI_rvalid }),
-		.m_axi_rready  ({M3_AXI_rready,       M2_AXI_rready,       M1_AXI_rready ,      M0_AXI_rready }),
+		.m_axi_awaddr  ({M5_AXI_awaddr[31:0], M4_AXI_awaddr[31:0], M3_AXI_awaddr[31:0], M2_AXI_awaddr[31:0], M1_AXI_awaddr[31:0] ,M0_AXI_awaddr[31:0]}),
+		.m_axi_awvalid ({M5_AXI_awvalid,      M4_AXI_awvalid,      M3_AXI_awvalid,      M2_AXI_awvalid,      M1_AXI_awvalid,      M0_AXI_awvalid}),
+		.m_axi_awready ({M5_AXI_awready,      M4_AXI_awready,      M3_AXI_awready,      M2_AXI_awready,      M1_AXI_awready,      M0_AXI_awready}),
+		.m_axi_wdata   ({M5_AXI_wdata,        M4_AXI_wdata,        M3_AXI_wdata,        M2_AXI_wdata,        M1_AXI_wdata  ,      M0_AXI_wdata  }),
+		.m_axi_wstrb   ({M5_AXI_wstrb,        M4_AXI_wstrb,        M3_AXI_wstrb,        M2_AXI_wstrb,        M1_AXI_wstrb  ,      M0_AXI_wstrb  }),
+		.m_axi_wvalid  ({M5_AXI_wvalid,       M4_AXI_wvalid,       M3_AXI_wvalid,       M2_AXI_wvalid,       M1_AXI_wvalid ,      M0_AXI_wvalid }),
+		.m_axi_wready  ({M5_AXI_wready,       M4_AXI_wready,       M3_AXI_wready,       M2_AXI_wready,       M1_AXI_wready ,      M0_AXI_wready }),
+		.m_axi_bresp   ({M5_AXI_bresp,        M4_AXI_bresp,        M3_AXI_bresp,        M2_AXI_bresp,        M1_AXI_bresp  ,      M0_AXI_bresp  }),
+		.m_axi_bvalid  ({M5_AXI_bvalid,       M4_AXI_bvalid,       M3_AXI_bvalid,       M2_AXI_bvalid,       M1_AXI_bvalid ,      M0_AXI_bvalid }),
+		.m_axi_bready  ({M5_AXI_bready,       M4_AXI_bready,       M3_AXI_bready,       M2_AXI_bready,       M1_AXI_bready ,      M0_AXI_bready }),
+		.m_axi_araddr  ({M5_AXI_araddr,       M4_AXI_araddr,       M3_AXI_araddr,       M2_AXI_araddr,       M1_AXI_araddr ,      M0_AXI_araddr }),
+		.m_axi_arvalid ({M5_AXI_arvalid,      M4_AXI_arvalid,      M3_AXI_arvalid,      M2_AXI_arvalid,      M1_AXI_arvalid,      M0_AXI_arvalid}),
+		.m_axi_arready ({M5_AXI_arready,      M4_AXI_arready,      M3_AXI_arready,      M2_AXI_arready,      M1_AXI_arready,      M0_AXI_arready}),
+		.m_axi_rdata   ({M5_AXI_rdata,        M4_AXI_rdata,        M3_AXI_rdata,        M2_AXI_rdata,        M1_AXI_rdata  ,      M0_AXI_rdata  }),
+		.m_axi_rresp   ({M5_AXI_rresp,        M4_AXI_rresp,        M3_AXI_rresp,        M2_AXI_rresp,        M1_AXI_rresp  ,      M0_AXI_rresp  }),
+		.m_axi_rvalid  ({M5_AXI_rvalid,       M4_AXI_rvalid,       M3_AXI_rvalid,       M2_AXI_rvalid,       M1_AXI_rvalid ,      M0_AXI_rvalid }),
+		.m_axi_rready  ({M5_AXI_rready,       M4_AXI_rready,       M3_AXI_rready,       M2_AXI_rready,       M1_AXI_rready ,      M0_AXI_rready }),
 		.m_axi_arprot  ()
 	);
 
@@ -725,50 +886,50 @@
 
 	// Multiplex the DMA stim to the two different datapths.
 	// Fairly simple, just set valid based upon the tuser
-	assign axis_dma_i_0_tdata = axis_dma_stim_tdata;
-	assign axis_dma_i_0_tvalid = (axis_dma_stim_tuser_src[1]) ? axis_dma_stim_tvalid : 1'b0;
-	assign axis_dma_i_0_tlast = axis_dma_stim_tlast;
-	assign axis_dma_i_0_tuser = axis_dma_stim_tuser;
-	assign axis_dma_i_0_tkeep = axis_dma_stim_tkeep;
+	assign axis_dma_i_0_raw_tdata = axis_dma_stim_tdata;
+	assign axis_dma_i_0_raw_tvalid = (axis_dma_stim_tuser_src[1]) ? axis_dma_stim_tvalid : 1'b0;
+	assign axis_dma_i_0_raw_tlast = axis_dma_stim_tlast;
+	assign axis_dma_i_0_raw_tuser = axis_dma_stim_tuser;
+	assign axis_dma_i_0_raw_tkeep = axis_dma_stim_tkeep;
 	// Choose appropriate tready depending on the destination
 	// Definitely not tready if stim not tvalid.
-	assign axis_dma_stim_tready = axis_dma_stim_tvalid ? ((axis_dma_stim_tuser_src[1]) ? axis_dma_i_0_tready
-		: ((axis_dma_stim_tuser_src[3]) ? axis_dma_i_1_tready : 1'b0)) : 1'b0;
+	assign axis_dma_stim_tready = axis_dma_stim_tvalid ? ((axis_dma_stim_tuser_src[1]) ? axis_dma_i_0_raw_tready
+		: ((axis_dma_stim_tuser_src[3]) ? axis_dma_i_1_raw_tready : 1'b0)) : 1'b0;
 
-	assign axis_dma_i_1_tdata = axis_dma_stim_tdata;
-	assign axis_dma_i_1_tvalid = (axis_dma_stim_tuser_src[3]) ? axis_dma_stim_tvalid : 1'b0;
-	assign axis_dma_i_1_tlast = axis_dma_stim_tlast;
-	assign axis_dma_i_1_tuser = axis_dma_stim_tuser;
-	assign axis_dma_i_1_tkeep = axis_dma_stim_tkeep;
+	assign axis_dma_i_1_raw_tdata = axis_dma_stim_tdata;
+	assign axis_dma_i_1_raw_tvalid = (axis_dma_stim_tuser_src[3]) ? axis_dma_stim_tvalid : 1'b0;
+	assign axis_dma_i_1_raw_tlast = axis_dma_stim_tlast;
+	assign axis_dma_i_1_raw_tuser = axis_dma_stim_tuser;
+	assign axis_dma_i_1_raw_tkeep = axis_dma_stim_tkeep;
 
 	// Multiplex the DMA output (two streams) into a single stream for recording
 	// In comparison more difficult as we must decide when to take from each.
 	reg curr_datapath; // 0 for datapath 0, 1 for datapath 1
 	reg need_more_data;
 
-	assign axis_dma_rec_tdata = curr_datapath ? axis_dma_o_1_tdata : axis_dma_o_0_tdata;
-	assign axis_dma_rec_tvalid = curr_datapath ? axis_dma_o_1_tvalid : axis_dma_o_0_tvalid;
-	assign axis_dma_rec_tlast = curr_datapath ? axis_dma_o_1_tlast : axis_dma_o_0_tlast;
-	assign axis_dma_rec_tuser = curr_datapath ? axis_dma_o_1_tuser : axis_dma_o_0_tuser;
-	assign axis_dma_rec_tkeep = curr_datapath ? axis_dma_o_1_tkeep : axis_dma_o_0_tkeep;
+	assign axis_dma_rec_tdata = curr_datapath ?  axis_dma_o_1_raw_tdata :  axis_dma_o_0_raw_tdata;
+	assign axis_dma_rec_tvalid = curr_datapath ? axis_dma_o_1_raw_tvalid : axis_dma_o_0_raw_tvalid;
+	assign axis_dma_rec_tlast = curr_datapath ?  axis_dma_o_1_raw_tlast :  axis_dma_o_0_raw_tlast;
+	assign axis_dma_rec_tuser = curr_datapath ?  axis_dma_o_1_raw_tuser :  axis_dma_o_0_raw_tuser;
+	assign axis_dma_rec_tkeep = curr_datapath ?  axis_dma_o_1_raw_tkeep :  axis_dma_o_0_raw_tkeep;
 
 	// Ready only if we are the current datapath selected.
-	assign axis_dma_o_0_tready = curr_datapath == 0 && axis_dma_rec_tready;
-	assign axis_dma_o_1_tready = curr_datapath == 1 && axis_dma_rec_tready;
+	assign axis_dma_o_0_raw_tready = curr_datapath == 0 && axis_dma_rec_tready;
+	assign axis_dma_o_1_raw_tready = curr_datapath == 1 && axis_dma_rec_tready;
 
 	always_ff @(posedge clk_200) begin
 		if(sys_rst_n_c) begin
 			// Allowed to swap datapaths when there is no data, but only if not mid transaction
 			if(!axis_dma_rec_tvalid && !need_more_data) begin
 				// Swap datapaths if the other port has data
-				curr_datapath <= curr_datapath ? (axis_dma_o_0_tvalid ? 0 : 1) : (axis_dma_o_1_tvalid ? 1 : 0);
+				curr_datapath <= curr_datapath ? (axis_dma_o_0_raw_tvalid ? 0 : 1) : (axis_dma_o_1_raw_tvalid ? 1 : 0);
 				need_more_data <= 0;
 			end else if(axis_dma_rec_tvalid && axis_dma_rec_tready) begin
 				if(axis_dma_rec_tlast) begin
 					// The last transaction: swap to the other datapath but only if it is valid
 					need_more_data <= 0;
 					// i.e. if we are 1, go to 0 if it is valid, if we are 0, go to 1 if it is valid.
-					curr_datapath <= curr_datapath ? (axis_dma_o_0_tvalid ? 0 : 1) : (axis_dma_o_1_tvalid ? 1 : 0);
+					curr_datapath <= curr_datapath ? (axis_dma_o_0_raw_tvalid ? 0 : 1) : (axis_dma_o_1_raw_tvalid ? 1 : 0);
 				end else begin
 					// Not the last transaction: make sure to stick with this datapath until that point
 					need_more_data <= 1;
@@ -779,8 +940,5 @@
 			need_more_data <= 0;
 		end
 	end
-
-
-
 endmodule
 
