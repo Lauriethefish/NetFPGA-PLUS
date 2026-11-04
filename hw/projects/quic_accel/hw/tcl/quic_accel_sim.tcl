@@ -34,7 +34,6 @@ set board_name  $::env(BOARD_NAME)
 set proj_dir ./project
 set public_repo_dir $::env(NFPLUS_FOLDER)/hw/lib/
 set projects_dir $::env(NFPLUS_FOLDER)/hw/projects
-set repo_dir ./ip_repo
 set project_constraints ./constraints/${board_name}_switch.xdc
 
 set test_name [lindex $argv 0] 
@@ -58,14 +57,13 @@ puts "Creating User Datapath reference project"
 # set IP paths
 #####################################
 create_fileset -constrset -quiet constraints
-file copy ${public_repo_dir}/ ${repo_dir}
-file copy ${projects_dir}/udp_checksum_calculator ${repo_dir}
-set_property ip_repo_paths ${repo_dir} [current_fileset]
+set ip_repos_list [list $public_repo_dir $projects_dir]
+set_property ip_repo_paths ${ip_repos_list} [current_fileset]
  
 #####################################
 # Project 
 #####################################
-update_ip_catalog
+update_ip_catalog -verbose
 # Checksum calculator
 create_ip -name udp_checksum_calculator -vendor NetFPGA -library NetFPGA -module_name udp_checksum_setter_ip
 set_property generate_synth_checkpoint false [get_files udp_checksum_setter_ip.xci]

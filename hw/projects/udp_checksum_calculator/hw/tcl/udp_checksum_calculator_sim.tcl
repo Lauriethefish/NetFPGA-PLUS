@@ -41,7 +41,6 @@ set board  $::env(BOARD)
 set board_name  $::env(BOARD_NAME)
 set proj_dir ./project
 set public_repo_dir $::env(NFPLUS_FOLDER)/hw/lib/
-set repo_dir ./ip_repo
 set project_constraints ./constraints/${board_name}_switch.xdc
 
 set test_name [lindex $argv 0]
@@ -57,8 +56,8 @@ puts "Creating UDP checksum setting IP"
 # set IP paths
 #####################################
 create_fileset -constrset -quiet constraints
-file copy ${public_repo_dir}/ ${repo_dir}
-set_property ip_repo_paths ${repo_dir} [current_fileset]
+set ip_repos_list [list $public_repo_dir]
+set_property ip_repo_paths ${ip_repos_list} [current_fileset]
 #####################################
 # Design Parameters on NF_DATAPATH
 #####################################

@@ -36,7 +36,6 @@ set top udp_set_checksum
 set proj_dir ./synth
 set proj_dir ./project
 set public_repo_dir $::env(NFPLUS_FOLDER)/hw/lib/
-set repo_dir ./ip_repo
 
 set device          $::env(DEVICE)
 set ip_name 		{udp_checksum_calculator}
@@ -60,8 +59,8 @@ puts "Creating UDP checksum setting IP"
 # set IP paths
 #####################################
 create_fileset -constrset -quiet constraints
-file copy ${public_repo_dir}/ ${repo_dir}
-set_property ip_repo_paths ${repo_dir} [current_fileset]
+set ip_repos_list [list $public_repo_dir]
+set_property ip_repo_paths ${ip_repos_list} [current_fileset]
 #####################################
 # Design Parameters on NF_DATAPATH
 #####################################
