@@ -107,7 +107,7 @@ def nftest_init(sim_loop = [], hw_config=None):
 
     # running a hardware test, check connections
     else:
-        ifaceTuple = ('nf0', 'nf1')
+        ifaceTuple = ('nf0')
         if hw_config is None:
             print("Error: trying to run hardware test without specifying hardware configurations.  Verify the keyword argument hw_config is being used in nftest_init")
             sys.exit(1)
