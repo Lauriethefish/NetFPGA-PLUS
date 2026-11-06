@@ -184,7 +184,7 @@
 		.M_AXIS_TKEEP    (p_axis_i_tkeep),
 		.M_AXIS_TUSER    (p_axis_i_tuser),
 		.M_AXIS_TVALID   (p_axis_i_tvalid),
-		.M_AXIS_TREADY   (1),
+		.M_AXIS_TREADY   (p_axis_i_tready), /* change back to 1 once using MAC attachment again */
 		.M_AXIS_TLAST    (p_axis_i_tlast),
 
 		.counter         (counter0),
@@ -207,6 +207,25 @@
 		.activity_rec(activity_rec0)
 	);
 
+	/* Temporary assignments */
+	assign axis_i_tdata = p_axis_i_tdata;
+	assign axis_i_tuser = p_axis_i_tuser;
+	assign axis_i_tvalid = p_axis_i_tvalid;
+	assign axis_i_tkeep = p_axis_i_tkeep;
+	assign axis_i_tlast = p_axis_i_tlast;
+	assign p_axis_i_tready = axis_i_tready;
+
+	assign p_axis_o_tdata = axis_o_tdata;
+	assign p_axis_o_tuser = axis_o_tuser;
+	assign p_axis_o_tvalid = axis_o_tvalid;
+	assign p_axis_o_tkeep = axis_o_tkeep;
+	assign p_axis_o_tlast = axis_o_tlast;
+	assign axis_o_tready = p_axis_o_tready;
+
+
+
+	// Remove as has draconian restrictions on packet size (4000 bytes :()
+	/*
   nf_mac_attachment_ip u_nf_attachment_0 (
 		// 10GE block clk & rst 
 		.clk156                (clk_200),  
@@ -247,7 +266,7 @@
 		.m_axis_pipe_tuser     (axis_i_tuser),
 		.m_axis_pipe_tvalid    (axis_i_tvalid),
 		.m_axis_pipe_tready    (axis_i_tready)
-	);
+	);*/
 
 endmodule
 

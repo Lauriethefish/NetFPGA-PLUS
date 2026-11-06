@@ -33,6 +33,7 @@
 
 set DEF_LIST {
 	{QUIC_ACCEL 0 1 ../../projects/quic_accel/data/quic_accel_reg_defines.txt} \
+	{QUIC_ACCEL 1 1 ../../projects/quic_accel/data/quic_accel_reg_defines.txt} \
 }
 
 set target_path $::env(NF_DESIGN_DIR)/test
@@ -110,17 +111,17 @@ source $::env(NF_DESIGN_DIR)/hw/tcl/$::env(NF_PROJECT_NAME)_defines.tcl
 set public_repo_dir $::env(NFPLUS_FOLDER)/hw/lib/
 
 
-set baseaddr [set $prefix\_BASEADDR]
-set highaddr [set $prefix\_HIGHADDR]
-set sizeaddr [set $prefix\_SIZEADDR]
+set baseaddr [set $prefix\_$id\_BASEADDR]
+set highaddr [set $prefix\_$id\_HIGHADDR]
+set sizeaddr [set $prefix\_$id\_SIZEADDR]
 
 puts $h_file "//######################################################"
 puts $h_file "//# Definitions for $prefix"
 puts $h_file "//######################################################"
 
-puts $h_file "#define NFPLUS_$prefix\_BASEADDR $baseaddr"
-puts $h_file "#define NFPLUS_$prefix\_HIGHADDR $highaddr"
-puts $h_file "#define NFPLUS_$prefix\_SIZEADDR $sizeaddr"
+puts $h_file "#define NFPLUS_$prefix\_$id\_BASEADDR $baseaddr"
+puts $h_file "#define NFPLUS_$prefix\_$id\_HIGHADDR $highaddr"
+puts $h_file "#define NFPLUS_$prefix\_$id\_SIZEADDR $sizeaddr"
 puts $h_file ""
 
 #Second, read the registers information from the library defines file

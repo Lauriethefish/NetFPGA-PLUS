@@ -82,6 +82,9 @@ generate_target all [get_ips nf_mac_attachment_ip]
 # Project Structure & IP Build
 #####################################
 
+read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/inter_structs.sv"
+read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/ip_header_calc.sv"
+read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/udp_splitter.sv"
 read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/udp_segmentor.sv"
 read_verilog "$::env(NF_DESIGN_DIR)/hw/hdl/top_sim.v"
 read_verilog "$::env(NF_DESIGN_DIR)/hw/hdl/top_tb.v"
@@ -107,4 +110,4 @@ set output [exec $::env(PYTHON_BNRY) $::env(NF_DESIGN_DIR)/test/${test_name}/run
 puts $output
 
 launch_simulation -simset sim_1 -mode behavioral
-run 140us
+run 1000us

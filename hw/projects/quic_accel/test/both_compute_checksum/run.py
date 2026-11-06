@@ -40,6 +40,7 @@ import sys
 import os
 from scapy.layers.all import Ether, IP, TCP, UDP
 from scapy.all import *
+import reg_defines_quic_accel
 from reg_defines_quic_accel import *
 
 conn = ('../connections/conn', [])
@@ -100,28 +101,23 @@ for i in range(NUM_PKTS):
         pkt.time = ((i*(1e-8)) + (1e-6)) 
         nftest_send_dma('nf0', pkt)
         nftest_expect_phy('nf0', pkt_expect)
+        nftest_send_phy('nf0', pkt)
+        nftest_expect_dma('nf0', pkt_expect)
 
-"""
-if not isHW():  
-    nftest_send_dma('nf0', pkts_sent) 
-    nftest_expect_phy('nf0', pkts_expected) 
-"""
-    
+        nftest_send_dma('nf1', pkt)
+        nftest_expect_phy('nf1', pkt_expect)
+        nftest_send_phy('nf1', pkt)
+        nftest_expect_dma('nf1', pkt_expect)
+
+
 nftest_barrier()
 
-if isHW():
-    rres1=nftest_regread_expect(NFPLUS_QUIC_ACCEL_0_NUM_TX(), NUM_PKTS)
-    mres=[rres1]
-else:
-    nftest_regread_expect(NFPLUS_QUIC_ACCEL_0_NUM_TX(), NUM_PKTS)
-    nftest_regread_expect(NFPLUS_QUIC_ACCEL_0_NUM_RX(), NUM_PKTS)
-    nftest_regread_expect(NFPLUS_QUIC_ACCEL_0_NUM_RX_RAW(), NUM_PKTS)
-    nftest_regread_expect(NFPLUS_QUIC_ACCEL_0_NUM_TX_RAW(), NUM_PKTS)
-    nftest_regread_expect(NFPLUS_QUIC_ACCEL_0_MAGIC(), 0xffdafafa)
-    nftest_regread_expect(0x20014, 0xffdafafa)
-    nftest_regread_expect(0x20018, 0xffdafafa)
-    nftest_regread_expect(NFPLUS_QUIC_ACCEL_0_MAGIC(), 0xffdafafa)
 
-    mres=[]
+rres1 = nftest_regread_expect(NFPLUS_QUIC_ACCEL_0_NUM_TX(), NUM_PKTS)
+rres2 = nftest_regread_expect(NFPLUS_QUIC_ACCEL_0_NUM_RX(), 0)
+rres3 = nftest_regread_expect(NFPLUS_QUIC_ACCEL_0_NUM_TX_RAW(), NUM_PKTS)
+rres4 = nftest_regread_expect(NFPLUS_QUIC_ACCEL_0_NUM_RX_RAW(), 0)
+rres5 = nftest_regread_expect(NFPLUS_QUIC_ACCEL_0_MAGIC(), 0xffdafafa)
+mres=[rres1, rres2, rres3, rres4, rres5]
 
 nftest_finish(mres)

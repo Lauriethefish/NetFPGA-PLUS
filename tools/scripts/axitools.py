@@ -223,6 +223,7 @@ def axis_load( f, period ):
                 valid_bytes = int( math.log( int( line[1], 16 ) + 1, 2 ) )
                 if valid_bytes < bus_width//8: # trim off any padding
                     del pkt_data[valid_bytes-bus_width//8:]
+                #print(f"Length of packet: {len(pkt_data)}")
                 pkts.append(Ether(raw(pkt_data)))
                 pkts[-1].time        =  SoP_time
                 pkts[-1].tuser       =  tuser

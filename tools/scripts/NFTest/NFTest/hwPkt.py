@@ -137,7 +137,6 @@ class pktExpect(Thread):
         self.lock.acquire()
         print(f"Expecting {pkt}, checksum: {pkt.getlayer(2)[UDP].chksum} on self.device")
         self.exp_pkts.append((pkt, mask))
-        print(f"TOTAL EXPECTED: {len(self.exp_pkts)}")
         self.barrierEvent.clear()
         self.lock.release()
 
