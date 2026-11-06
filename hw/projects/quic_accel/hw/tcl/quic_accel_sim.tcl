@@ -232,6 +232,20 @@ set_property generate_synth_checkpoint false [get_files axi_crossbar_0.xci]
 reset_target all [get_ips axi_crossbar_0]
 generate_target all [get_ips axi_crossbar_0]
 
+create_ip -name axis_switch -vendor xilinx.com -library ip -version 1.1 -module_name axis_switch_0
+set_property -dict [list \
+  CONFIG.HAS_TKEEP {1} \
+  CONFIG.HAS_TLAST {1} \
+  CONFIG.NUM_SI {1} \
+  CONFIG.ROUTING_MODE {0} \
+  CONFIG.TDEST_WIDTH {1} \
+  CONFIG.TUSER_WIDTH {128} \
+] [get_ips axis_switch_0]
+set_property CONFIG.TDATA_NUM_BYTES ${datapath_width_byte} [get_ips axis_switch_0]
+
+
+#read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/inter_structs.sv"
+read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/incoming_filter.sv"
 read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/axil_register_bank.sv"
 read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/nf_datapath.sv"
 read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/top_sim.sv"

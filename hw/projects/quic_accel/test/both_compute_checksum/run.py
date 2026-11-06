@@ -110,6 +110,17 @@ for i in range(NUM_PKTS):
         nftest_expect_dma('nf1', pkt_expect)
 
 
+if not isHW():
+    pkt_send = make_IP_pkt(dst_MAC=DA, src_MAC=SA, dst_IP=DST_IP,
+                        src_IP=SRC_IP, TTL=TTL,
+                        pkt_len=300)
+    pkt_send.time = ((i*(1e-8)) + (1e-6)) 
+    # Should arrive on DMA when sent on PHY
+    # but when sending on DMA, should get filtered out
+    nftest_send_dma('nf0', pkt_send)
+    nftest_send_phy('nf0', pkt_send)
+    nftest_expect_dma('nf0', pkt_send)
+
 nftest_barrier()
 
 

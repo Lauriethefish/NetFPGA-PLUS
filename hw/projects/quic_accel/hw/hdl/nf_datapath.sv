@@ -111,6 +111,26 @@ module nf_datapath #(
     output                                     m_axis_phy_tlast_raw
     );
 
+    // Offload input on TX path
+    wire [C_AXIS_DATA_WIDTH - 1:0]         s_axis_offload_tdata;
+    wire [((C_AXIS_DATA_WIDTH / 8)) - 1:0] s_axis_offload_tkeep;
+    wire [C_AXIS_TUSER_WIDTH-1:0]          s_axis_offload_tuser;
+    wire                                   s_axis_offload_tvalid;
+    wire                                   s_axis_offload_tready;
+    wire                                   s_axis_offload_tlast;
+
+    // Packets bypassing the offload
+    wire [C_AXIS_DATA_WIDTH - 1:0]         s_axis_bypass_tdata;
+    wire [((C_AXIS_DATA_WIDTH / 8)) - 1:0] s_axis_bypass_tkeep;
+    wire [C_AXIS_TUSER_WIDTH-1:0]          s_axis_bypass_tuser;
+    wire                                   s_axis_bypass_tvalid;
+    wire                                   s_axis_bypass_tready;
+    wire                                   s_axis_bypass_tlast;
+
+    // Void everything bypassing the offload for now
+    // TODO
+    assign s_axis_bypass_tready = 1'b1;
+
     // Register inputs and outputs to CMAC subsystem using SLR-crossing
     // axis_register_slice.
     // The CMAC subsystem has a high clock frequency so the interface to it
@@ -181,18 +201,68 @@ module nf_datapath #(
     assign s_axis_phy_tready = m_axis_dma_tready;
     
 
+    reg is_new_packet;
+    reg can_offload_last_from_dma;
+    wire can_offload_new_from_dma;
+    incoming_filter
+    #(
+        .C_AXIS_DATA_WIDTH(512),
+        .C_AXIS_TUSER_WIDTH(128)
+    )
+    offload_filter (
+        .s_axis_tdata(s_axis_dma_tdata),
+        .s_axis_tuser(s_axis_dma_tuser),
+        
+        .is_offloadable(can_offload_new_from_dma)
+    );
+
+    wire can_offload_from_dma;
+    assign can_offload_from_dma = is_new_packet ? can_offload_new_from_dma : can_offload_last_from_dma;
+    
+    always_ff @(posedge axis_aclk) begin
+        if(!axi_resetn) begin
+            is_new_packet <= 1'b1;
+        end else begin
+            if(s_axis_dma_tvalid && s_axis_dma_tready) begin
+                is_new_packet <= s_axis_dma_tlast;
+                can_offload_last_from_dma <= can_offload_from_dma;
+            end
+        end
+    end
+
+    axis_switch_0 inc_packet_switch
+    (
+        .aclk(axis_aclk),
+        .aresetn(axis_resetn),
+        .s_axis_tdata (s_axis_dma_tdata),
+        .s_axis_tvalid(s_axis_dma_tvalid),
+        .s_axis_tuser (s_axis_dma_tuser),
+        .s_axis_tlast (s_axis_dma_tlast),
+        .s_axis_tkeep (s_axis_dma_tkeep),
+        .s_axis_tready(s_axis_dma_tready),
+        .s_axis_tdest(can_offload_from_dma),
+
+        .m_axis_tdata({s_axis_offload_tdata, s_axis_bypass_tdata}),
+        .m_axis_tvalid({s_axis_offload_tvalid, s_axis_bypass_tvalid}),
+        .m_axis_tuser({s_axis_offload_tuser, s_axis_bypass_tuser}),
+        .m_axis_tlast({s_axis_offload_tlast, s_axis_bypass_tlast}),
+        .m_axis_tkeep({s_axis_offload_tkeep, s_axis_bypass_tkeep}),
+        .m_axis_tready({s_axis_offload_tready, s_axis_bypass_tready})
+    );
+    
+
     udp_checksum_setter_ip
     set_checksum
     (
       .axis_aclk(axis_aclk), 
       .axis_resetn(axis_resetn), 
       
-      .s_axis_tdata (s_axis_dma_tdata), 
-      .s_axis_tkeep (s_axis_dma_tkeep), 
-      .s_axis_tuser (s_axis_dma_tuser), 
-      .s_axis_tvalid(s_axis_dma_tvalid),
-      .s_axis_tready(s_axis_dma_tready), 
-      .s_axis_tlast (s_axis_dma_tlast),
+      .s_axis_tdata (s_axis_offload_tdata), 
+      .s_axis_tkeep (s_axis_offload_tkeep), 
+      .s_axis_tuser (s_axis_offload_tuser), 
+      .s_axis_tvalid(s_axis_offload_tvalid),
+      .s_axis_tready(s_axis_offload_tready), 
+      .s_axis_tlast (s_axis_offload_tlast),
 
       .m_axis_tdata (m_axis_phy_tdata), 
       .m_axis_tkeep (m_axis_phy_tkeep), 
