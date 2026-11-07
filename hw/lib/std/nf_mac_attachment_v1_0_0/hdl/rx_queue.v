@@ -36,7 +36,8 @@ module rx_queue
 #(
     parameter AXI_DATA_WIDTH = 512,
     parameter AXI_USER_WIDTH = 128,
-    parameter RXQUEUE_DEPTH  = 128
+    parameter RXQUEUE_DEPTH  = 128,
+    parameter C_ENABLE_MAC_TREADY = 0
 )
 (
     // AXI side output
@@ -58,6 +59,7 @@ module rx_queue
     input [AXI_DATA_WIDTH/8-1:0]         i_tkeep,
     input [AXI_USER_WIDTH-1:0]           i_tuser,
     input                                i_tuser_err,
+    output                               i_tready,
     input                                i_tvalid,
     input                                i_tlast,
 
@@ -72,6 +74,7 @@ module rx_queue
     localparam PKT           = 1;
 
     wire fifo_almost_full;
+    assign i_tready = ~fifo_almost_full;
     wire fifo_empty, fifo_full;
     wire fifo_rd_en;
 
@@ -137,10 +140,10 @@ module rx_queue
     /* **************************************************
      *  Enqueue: rx_queue
      * **************************************************/
-    assign rx_pkt_drop       = (i_tvalid && state == IDLE && fifo_almost_full) ||
-                               (i_tvalid && state == IDLE && !rx_good_frame);
+    assign rx_pkt_drop       = !C_ENABLE_MAC_TREADY && ((i_tvalid && state == IDLE && fifo_almost_full) ||
+                               (i_tvalid && state == IDLE && !rx_good_frame));
     assign rx_pkt_drop_frame = rx_pkt_drop || rx_pkt_drop_reg;
-    assign fifo_wr_en        = i_tvalid && !rx_pkt_drop_frame;
+    assign fifo_wr_en        = i_tvalid && !rx_pkt_drop_frame && (!C_ENABLE_MAC_TREADY || i_tready);
     assign tdata_rx_fifo = i_tdata;
     assign tkeep_rx_fifo = i_tkeep;
     assign tlast_rx_fifo = i_tlast;

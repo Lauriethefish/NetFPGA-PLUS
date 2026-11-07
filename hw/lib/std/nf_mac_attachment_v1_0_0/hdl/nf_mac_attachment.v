@@ -43,6 +43,7 @@ module nf_mac_attachment #(
     parameter C_S_AXI_ADDR_WIDTH        = 32,
     parameter C_BASEADDR                = 32'h00000000,
     parameter C_DEFAULT_VALUE_ENABLE    = 1,
+    parameter C_ENABLE_MAC_TREADY       = 0,
     parameter C_DEFAULT_SRC_PORT        = 0,
     parameter C_DEFAULT_DST_PORT        = 0
 ) (
@@ -57,6 +58,7 @@ module nf_mac_attachment #(
   input                                 m_axis_mac_tuser_err,   // valid frame
   input [C_M_AXIS_TUSER_WIDTH-1:0]      m_axis_mac_tuser,
   input                                 m_axis_mac_tlast,
+  output                                m_axis_mac_tready,
 
   // tx_queue 64b@axis_clk -> mac 64b@clk156
   output [511:0]                        s_axis_mac_tdata,
@@ -177,7 +179,7 @@ module nf_mac_attachment #(
    );
 
    // FIFO36_72 primitive rst extension tx
-   data_sync_block #(
+   data_sync_block #(C_ENABLE_MAC_TREADY
      .C_NUM_SYNC_REGS                     (6)
    ) tx_fifo_rst (
      .clk                                 (axis_aclk),
@@ -193,22 +195,23 @@ module nf_mac_attachment #(
    // should be ONLY 1'b0 at that time. 
    //-------------------------------------------------------------------------  
    rx_queue #(
-     .AXI_DATA_WIDTH                      (C_M_AXIS_DATA_WIDTH_INTERNAL)
+     .AXI_DATA_WIDTH                      (C_M_AXIS_DATA_WIDTH_INTERNAL),
+     .C_ENABLE_MAC_TREADY                 (C_ENABLE_MAC_TREADY)
     ) rx_fifo_intf (
     // MAC input 64b@clk156
     .clk156                               (clk156),
     .areset_clk156                        (areset_clk156),
-
     .i_tdata                              (m_axis_mac_tdata),
     .i_tkeep                              (m_axis_mac_tkeep),
     .i_tuser_err                          (m_axis_mac_tuser_err),
     .i_tuser                              (m_axis_mac_tuser),
+    .i_tready                             (m_axis_mac_tready),
     .i_tvalid                             (m_axis_mac_tvalid),
     .i_tlast                              (m_axis_mac_tlast),
 
     // FIFO output 64b@axi_aclk
     .clk                                  (axis_aclk),
-    .reset                                (areset_rx_fifo_extended), 
+    .reset                                (areset_rx_fifo_extended),
 
     .o_tdata                              (m_axis_fifo_tdata),
     .o_tkeep                              (m_axis_fifo_tkeep),
