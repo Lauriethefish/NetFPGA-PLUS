@@ -106,7 +106,7 @@ module nf_axis_converter_main
      end
   endfunction 
 
-  localparam MAX_PKT_SIZE = 4000; // In bytes
+  localparam MAX_PKT_SIZE = 131072; // In bytes
   localparam LENGTH_COUNTER_WIDTH = log2(C_S_AXIS_DATA_WIDTH / 8);
   localparam IN_FIFO_DEPTH_BIT = log2(MAX_PKT_SIZE/(C_S_AXIS_DATA_WIDTH / 8));
   localparam M_S_RATIO_COUNT = C_M_AXIS_DATA_WIDTH / C_S_AXIS_DATA_WIDTH;
@@ -188,6 +188,8 @@ module nf_axis_converter_main
   if(C_DEFAULT_VALUE_ENABLE == 1) begin: DEFAULT_VALUE_ENABLE
 
   xpm_fifo_sync # (
+        // TODO: This REALLY shouldn't be hardcoded
+        // TODO: The number that IS hard coded definitely isn't ENOUGH
         .FIFO_WRITE_DEPTH    (32),
         .WRITE_DATA_WIDTH    (C_LEN_WIDTH),
         .PROG_FULL_THRESH    (32-5),
@@ -221,7 +223,7 @@ module nf_axis_converter_main
 
   always @(*) begin
       local_sum = 0;
-      for ( i=0; i< C_S_AXIS_DATA_WIDTH / 8; i=i+1 ) begin
+      for ( i=0; i< (C_S_AXIS_DATA_WIDTH / 8); i=i+1 ) begin
           if ( s_axis_tkeep[i] ) begin
               local_sum = i+1;
           end
