@@ -127,6 +127,14 @@ module nf_datapath #(
     wire                                   s_axis_bypass_tready;
     wire                                   s_axis_bypass_tlast;
 
+    // Packets post segmentation which need their checksum (re) calculating.
+    wire [C_AXIS_DATA_WIDTH - 1:0]         s_axis_tobe_checksummed_tdata;
+    wire [((C_AXIS_DATA_WIDTH / 8)) - 1:0] s_axis_tobe_checksummed_tkeep;
+    wire [C_AXIS_TUSER_WIDTH-1:0]          s_axis_tobe_checksummed_tuser;
+    wire                                   s_axis_tobe_checksummed_tvalid;
+    wire                                   s_axis_tobe_checksummed_tready;
+    wire                                   s_axis_tobe_checksummed_tlast;
+
     // Void everything bypassing the offload for now
     // TODO
     assign s_axis_bypass_tready = 1'b1;
@@ -249,6 +257,26 @@ module nf_datapath #(
         .m_axis_tkeep({s_axis_offload_tkeep, s_axis_bypass_tkeep}),
         .m_axis_tready({s_axis_offload_tready, s_axis_bypass_tready})
     );
+
+    // Instantiate segmentor
+	udp_segmentor segmentor
+    (
+      .axis_aclk(clk_200),
+      .axis_resetn(sys_rst_n_c), 
+      
+      .s_axis_tdata (s_axis_offload_tdata), 
+      .s_axis_tkeep (s_axis_offload_tkeep), 
+      .s_axis_tuser (s_axis_offload_tuser), 
+      .s_axis_tvalid(s_axis_offload_tvalid),
+      .s_axis_tready(s_axis_offload_tready), 
+      .s_axis_tlast (s_axis_offload_tlast),
+      .m_axis_tdata (s_axis_tobe_checksummed_tdata), 
+      .m_axis_tkeep (s_axis_tobe_checksummed_tkeep), 
+      .m_axis_tuser (s_axis_tobe_checksummed_tuser), 
+      .m_axis_tvalid(s_axis_tobe_checksummed_tvalid), 
+      .m_axis_tready(s_axis_tobe_checksummed_tready), 
+      .m_axis_tlast (s_axis_tobe_checksummed_tlast)
+    );
     
 
     udp_checksum_setter_ip
@@ -257,12 +285,12 @@ module nf_datapath #(
       .axis_aclk(axis_aclk), 
       .axis_resetn(axis_resetn), 
       
-      .s_axis_tdata (s_axis_offload_tdata), 
-      .s_axis_tkeep (s_axis_offload_tkeep), 
-      .s_axis_tuser (s_axis_offload_tuser), 
-      .s_axis_tvalid(s_axis_offload_tvalid),
-      .s_axis_tready(s_axis_offload_tready), 
-      .s_axis_tlast (s_axis_offload_tlast),
+      .s_axis_tdata (s_axis_tobe_checksummed_tdata), 
+      .s_axis_tkeep (s_axis_tobe_checksummed_tkeep), 
+      .s_axis_tuser (s_axis_tobe_checksummed_tuser), 
+      .s_axis_tvalid(s_axis_tobe_checksummed_tvalid),
+      .s_axis_tready(s_axis_tobe_checksummed_tready), 
+      .s_axis_tlast (s_axis_tobe_checksummed_tlast),
 
       .m_axis_tdata (m_axis_phy_tdata), 
       .m_axis_tkeep (m_axis_phy_tkeep), 

@@ -84,7 +84,13 @@ def generate_rand_segment_packet(cut_off_last_segment, pkts_expect, pkts_send, v
 # if present.
 # By default, the expected packets have UDP checksum 0. If this should not be the case,
 # pass valid_udp_checksum=True
-def generate_testcases(seed, pkts_expect, pkts_send, allow_invalid_packets, num_pkts=500, valid_udp_checksum=False, **kwargs):
+def generate_testcases(seed,
+                       pkts_expect,
+                       pkts_send,
+                       allow_invalid_packets,
+                       num_pkts=500,
+                       valid_udp_checksum=False,
+                       **kwargs):
     random.seed(seed)
 
     for lengths in testcases:

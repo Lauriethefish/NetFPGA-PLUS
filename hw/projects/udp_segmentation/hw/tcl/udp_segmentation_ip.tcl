@@ -32,7 +32,7 @@
 # Vivado Launch Script
 #### Change design settings here #######
 set device          $::env(DEVICE)
-set top udp_set_checksum
+set top udp_segmentor
 set proj_dir ./synth
 set proj_dir ./project
 set public_repo_dir $::env(NFPLUS_FOLDER)/hw/lib/
@@ -72,7 +72,12 @@ update_ip_catalog
 # Project Structure & IP Build
 #####################################
 
+read_verilog -sv "./hdl/inter_structs.sv"
+read_verilog -sv "./hdl/ip_header_calc.sv"
+read_verilog -sv "./hdl/udp_splitter.sv"
 read_verilog -sv "./hdl/udp_segmentor.sv"
+read_verilog "./hdl/top_sim.v"
+read_verilog "./hdl/top_tb.v"
 
 update_compile_order -fileset sources_1
 update_compile_order -fileset sim_1
