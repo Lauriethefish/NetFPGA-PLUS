@@ -84,13 +84,19 @@ def generate_rand_segment_packet(cut_off_last_segment, pkts_expect, pkts_send, v
 # if present.
 # By default, the expected packets have UDP checksum 0. If this should not be the case,
 # pass valid_udp_checksum=True
-def generate_testcases(seed, pkts_expect, pkts_send, allow_invalid_packets, num_pkts=500, valid_udp_checksum=False, **kwargs):
+def generate_testcases(seed,
+                       pkts_expect,
+                       pkts_send,
+                       allow_invalid_packets,
+                       num_pkts=500,
+                       valid_udp_checksum=False,
+                       **kwargs):
     random.seed(seed)
 
     for lengths in testcases:
         print(f"Generating deterministic testcase {lengths}")
         generate_determ_segment_packet(lengths, pkts_expect, pkts_send, valid_udp_checksum, **kwargs)
-    
+
     for _ in range(num_pkts):
         print("Generating standard packet to segment")
         generate_rand_segment_packet(False, pkts_expect, pkts_send, valid_udp_checksum, **kwargs)
@@ -99,7 +105,7 @@ def generate_testcases(seed, pkts_expect, pkts_send, allow_invalid_packets, num_
             print("Generating invalid packets")
             for _ in range(random.randint(1, 3)):
                 generate_rand_segment_packet(True, pkts_expect, pkts_send, valid_udp_checksum, **kwargs)
-
+    
     for pkt in pkts_expect:
         if not valid_udp_checksum:
             pkt.getlayer(2)[scapy.UDP].chksum = 0
