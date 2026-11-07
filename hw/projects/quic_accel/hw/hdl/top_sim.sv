@@ -136,9 +136,6 @@
   wire[C_TUSER_WIDTH-1:0]     axis_dma_i_1_raw_tuser , axis_dma_o_1_raw_tuser;
   wire[C_DATA_WIDTH/8-1:0]    axis_dma_i_1_raw_tkeep , axis_dma_o_1_raw_tkeep;
   wire                        axis_dma_i_1_raw_tready, axis_dma_o_1_raw_tready;
-	// Input to DMA assumes no backpressure.
-  assign axis_dma_i_0_raw_tready = 1'b1;
-  assign axis_dma_i_1_raw_tready = 1'b1;
 
   wire[C_DATA_WIDTH-1:0]      axis_dma_i_0_tdata , axis_dma_o_0_tdata;
   wire                        axis_dma_i_0_tvalid, axis_dma_o_0_tvalid;
@@ -706,6 +703,7 @@
 		.m_axis_mac_tuser_err  (1'b1),   // valid frame
 		.m_axis_mac_tuser      (axis_dma_i_0_raw_tuser),
 		.m_axis_mac_tlast      (axis_dma_i_0_raw_tlast),
+		.m_axis_mac_tready     (axis_dma_i_0_raw_tready),
 		// tx_queue 64b@axis_clk -> mac 64b@clk156
 		.s_axis_mac_tdata      (axis_dma_o_0_raw_tdata),
 		.s_axis_mac_tkeep      (axis_dma_o_0_raw_tkeep),
@@ -767,6 +765,7 @@
 		.m_axis_mac_tuser_err  (1'b1),   // valid frame
 		.m_axis_mac_tuser      (axis_dma_i_1_raw_tuser),
 		.m_axis_mac_tlast      (axis_dma_i_1_raw_tlast),
+		.m_axis_mac_tready     (axis_dma_i_1_raw_tready),
 		// tx_queue 64b@axis_clk -> mac 64b@clk156
 		.s_axis_mac_tdata      (axis_dma_o_1_raw_tdata),
 		.s_axis_mac_tkeep      (axis_dma_o_1_raw_tkeep),

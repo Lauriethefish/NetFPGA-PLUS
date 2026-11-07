@@ -70,16 +70,23 @@ set_property generate_synth_checkpoint false [get_files udp_checksum_setter_ip.x
 reset_target all [get_ips udp_checksum_setter_ip]
 generate_target all [get_ips udp_checksum_setter_ip]
 
+create_ip -name udp_segmentation -vendor NetFPGA -library NetFPGA -module_name udp_segmentor_ip
+set_property generate_synth_checkpoint false [get_files udp_segmentor_ip.xci]
+reset_target all [get_ips udp_segmentor_ip]
+generate_target all [get_ips udp_segmentor_ip]
+
 create_ip -name nf_mac_attachment -vendor NetFPGA -library NetFPGA -module_name nf_mac_attachment_ip
 set_property CONFIG.C_M_AXIS_DATA_WIDTH ${datapath_width_bit} [get_ips nf_mac_attachment_ip]
 set_property CONFIG.C_S_AXIS_DATA_WIDTH ${datapath_width_bit} [get_ips nf_mac_attachment_ip]
 set_property generate_synth_checkpoint false [get_files nf_mac_attachment_ip.xci]
+set_property CONFIG.C_ENABLE_MAC_TREADY 0 [get_ips nf_mac_attachment_ip]
 reset_target all [get_ips nf_mac_attachment_ip]
 generate_target all [get_ips nf_mac_attachment_ip]
 
 create_ip -name nf_mac_attachment -vendor NetFPGA -library NetFPGA -module_name nf_mac_attachment_dma_ip
 set_property CONFIG.C_M_AXIS_DATA_WIDTH ${datapath_width_bit} [get_ips nf_mac_attachment_dma_ip]
 set_property CONFIG.C_S_AXIS_DATA_WIDTH ${datapath_width_bit} [get_ips nf_mac_attachment_dma_ip]
+set_property CONFIG.C_ENABLE_MAC_TREADY 1 [get_ips nf_mac_attachment_dma_ip]
 set_property CONFIG.C_DEFAULT_VALUE_ENABLE 0 [get_ips nf_mac_attachment_dma_ip]
 set_property generate_synth_checkpoint false [get_files nf_mac_attachment_dma_ip.xci]
 reset_target all [get_ips nf_mac_attachment_dma_ip]
@@ -272,5 +279,5 @@ set output [exec $::env(PYTHON_BNRY) $::env(NF_DESIGN_DIR)/test/${test_name}/run
 puts $output
 
 launch_simulation -simset sim_1 -mode behavioral
-run 140us
+run 2000us
 
