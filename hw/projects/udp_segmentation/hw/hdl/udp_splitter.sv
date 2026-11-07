@@ -79,6 +79,9 @@ module udp_splitter
     assign s_axis_bytes_remaining = is_new_packet ? s_axis_tuser_length
         : bytes_left_in_packet;
 
+    // Number of bytes in the current packet that we haven't outputted yet.
+    wire [15:0] packet_data_yet_to_output = bytes_in_buffer + bytes_left_in_packet;
+
     wire [15:0] s_axis_bytes_to_input;
     assign s_axis_bytes_to_input = s_axis_bytes_remaining > (`C_M_AXIS_DATA_WIDTH/8)
         ? (`C_M_AXIS_DATA_WIDTH/8) : s_axis_bytes_remaining;
@@ -104,6 +107,15 @@ module udp_splitter
 
     wire [15:0] current_segment_size;
     assign current_segment_size = is_new_segment ? new_segment_size : segment_total_len;
+
+    // Whether the segment in the last cycle was oversized
+    // When an oversized segment is detected, we keep voiding input data until
+    // there is a new packet.
+    reg was_last_oversized;
+
+    // If true, then we need to abort the current segment (and therefore the whole packet),
+    // as there is insufficient data in the buffer.
+    wire is_segment_oversized = was_last_oversized || (is_new_segment && (current_segment_size + 2 > packet_data_yet_to_output));
 
     wire [15:0] max_data_in_transfer; // Amount of data bytes (payload) we could send in the next transfer
     wire [15:0] bytes_to_send;
@@ -150,8 +162,10 @@ module udp_splitter
 
     // Don't remove anything from the buffer unless have the full amount needed for the segment
     wire ready_for_egress;
-    assign ready_for_egress = egress_needed > 0 && bytes_in_buffer >= egress_needed;
-    assign buffer_remove_amt = ready_for_egress ? egress_needed : 0;
+    assign ready_for_egress = egress_needed > 0 && bytes_in_buffer >= egress_needed && m_axis_tready;
+    // Dump everything from the buffer when an oversized segment is detected
+    assign buffer_remove_amt = is_segment_oversized && m_axis_tready ? bytes_in_buffer :
+        (ready_for_egress ? egress_needed : 0);
 
     wire last_in_segment;
     assign last_in_segment = bytes_to_send == current_segment_rem;
@@ -175,6 +189,7 @@ module udp_splitter
             is_new_segment <= 1'b1;
             segment_rem <= '0;
             segment_total_len <= '0;
+            was_last_oversized <= 1'b0;
 
             m_axis_tdata <= '0;
             m_axis_tkeep <= '0;
@@ -185,7 +200,7 @@ module udp_splitter
             // BUFFER MANAGEMENT
             // Remove data from the buffer, and add new data from the incoming packet.
             segment_buffer <= (segment_buffer >> (buffer_remove_amt*8)) |
-                ((s_axis_tready && s_axis_tvalid) ? (s_axis_tdata_stripped_udp_headers << (buffer_add_pos*8)) : 0);
+            ((s_axis_tready && s_axis_tvalid) ? (s_axis_tdata_stripped_udp_headers << (buffer_add_pos*8)) : 0);
             bytes_in_buffer <= bytes_in_buffer + ((s_axis_tready && s_axis_tvalid) ? s_axis_bytes_to_accept : 0) - buffer_remove_amt;
 
             // INGRESS DATA
@@ -198,24 +213,38 @@ module udp_splitter
                 is_new_packet <= s_axis_tlast;
             end
 
+            // Panic condition: insufficient data to fulfill segment
+            if(m_axis_tready && is_segment_oversized) begin
+                segment_rem <= '0;
+                segment_total_len <= '0;
+                is_new_segment <= 1'b1;
+                m_axis_tvalid <= '0;
+            end
+            // Only remove the segment oversized condition when there is a new packet arriving.
+            if(is_segment_oversized) begin
+                was_last_oversized <= ~is_new_packet;
+            end
 
             // EGRESS DATA
-            if(ready_for_egress && m_axis_tready) begin
-                segment_rem <= current_segment_rem - bytes_to_send;
-                if(is_new_segment) begin
-                    segment_total_len <= new_segment_size;
-                end
-                is_new_segment <= last_in_segment;
+            if(!is_segment_oversized) begin
+                if(ready_for_egress) begin
+                    segment_rem <= current_segment_rem - bytes_to_send;
+                    if(is_new_segment) begin
+                        segment_total_len <= new_segment_size;
+                    end
+                    is_new_segment <= last_in_segment;
 
-                m_axis_tdata <= segment_egress_data;
-                m_axis_tkeep <= output_tkeep;
-                // TODO: currently doesn't maintain the other parts of tuser.
-                m_axis_tuser <= reconstructed_tuser;
-                m_axis_tvalid <= 1'b1;
-                m_axis_tlast <= last_in_segment;
-            end else begin
-                // Buffer emptied with nothing to fill its place
-                m_axis_tvalid <= 1'b0;
+                    m_axis_tdata <= segment_egress_data;
+                    m_axis_tkeep <= output_tkeep;
+                    // TODO: currently doesn't maintain the other parts of tuser.
+                    // TODO: Do we even need these?
+                    m_axis_tuser <= reconstructed_tuser;
+                    m_axis_tvalid <= 1'b1;
+                    m_axis_tlast <= last_in_segment;
+                end else begin
+                    // Buffer emptied with nothing to fill its place
+                    m_axis_tvalid <= 1'b0;
+                end
             end
         end 
     end

@@ -3,11 +3,6 @@ module incoming_filter #(
     parameter C_AXIS_TUSER_WIDTH=128
 ) 
 (
-    // Global clock/reset
-    input axis_aclk,
-    // Active low
-    input axis_resetn,
-
     input [C_AXIS_DATA_WIDTH - 1:0]         s_axis_tdata,
     input [C_AXIS_TUSER_WIDTH-1:0]          s_axis_tuser,
     
