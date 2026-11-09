@@ -67,7 +67,9 @@ module nf_axis_converter_main
 
     parameter C_DEFAULT_VALUE_ENABLE=0,
     parameter C_DEFAULT_SRC_PORT=0,
-    parameter C_DEFAULT_DST_PORT=0
+    parameter C_DEFAULT_DST_PORT=0,
+
+    parameter C_MAX_PKT_SIZE=1500
 )
 (
     // Part 1: System side signals
@@ -106,9 +108,12 @@ module nf_axis_converter_main
      end
   endfunction 
 
-  localparam MAX_PKT_SIZE = 131072; // In bytes
+  // Add a little buffer space to account for the PROG_FULL threshold below,
+  // so that the buffer never gets completely full and therefore packets don't get
+  // blocked.
+  localparam MAX_PKT_SIZE_BUFFERED = C_MAX_PKT_SIZE + 2500;
   localparam LENGTH_COUNTER_WIDTH = log2(C_S_AXIS_DATA_WIDTH / 8);
-  localparam IN_FIFO_DEPTH_BIT = log2(MAX_PKT_SIZE/(C_S_AXIS_DATA_WIDTH / 8));
+  localparam IN_FIFO_DEPTH_BIT = log2(MAX_PKT_SIZE_BUFFERED/(C_S_AXIS_DATA_WIDTH / 8));
   localparam M_S_RATIO_COUNT = C_M_AXIS_DATA_WIDTH / C_S_AXIS_DATA_WIDTH;
   localparam S_M_RATIO_COUNT = C_S_AXIS_DATA_WIDTH / C_M_AXIS_DATA_WIDTH;
 

@@ -62,7 +62,9 @@ module nf_axis_converter
 
     parameter C_DEFAULT_VALUE_ENABLE=0,
     parameter C_DEFAULT_SRC_PORT=0,
-    parameter C_DEFAULT_DST_PORT=0
+    parameter C_DEFAULT_DST_PORT=0,
+
+    parameter C_MAX_PKT_SIZE=1500
 )
 (
     // Part 1: System side signals
@@ -108,7 +110,8 @@ module nf_axis_converter
    .C_DPT_WIDTH            (C_DPT_WIDTH),
    .C_DEFAULT_VALUE_ENABLE (C_DEFAULT_VALUE_ENABLE),
    .C_DEFAULT_SRC_PORT     (C_DEFAULT_SRC_PORT),
-   .C_DEFAULT_DST_PORT     (C_DEFAULT_DST_PORT)
+   .C_DEFAULT_DST_PORT     (C_DEFAULT_DST_PORT),
+   .C_MAX_PKT_SIZE           (C_MAX_PKT_SIZE)
   ) nf_converter (
    .axi_aclk                             (axi_aclk),
    .axi_resetn                           (axi_resetn),

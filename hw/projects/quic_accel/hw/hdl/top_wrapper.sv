@@ -265,11 +265,6 @@ module top_wrapper #(
   wire                            axis_dma_i_0_raw_tlast ,     axis_dma_i_1_raw_tlast ;
   wire                            axis_dma_i_0_raw_tready ,    axis_dma_i_1_raw_tready ;
 
-  // NF mac attachment doesn't support an input tready as the CMAC doesn't have
-  // one. So for now set tready == 1, treating the DMA as though it has no
-  // backpressure, even though it does.
-  assign axis_dma_i_0_raw_tready = 1'b1;
-  assign axis_dma_i_1_raw_tready = 1'b1;
 
   assign axis_dma_i_0_raw_tuser = {axis_dma_i_0_raw_tuser_dst[7:0], axis_dma_i_0_raw_tuser_src[7:0], axis_dma_i_0_raw_tuser_size};
   assign axis_dma_i_1_raw_tuser = {axis_dma_i_1_raw_tuser_dst[7:0], axis_dma_i_1_raw_tuser_src[7:0], axis_dma_i_1_raw_tuser_size};
@@ -611,6 +606,7 @@ module top_wrapper #(
     .m_axis_mac_tuser_err  (1'b1),   // valid frame
     .m_axis_mac_tuser      (axis_dma_i_0_raw_tuser),
     .m_axis_mac_tlast      (axis_dma_i_0_raw_tlast),
+    .m_axis_mac_tready     (axis_dma_i_0_raw_tready),
     // tx_queue 64b@axis_clk -> mac 64b@clk156
     .s_axis_mac_tdata      (axis_dma_o_0_raw_tdata),
     .s_axis_mac_tkeep      (axis_dma_o_0_raw_tkeep),
@@ -672,6 +668,7 @@ module top_wrapper #(
     .m_axis_mac_tuser_err  (1'b1),   // valid frame
     .m_axis_mac_tuser      (axis_dma_i_1_raw_tuser),
     .m_axis_mac_tlast      (axis_dma_i_1_raw_tlast),
+    .m_axis_mac_tready     (axis_dma_i_1_raw_tready),
     // tx_queue 64b@axis_clk -> mac 64b@clk156
     .s_axis_mac_tdata      (axis_dma_o_1_raw_tdata),
     .s_axis_mac_tkeep      (axis_dma_o_1_raw_tkeep),

@@ -45,7 +45,8 @@ module nf_mac_attachment #(
     parameter C_DEFAULT_VALUE_ENABLE    = 1,
     parameter C_ENABLE_MAC_TREADY       = 0,
     parameter C_DEFAULT_SRC_PORT        = 0,
-    parameter C_DEFAULT_DST_PORT        = 0
+    parameter C_DEFAULT_DST_PORT        = 0,
+    parameter C_MAX_PKT_SIZE            = 1500
 ) (
   // 10GE block clk & rst 
   input                                 clk156,
@@ -240,7 +241,8 @@ module nf_mac_attachment #(
           
     .C_DEFAULT_VALUE_ENABLE               (C_DEFAULT_VALUE_ENABLE), // USE C_DEFAULT_VALUE_ENABLE = 1
     .C_DEFAULT_SRC_PORT                   (C_DEFAULT_SRC_PORT),
-    .C_DEFAULT_DST_PORT                   (C_DEFAULT_DST_PORT)  
+    .C_DEFAULT_DST_PORT                   (C_DEFAULT_DST_PORT),
+    .C_MAX_PKT_SIZE                       (C_MAX_PKT_SIZE)
    ) 
    converter_rx (     
     .axi_aclk                             (axis_aclk),
@@ -279,7 +281,8 @@ module nf_mac_attachment #(
     #(
      .C_M_AXIS_DATA_WIDTH                (C_S_AXIS_DATA_WIDTH_INTERNAL),
      .C_S_AXIS_DATA_WIDTH                (C_S_AXIS_DATA_WIDTH),
-     .C_DEFAULT_VALUE_ENABLE             (1'b0)
+     .C_DEFAULT_VALUE_ENABLE             (1'b0),
+     .C_MAX_PKT_SIZE                     (C_MAX_PKT_SIZE)
     )
     converter_tx (
      .axi_aclk                           (axis_aclk),
