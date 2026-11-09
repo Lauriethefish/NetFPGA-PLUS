@@ -71,7 +71,7 @@ entity axis_sim_stim is
         M_AXIS_TREADY : in  std_logic;
         M_AXIS_TLAST  : out std_logic;
 
-	counter       : in std_logic_vector(10 downto 0);
+	counter       : in std_logic_vector(31 downto 0);
 	activity_stim : out std_logic;
         barrier_req   : out std_logic;
         barrier_proceed : in std_logic

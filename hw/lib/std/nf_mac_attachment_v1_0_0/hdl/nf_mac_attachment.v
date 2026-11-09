@@ -179,7 +179,7 @@ module nf_mac_attachment #(
    );
 
    // FIFO36_72 primitive rst extension tx
-   data_sync_block #(C_ENABLE_MAC_TREADY
+   data_sync_block #(
      .C_NUM_SYNC_REGS                     (6)
    ) tx_fifo_rst (
      .clk                                 (axis_aclk),

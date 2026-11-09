@@ -69,7 +69,7 @@ module axis_sim_record
     output s_axis_tready,
     input s_axis_tlast,
 
-    output reg [10:0] counter,
+    output reg [31:0] counter,
     output reg activity_rec
 );
 

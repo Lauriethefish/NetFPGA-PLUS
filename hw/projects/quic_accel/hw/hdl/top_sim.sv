@@ -237,7 +237,7 @@
   // Network Interfaces
   wire axi_aresetn;
   wire axi_clk;
-  wire [10:0] counter0,counter1,counter2,counter3,counter4;
+  wire [31:0] counter0,counter1,counter2,counter3,counter4;
   wire activity_stim4, activity_stim3, activity_stim2, activity_stim1, activity_stim0;
   wire activity_rec4, activity_rec3, activity_rec2, activity_rec1, activity_rec0;
   wire barrier_req0, barrier_req1, barrier_req2, barrier_req3, barrier_req4;
