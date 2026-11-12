@@ -22,8 +22,6 @@ module udp_splitter
     output reg m_axis_tlast,
 
     // Slave Stream Ports (read packet data)
-    // Register these inputs
-    // And compute checksum of the first half
     input [`C_S_AXIS_DATA_WIDTH - 1:0] s_axis_tdata,
     input [((`C_S_AXIS_DATA_WIDTH / 8)) - 1:0] s_axis_tkeep,
     input [`C_S_AXIS_TUSER_WIDTH-1:0] s_axis_tuser,
