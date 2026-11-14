@@ -7,3 +7,6 @@
 [submodule "scapy"]
 	path = scapy
 	url = https://github.com/Lauriethefish/scapy
+[submodule "AES-GCM-128-192-256-bits"]
+	path = aes-gcm
+	url = https://github.com/Lauriethefish/AES-GCM-128-192-256-bits.git
