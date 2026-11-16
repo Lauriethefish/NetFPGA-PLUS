@@ -1,18 +1,25 @@
 PROJ = ${NF_PROJECT_NAME}
+PYTHON_BNRY ?= python3
+AES_GCM_CONFIG_DIR = $(NFPLUS_FOLDER)/aes-gcm/config
 
-all: clean
+.PHONY: all clean aes_gcm sim simgui simclean
+
+all: clean aes_gcm
 	vivado -mode batch -source tcl/quic_encrypt_ip.tcl
+
+aes_gcm:
+	cd "$(AES_GCM_CONFIG_DIR)" && "$(PYTHON_BNRY)" gcm_config.py --mode 128 --size L --pipe 0
 
 clean:
 	rm -rf ip_*  vivado*.* *.xml xgui/ .Xil* *.*~ *.zip
 
-sim:	simclean
+sim:	simclean aes_gcm
 	vivado -mode batch -source ../../../projects/${PROJ}/hw/tcl/${NF_PROJECT_NAME}_sim.tcl -tclargs ${TESTNAME}
 	test -s ../test/single_expected.axi -a -s ../test/single_log.axi
 	cd ../test && $(PYTHON_BNRY) $(NFPLUS_FOLDER)/tools/scripts/nf_sim_reconcile_axi_logs.py
 
 
-simgui: simclean
+simgui: simclean aes_gcm
 	vivado -mode gui -source ../../../projects/${PROJ}/hw/tcl/$(NF_PROJECT_NAME)_sim.tcl -tclargs ${TESTNAME}
 	test -s ../test/single_expected.axi -a -s ../test/single_log.axi
 	cd ../test && $(PYTHON_BNRY) $(NFPLUS_FOLDER)/tools/scripts/nf_sim_reconcile_axi_logs.py
