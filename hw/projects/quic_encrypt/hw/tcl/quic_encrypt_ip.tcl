@@ -72,6 +72,24 @@ update_ip_catalog
 # Project Structure & IP Build
 #####################################
 
+# AES-GCM packages, supporting RTL, and the generated core.
+set aes_gcm_src $::env(NFPLUS_FOLDER)/aes-gcm/src
+read_vhdl [list \
+    ${aes_gcm_src}/aes_pkg.vhd \
+    ${aes_gcm_src}/aes_func.vhd \
+    ${aes_gcm_src}/aes_last_round.vhd \
+    ${aes_gcm_src}/gen_rtl/aes_round.vhd \
+    ${aes_gcm_src}/gen_rtl/aes_kexp.vhd \
+    ${aes_gcm_src}/gen_rtl/aes_ecb.vhd \
+    ${aes_gcm_src}/gcm_pkg.vhd \
+    ${aes_gcm_src}/aes_icb.vhd \
+    ${aes_gcm_src}/gcm_gctr.vhd \
+    ${aes_gcm_src}/ghash_gfmul.vhd \
+    ${aes_gcm_src}/gcm_ghash.vhd \
+    ${aes_gcm_src}/aes_enc_dec_ctrl.vhd \
+    ${aes_gcm_src}/aes_gcm.vhd \
+    ${aes_gcm_src}/gen_rtl/top_aes_gcm.vhd]
+
 read_verilog -sv "./hdl/quic_encrypt.sv"
 
 update_compile_order -fileset sources_1
