@@ -85,9 +85,9 @@ module quic_encrypt #(
     
     reg [7:0] packet_buf_amt_valid;
 
-    typedef enum {READING_HEADERS, KEY_LOAD, IV_LOAD, POST_IV_LOAD, PENDING, ADATA_LOAD,
+    typedef enum logic [2:0] {READING_HEADERS, KEY_LOAD, IV_LOAD, POST_IV_LOAD, PENDING, ADATA_LOAD,
     CONTENTS_LOAD, WAIT_OUTPUT_TAG} e_state;
-    e_state reg state;
+    e_state state;
 
     // TODO: Double check this condition is always correct!
     assign s_axis_tready = state == READING_HEADERS
@@ -114,9 +114,8 @@ module quic_encrypt #(
                 if(state == READING_HEADERS) begin
                     // Put remaining data into packet buffer
                     if(is_last_header_transfer) begin
-                        packet_buf <= s_axis_tdata[C_AXIS_DATA_WIDTH-1:
-                                header_data_left*8];
-                        packet_buf_keep <= s_axis_tkeep[C_AXIS_DATA_WIDTH/8-1:header_data_left];
+                        packet_buf <= s_axis_tdata >> header_data_left*8;
+                        packet_buf_keep <= s_axis_tkeep >> header_data_left;
                         packet_buf_amt_valid <= C_AXIS_DATA_WIDTH/8 - header_data_left;
                     end
 
@@ -137,8 +136,8 @@ module quic_encrypt #(
                 end
                 // Shift out header data
                 if(state == ADATA_LOAD) begin
-                    headers_buf >> AES_BLOCK_SIZE;
-                    headers_keep >> AES_BLOCK_SIZE/8;
+                    headers_buf <= headers_buf >> AES_BLOCK_SIZE;
+                    headers_keep <= headers_keep >> AES_BLOCK_SIZE/8;
                 end
             end
            
@@ -154,7 +153,7 @@ module quic_encrypt #(
 
     always_ff @(posedge axis_aclk) begin
         if(!axis_resetn) begin
-            state <= WAIT_INPUT;
+            state <= READING_HEADERS;
         end else begin
             if(state == READING_HEADERS) begin
                 if(s_axis_tvalid) begin
@@ -203,7 +202,7 @@ module quic_encrypt #(
         .aes_gcm_iv_val_i(nonce),
         .aes_gcm_iv_i(state == IV_LOAD), /* TODO: as above but for nonce */
         .aes_gcm_icb_start_cnt_i(state == POST_IV_LOAD),
-        .aes_gcm_icb_stop_cnt_i(0'b0), // TODO: work out when need to assert this
+        .aes_gcm_icb_stop_cnt_i(1'b0), // TODO: work out when need to assert this
         .aes_gcm_ghash_pkt_val_i(state == ADATA_LOAD || state == CONTENTS_LOAD),
         .aes_gcm_ghash_aad_bval_i({<<1{headers_keep[AES_BLOCK_SIZE/8-1:0]}}),
         .aes_gcm_ghash_aad_i({<<8{headers_buf[AES_BLOCK_SIZE-1:0]}}),

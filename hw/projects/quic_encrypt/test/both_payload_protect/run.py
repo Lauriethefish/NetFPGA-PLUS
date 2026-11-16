@@ -36,7 +36,8 @@ import logging
 logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
 
 from NFTest import *
-from scapy.layers.all import Ether, IP, UDP, Raw, QUIC
+from scapy.layers.all import Ether, IP, UDP, Raw
+from scapy.layers.quic import *
 
 # Only simulation is supported here. This standalone IP must be integrated
 # into the QUIC pipeline before it can be tested on hardware.
@@ -62,7 +63,7 @@ pkt = Ether(src=SA, dst=DA)/IP(src=SRC_IP, dst=DST_IP, ttl=TTL, id=1)/UDP(sport=
 pkt = pkt/QUIC_1RTT(DstConnID="ABCDEFGH", PacketNumber=25)/Raw("ENCRYPTION TEST")
 print(pkt)
 
-pkt.time = index * 0.00001
+pkt.time = 1 * 0.00001
 pkts_sent.append(pkt)
 # Until encryption is implemented, expect the same packet back.
 pkts_expected.append(pkt.copy())
