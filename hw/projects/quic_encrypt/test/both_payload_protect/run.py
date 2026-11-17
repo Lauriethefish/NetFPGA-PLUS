@@ -38,6 +38,7 @@ logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
 from NFTest import *
 from scapy.layers.all import Ether, IP, UDP, Raw
 from scapy.layers.quic import *
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 # Only simulation is supported here. This standalone IP must be integrated
 # into the QUIC pipeline before it can be tested on hardware.
@@ -58,24 +59,69 @@ SRC_IP = "192.168.0.1"
 pkts_expected = []
 pkts_sent = []
 
+# Constant key currently used by encryption module
+key_size = 16 # in bytes
+nonce_size = 12 # in bytes
+key = 4
+nonce = 5
+
+key_bytes = key.to_bytes(key_size, 'big')
+
+# Protects the payload of the QUIC packet `packet`
+# (may have other layers on top, which are ignored)
+# Returns the packet with protected payload
+def protect_quic_payload(packet, packet_no):
+    gcm = AESGCM(key_bytes)
+    quic_packet = packet[QUIC]
+    parent_layers = packet.copy()
+    parent_layers[QUIC].underlayer.remove_payload()
+
+    quic_headers = quic_packet.copy()
+    quic_headers.remove_payload()
+    raw_headers = bytes(quic_headers)
+    raw_payload = bytes(quic_packet.payload)
+    
+    packet_nonce = nonce ^ packet_no
+    packet_nonce_bytes = packet_nonce.to_bytes(12, 'big')
+    aead_payload = gcm.encrypt(packet_nonce_bytes, raw_payload, raw_headers)
+
+    print(f"Associated data: {raw_headers.hex()}")
+    print(f"Nonce bytes: {packet_nonce_bytes.hex()}")
+    print(f"Key bytes: {key_bytes.hex()}")
+    print(f"Parent layers: {parent_layers}")
+    print(f"QUIC headers: {quic_headers}")
+    print(f"Original payload: {raw_payload.hex()}")
+    print(f"AEAD payload: {aead_payload.hex()}, length: {len(aead_payload)}")
+    return parent_layers / quic_headers / Raw(aead_payload)
+    
 print("Sending now: ")
+
+packet_no = 25
 pkt = Ether(src=SA, dst=DA)/IP(src=SRC_IP, dst=DST_IP, ttl=TTL, id=1)/UDP(sport=8080, dport=4040)
-pkt = pkt/QUIC_1RTT(DstConnID="ABCDEFGH", PacketNumber=25)/Raw("ENCRYPTION TEST")
+pkt = pkt/QUIC_1RTT(DstConnID="ABCDEFGH", PacketNumber=packet_no)/Raw("ENCRYPTION TEST")
+print(f"Pre protection: {pkt}")
+
+pkt_protected = protect_quic_payload(pkt, packet_no)
+pkt_protected[UDP].chksum = 0
+pkt_protected[IP].chksum = 0
+print(f"Post protection: {pkt_protected}")
+
+pkt.time = 1 * 0.00001
+pkts_sent.append(pkt)
+# Until encryption is implemented, expect the same packet back.
+pkts_expected.append(pkt_protected)
+
+"""
+pkt = Ether(src=SA, dst=DA)/IP(src=SRC_IP, dst=DST_IP, ttl=TTL, id=1)/UDP(sport=8080, dport=4040)
+pkt = pkt/QUIC_1RTT(DstConnID="ABCDEFGH", PacketNumber=26)/Raw("ENCRYPTION TEST 2")
 print(pkt)
 
 pkt.time = 1 * 0.00001
 pkts_sent.append(pkt)
 # Until encryption is implemented, expect the same packet back.
 pkts_expected.append(pkt.copy())
+"""
 
-pkt = Ether(src=SA, dst=DA)/IP(src=SRC_IP, dst=DST_IP, ttl=TTL, id=1)/UDP(sport=8080, dport=4040)
-pkt = pkt/QUIC_1RTT(DstConnID="ABCDEFGH", PacketNumber=25)/Raw("ENCRYPTION TEST 2")
-print(pkt)
-
-pkt.time = 1 * 0.00001
-pkts_sent.append(pkt)
-# Until encryption is implemented, expect the same packet back.
-pkts_expected.append(pkt.copy())
 
 nftest_send_single(pkts_sent)
 nftest_expect_single(pkts_expected)

@@ -95,6 +95,8 @@ read_vhdl [list \
     ${aes_gcm_src}/aes_gcm.vhd \
     ${aes_gcm_src}/gen_rtl/top_aes_gcm.vhd]
 
+read_verilog -sv "$::env(NFPLUS_FOLDER)/hw/projects/udp_checksum_calculator/hw/hdl/inter_structs.sv"
+read_verilog -sv "$::env(NFPLUS_FOLDER)/hw/projects/udp_segmentation/hw/hdl/ip_header_calc.sv"
 read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/quic_encrypt.sv"
 read_verilog "$::env(NF_DESIGN_DIR)/hw/hdl/top_sim.v"
 read_verilog "$::env(NF_DESIGN_DIR)/hw/hdl/top_tb.v"
