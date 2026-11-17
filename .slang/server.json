@@ -1,0 +1,13 @@
+{
+    "index": [
+        {
+            "dirs": [
+                "hw/projects/quic_encrypt/hw/hdl",
+                "hw/projects/quic_encrypt/.slang/stubs"
+            ]
+        }
+    ],
+    "flags": "-DSIMULATION=1 -v hw/projects/quic_encrypt/.slang/stubs/external_modules.sv",
+    "build": "hw/projects/quic_encrypt/.slang/quic_encrypt.f",
+    "buildRelativePaths": true
+}

@@ -1,0 +1,12 @@
+{
+    "folders": [
+        { "name": "quic_encrypt", "path": "hw/projects/quic_encrypt" }
+    ],
+    "settings": {
+        "slang.path": "/home/laurie/NetFPGA-PLUS/hw/projects/quic_encrypt/.slang/local/bin/slang-server",
+        "slang.formatters": []
+    },
+    "extensions": {
+        "recommendations": ["Hudson-River-Trading.vscode-slang"]
+    }
+}

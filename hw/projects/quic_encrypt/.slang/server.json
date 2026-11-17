@@ -1,0 +1,8 @@
+{
+    "index": [
+        { "dirs": ["hw/hdl", ".slang/stubs"] }
+    ],
+    "flags": "-DSIMULATION=1 -v .slang/stubs/external_modules.sv",
+    "build": ".slang/quic_encrypt.f",
+    "buildRelativePaths": true
+}
