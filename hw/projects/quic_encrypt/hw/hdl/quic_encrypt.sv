@@ -85,13 +85,14 @@ module quic_encrypt #(
     reg [PACKET_BUF_SIZE_BITS/8-1:0] packet_buf_keep;
     
     reg [7:0] packet_buf_amt_valid;
-    typedef enum logic [2:0] {READING_HEADERS, KEY_LOAD, IV_LOAD, POST_IV_LOAD, PENDING, ADATA_LOAD,
-    CONTENTS_LOAD, WAIT_OUTPUT_TAG} e_state;
+    typedef enum logic [3:0] {READING_HEADERS, KEY_LOAD, IV_LOAD, POST_IV_LOAD, PENDING, ADATA_LOAD,
+    CONTENTS_LOAD, WAIT_OUTPUT_TAG, RESETTING} e_state;
     e_state state;
 
     // TODO: Double check this condition is always correct!
-    assign s_axis_tready = state == READING_HEADERS
-        || (packet_buf_amt_valid <= 16);
+    assign s_axis_tready = (state == READING_HEADERS
+        || (packet_buf_amt_valid <= 16))
+        && !got_last_transfer; // prevent next packet from entering until reset.
     
     // Take a block from the packet buffer if:
     // - We are loading packet contents
@@ -110,6 +111,10 @@ module quic_encrypt #(
     reg [OUTPUT_BUF_SIZE/8-1:0] m_axis_tkeep_buf;
     reg [7:0] m_axis_tdata_data_amt;
     reg got_all_output_data;
+    // True if the current clock cycle will finish outputting the current packet.
+    wire end_of_packet = got_all_output_data && m_axis_tready &&
+        (m_axis_tdata_data_amt <= C_AXIS_DATA_WIDTH/8) && state == RESETTING;
+
     assign m_axis_tdata = m_axis_tdata_buf[C_AXIS_DATA_WIDTH-1:0];
     assign m_axis_tvalid = (m_axis_tdata_data_amt > C_AXIS_DATA_WIDTH/8)
         || (got_all_output_data && m_axis_tdata_data_amt > 0);
@@ -123,9 +128,8 @@ module quic_encrypt #(
 
     wire [7:0] next_out_block_data_amt = $countones(next_out_block_tkeep);
 
-    // Note 
     always_ff @(posedge axis_aclk) begin
-        if(!axis_resetn) begin
+        if(!axis_resetn || end_of_packet) begin
             m_axis_tdata_buf <= '0;
             m_axis_tkeep_buf <= '0;
             m_axis_tdata_data_amt <= '0;
@@ -161,7 +165,7 @@ module quic_encrypt #(
 
     // INPUT BUFFERING
     always_ff @(posedge axis_aclk) begin
-        if(!axis_resetn) begin
+        if(!axis_resetn || end_of_packet) begin
             headers_buf <= '0;
             headers_keep <= '0;
             got_first_transfer_of_headers <= '0;
@@ -238,7 +242,7 @@ module quic_encrypt #(
     assign next_out_block_tkeep = gcm_tag_out_val ? '1 : gcm_data_out_keep;
 
     always_ff @(posedge axis_aclk) begin
-        if(!axis_resetn) begin
+        if(!axis_resetn || end_of_packet) begin
             state <= READING_HEADERS;
             got_all_output_data <= 1'b0;
         end else begin
@@ -274,13 +278,14 @@ module quic_encrypt #(
             end else if(state == WAIT_OUTPUT_TAG) begin
                 if(gcm_tag_out_val) begin
                     got_all_output_data <= 1'b1;
+                    state <= RESETTING;
                 end
             end
         end
     end
 
     top_aes_gcm aes_gcm (
-        .rst_i(!axis_resetn),
+        .rst_i(!axis_resetn || (state == RESETTING)),
         .clk_i(axis_aclk),
         .aes_gcm_enc_dec_i(0), // Encryption mode
         .aes_gcm_pipe_reset_i(0), // Set in between packets.

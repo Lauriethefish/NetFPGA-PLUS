@@ -68,6 +68,15 @@ pkts_sent.append(pkt)
 # Until encryption is implemented, expect the same packet back.
 pkts_expected.append(pkt.copy())
 
+pkt = Ether(src=SA, dst=DA)/IP(src=SRC_IP, dst=DST_IP, ttl=TTL, id=1)/UDP(sport=8080, dport=4040)
+pkt = pkt/QUIC_1RTT(DstConnID="ABCDEFGH", PacketNumber=25)/Raw("ENCRYPTION TEST 2")
+print(pkt)
+
+pkt.time = 1 * 0.00001
+pkts_sent.append(pkt)
+# Until encryption is implemented, expect the same packet back.
+pkts_expected.append(pkt.copy())
+
 nftest_send_single(pkts_sent)
 nftest_expect_single(pkts_expected)
 
