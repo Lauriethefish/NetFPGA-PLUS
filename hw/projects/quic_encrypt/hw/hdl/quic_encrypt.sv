@@ -85,7 +85,6 @@ module quic_encrypt #(
     reg [PACKET_BUF_SIZE_BITS/8-1:0] packet_buf_keep;
     
     reg [7:0] packet_buf_amt_valid;
-
     typedef enum logic [2:0] {READING_HEADERS, KEY_LOAD, IV_LOAD, POST_IV_LOAD, PENDING, ADATA_LOAD,
     CONTENTS_LOAD, WAIT_OUTPUT_TAG} e_state;
     e_state state;
@@ -100,6 +99,65 @@ module quic_encrypt #(
     // - OR (We have received the whole packet data)
     assign packet_buf_take_block = state == CONTENTS_LOAD &&
         (packet_buf_amt_valid >= AES_BLOCK_SIZE/8 || got_last_transfer);
+
+    // OUTPUT BUFFERING
+    // The output is provided in terms of 16 byte blocks
+    // We shift these into a larger C_AXIS_DATA_WIDTH buffer before outputting
+    // complete transfers.
+    localparam OUTPUT_BUF_SIZE = MAX_QUIC_HEADERS_LEN*8 > C_AXIS_DATA_WIDTH+AES_BLOCK_SIZE ?
+        MAX_QUIC_HEADERS_LEN*8 : C_AXIS_DATA_WIDTH+AES_BLOCK_SIZE;
+    reg [OUTPUT_BUF_SIZE-1:0] m_axis_tdata_buf;
+    reg [OUTPUT_BUF_SIZE/8-1:0] m_axis_tkeep_buf;
+    reg [7:0] m_axis_tdata_data_amt;
+    reg got_all_output_data;
+    assign m_axis_tdata = m_axis_tdata_buf[C_AXIS_DATA_WIDTH-1:0];
+    assign m_axis_tvalid = (m_axis_tdata_data_amt > C_AXIS_DATA_WIDTH/8)
+        || (got_all_output_data && m_axis_tdata_data_amt > 0);
+
+    // Output from the AES GCM IP
+    wire [AES_BLOCK_SIZE-1:0] next_out_block_tdata;
+    wire [AES_BLOCK_SIZE/8-1:0] next_out_block_tkeep;
+
+    wire [AES_BLOCK_SIZE-1:0] next_out_block_tdata_reordered = {<<8{next_out_block_tdata}};
+    wire [AES_BLOCK_SIZE/8-1:0] next_out_block_tkeep_reordered = {<<1{next_out_block_tkeep}};
+
+    wire [7:0] next_out_block_data_amt = $countones(next_out_block_tkeep);
+
+    // Note 
+    always_ff @(posedge axis_aclk) begin
+        if(!axis_resetn) begin
+            m_axis_tdata_buf <= '0;
+            m_axis_tkeep_buf <= '0;
+            m_axis_tdata_data_amt <= '0;
+        end else begin
+            if(s_axis_tready && s_axis_tvalid && is_last_header_transfer) begin
+                // Enqueue header data for output.
+                // TODO avoid duplicating the below code
+                m_axis_tdata_buf <= 
+                    got_first_transfer_of_headers ?
+                        (headers_buf | s_axis_tdata << C_AXIS_DATA_WIDTH)
+                        : s_axis_tdata;
+                m_axis_tdata_data_amt <= true_header_len;
+                m_axis_tkeep_buf <= (1 << true_header_len) - 1;
+            end
+
+            // TODO: no means of backpressure on the AES IP!
+            // Need to add an output buffer on this IP anyway (AES IP is slow), so this can provide the backpressure.
+            else if(m_axis_tready && m_axis_tvalid) begin
+                // Shift out old data and insert new data, if there is any
+                m_axis_tdata_buf <= (m_axis_tdata_buf >> C_AXIS_DATA_WIDTH)
+                    | (next_out_block_tdata_reordered << (m_axis_tdata_data_amt*8-C_AXIS_DATA_WIDTH));
+                m_axis_tkeep_buf <= (m_axis_tkeep_buf >> C_AXIS_DATA_WIDTH/8)
+                    | (next_out_block_tkeep_reordered << (m_axis_tdata_data_amt-C_AXIS_DATA_WIDTH/8));
+                m_axis_tdata_data_amt <= (m_axis_tdata_data_amt > C_AXIS_DATA_WIDTH/8 ? (m_axis_tdata_data_amt - C_AXIS_DATA_WIDTH/8)
+                    : 0) + next_out_block_data_amt;
+            end else begin
+                m_axis_tdata_buf <= m_axis_tdata_buf | (next_out_block_tdata_reordered << m_axis_tdata_data_amt*8);
+                m_axis_tkeep_buf <= m_axis_tkeep_buf | (next_out_block_tkeep_reordered << m_axis_tdata_data_amt);
+                m_axis_tdata_data_amt <= m_axis_tdata_data_amt + next_out_block_data_amt;
+            end
+        end
+    end
 
     // INPUT BUFFERING
     always_ff @(posedge axis_aclk) begin
@@ -155,6 +213,8 @@ module quic_encrypt #(
         end
     end
 
+    
+
 
     // Compute cryptographic parameters
     wire [12*8-1:0] nonce = packet_protection_iv ^ packet_number;
@@ -162,9 +222,25 @@ module quic_encrypt #(
 
     wire aes_gcm_ready;
 
+    // AES authenticated data for QUIC 1-RTT packets is the unprotected 
+    // (short) packet header (RFC 9001, 5.3)
+
+    wire [AES_BLOCK_SIZE/8-1:0] data_in_bval_tkeep = {<<1{packet_buf_keep[AES_BLOCK_SIZE/8-1:0]}};
+
+    wire [AES_BLOCK_SIZE-1:0] gcm_data_out;
+    wire [AES_BLOCK_SIZE-1:0] gcm_tag_out;
+
+    wire [AES_BLOCK_SIZE/8-1:0] gcm_data_out_keep;
+    wire gcm_data_out_val;
+    wire gcm_tag_out_val;
+
+    assign next_out_block_tdata = gcm_tag_out_val ? gcm_tag_out : gcm_data_out;
+    assign next_out_block_tkeep = gcm_tag_out_val ? '1 : gcm_data_out_keep;
+
     always_ff @(posedge axis_aclk) begin
         if(!axis_resetn) begin
             state <= READING_HEADERS;
+            got_all_output_data <= 1'b0;
         end else begin
             if(state == READING_HEADERS) begin
                 if(s_axis_tvalid) begin
@@ -195,14 +271,13 @@ module quic_encrypt #(
                 if(got_last_transfer && packet_buf_keep == '0) begin 
                     state <= WAIT_OUTPUT_TAG;
                 end
+            end else if(state == WAIT_OUTPUT_TAG) begin
+                if(gcm_tag_out_val) begin
+                    got_all_output_data <= 1'b1;
+                end
             end
         end
     end
-
-    // AES authenticated data for QUIC 1-RTT packets is the unprotected 
-    // (short) packet header (RFC 9001, 5.3)
-
-    wire [AES_BLOCK_SIZE/8-1:0] data_in_bval_tkeep = {<<1{packet_buf_keep[AES_BLOCK_SIZE/8-1:0]}};
 
     top_aes_gcm aes_gcm (
         .rst_i(!axis_resetn),
@@ -221,11 +296,11 @@ module quic_encrypt #(
         .aes_gcm_data_in_bval_i(data_in_bval_tkeep*packet_buf_take_block),
         .aes_gcm_data_in_i({<<8{packet_buf[AES_BLOCK_SIZE-1:0]}}),
         .aes_gcm_ready_o(aes_gcm_ready),
-        .aes_gcm_data_out_val_o(),
-        .aes_gcm_data_out_bval_o(),
-        .aes_gcm_data_out_o(),
-        .aes_gcm_ghash_tag_val_o(),
-        .aes_gcm_ghash_tag_o(),
+        .aes_gcm_data_out_val_o(gcm_data_out_val),
+        .aes_gcm_data_out_bval_o(gcm_data_out_keep),
+        .aes_gcm_data_out_o(gcm_data_out),
+        .aes_gcm_ghash_tag_val_o(gcm_tag_out_val),
+        .aes_gcm_ghash_tag_o(gcm_tag_out),
         .aes_gcm_icb_cnt_overflow_o()
     );
 endmodule
