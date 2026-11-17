@@ -53,6 +53,8 @@ set test_name [lindex $argv 0]
 # Project Settings
 #####################################
 create_project -name ${ip_name} -force -dir "./${proj_dir}" -part ${device}
+# Enable xpm_fifo_sync for synthesis and IP packaging.
+set_property XPM_LIBRARIES {XPM_FIFO} [current_project]
 set_property source_mgmt_mode DisplayOnly [current_project]
 set_property top ${top} [current_fileset]
 puts "Creating QUIC encryption setting IP"
@@ -96,6 +98,7 @@ update_compile_order -fileset sources_1
 update_compile_order -fileset sim_1
 
 ipx::package_project
+set_property xpm_libraries {XPM_FIFO} [ipx::current_core]
 
 set_property name 			${ip_name} [ipx::current_core]
 set_property library 			${lib_name} [ipx::current_core]

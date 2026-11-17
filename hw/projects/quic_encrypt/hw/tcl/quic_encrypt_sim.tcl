@@ -47,6 +47,8 @@ set test_name [lindex $argv 0]
 # Project Settings
 #####################################
 create_project -name ${design} -force -dir "./${proj_dir}" -part ${device}
+# Enable the xpm_fifo_sync simulation models.
+set_property XPM_LIBRARIES {XPM_FIFO} [current_project]
 set_property board_part ${board} [current_project]
 set_property source_mgmt_mode DisplayOnly [current_project]
 set_property top ${top} [current_fileset]

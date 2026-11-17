@@ -25,6 +25,8 @@ module quic_encrypt #(
     input m_axis_tready,
     output m_axis_tlast
 );
+    localparam unsigned ETHER_MTU = 1500;
+    localparam unsigned FIFO_DEPTH = 1 << $clog2(1500/(C_AXIS_DATA_WIDTH/8) + 1);
     localparam unsigned AES_BLOCK_SIZE=128;
 
     // Lengths of crypto parameters in bytes.
@@ -115,8 +117,13 @@ module quic_encrypt #(
     wire end_of_packet = got_all_output_data && m_axis_tready &&
         (m_axis_tdata_data_amt <= C_AXIS_DATA_WIDTH/8) && state == RESETTING;
 
-    assign m_axis_tdata = m_axis_tdata_buf[C_AXIS_DATA_WIDTH-1:0];
-    assign m_axis_tvalid = (m_axis_tdata_data_amt > C_AXIS_DATA_WIDTH/8)
+    wire [C_AXIS_DATA_WIDTH-1:0] m_axis_tdata_fifo_in;
+    wire [C_AXIS_DATA_WIDTH/8-1:0] m_axis_tkeep_fifo_in;
+    wire fifo_wr_en;
+
+    assign m_axis_tdata_fifo_in = m_axis_tdata_buf[C_AXIS_DATA_WIDTH-1:0];
+    assign m_axis_tkeep_fifo_in = m_axis_tkeep_buf[C_AXIS_DATA_WIDTH/8-1:0];
+    assign fifo_wr_en = (m_axis_tdata_data_amt >= C_AXIS_DATA_WIDTH/8)
         || (got_all_output_data && m_axis_tdata_data_amt > 0);
 
     // Output from the AES GCM IP
@@ -147,7 +154,7 @@ module quic_encrypt #(
 
             // TODO: no means of backpressure on the AES IP!
             // Need to add an output buffer on this IP anyway (AES IP is slow), so this can provide the backpressure.
-            else if(m_axis_tready && m_axis_tvalid) begin
+            else if(fifo_wr_en) begin
                 // Shift out old data and insert new data, if there is any
                 m_axis_tdata_buf <= (m_axis_tdata_buf >> C_AXIS_DATA_WIDTH)
                     | (next_out_block_tdata_reordered << (m_axis_tdata_data_amt*8-C_AXIS_DATA_WIDTH));
@@ -307,5 +314,45 @@ module quic_encrypt #(
         .aes_gcm_ghash_tag_val_o(gcm_tag_out_val),
         .aes_gcm_ghash_tag_o(gcm_tag_out),
         .aes_gcm_icb_cnt_overflow_o()
+    );
+
+    wire fifo_empty;
+    assign m_axis_tvalid = !fifo_empty;
+
+    // Buffer the output in a FIFO
+    // One of these modules only has (at most) 1/4 the throughput of the NFPlus
+    // datapath. Therefore buffer the output so we can provide a whole output
+    // packet in one rapid burst. The bursts from multiple of these modules
+    // will be interleaved to produce the output packet stream.
+    xpm_fifo_sync # (
+       .FIFO_WRITE_DEPTH    (FIFO_DEPTH),
+       .WRITE_DATA_WIDTH    (C_AXIS_DATA_WIDTH+C_AXIS_DATA_WIDTH/8),
+       .PROG_FULL_THRESH    (FIFO_DEPTH - 5),
+       .READ_MODE           ("FWFT"),
+       .FIFO_READ_LATENCY   (0),
+       .READ_DATA_WIDTH     (C_AXIS_DATA_WIDTH+C_AXIS_DATA_WIDTH/8)
+    ) output_fifo (
+       .sleep            (1'b0),
+       .rst              (!axis_resetn),
+       .wr_clk           (axis_aclk),
+       .wr_en            (fifo_wr_en),
+       .din              ({m_axis_tdata_fifo_in, m_axis_tkeep_fifo_in}),
+       .full             (), /* Should never happen, if it does happen, panic? */
+       .prog_full        (), // TODO: maybe track with an AXI-Lite register?
+       .wr_data_count    (),
+       .overflow         (),
+       .wr_rst_busy      (),
+       .rd_en            (m_axis_tready),
+       .dout             ({m_axis_tdata, m_axis_tkeep}),
+       .data_valid       (),
+       .empty            (fifo_empty),
+       .prog_empty       (),
+       .rd_data_count    (),
+       .underflow        (),
+       .rd_rst_busy      (),
+       .injectsbiterr    (1'b0),
+       .injectdbiterr    (1'b0),
+       .sbiterr          (),
+       .dbiterr          ()
     );
 endmodule
