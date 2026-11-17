@@ -2,6 +2,7 @@
 // Preserve the 512-bit AXI-stream interface used by udp_segmentation.
 `timescale 1ns / 1ps
 
+// Carries out QUIC payload protection on a packet, using AES-GCM AEAD
 module quic_encrypt #(
     parameter C_AXIS_DATA_WIDTH = 512,
     parameter C_AXIS_TUSER_WIDTH = 128
@@ -24,11 +25,11 @@ module quic_encrypt #(
     input m_axis_tready,
     output m_axis_tlast
 );
-    localparam AES_BLOCK_SIZE=128;
+    localparam unsigned AES_BLOCK_SIZE=128;
 
     // Lengths of crypto parameters in bytes.
-    localparam NONCE_LENGTH=12;
-    localparam KEY_LENGTH=16;
+    localparam unsigned NONCE_LENGTH=12;
+    localparam unsigned KEY_LENGTH=16;
 
     // Constant parameters for now. TODO: Wire these in from cryptographic
     // parameter storage.
@@ -36,25 +37,25 @@ module quic_encrypt #(
     wire [NONCE_LENGTH*8-1:0] packet_protection_iv = 'd5;
 
     // Length of the Ether + IP + UDP headers.
-    localparam PRE_QUIC_HEADERS_LEN=42;
+    localparam unsigned PRE_QUIC_HEADERS_LEN=42;
     // Destination connection ID length: in the future, this will have to come
     // from tuser as it can vary with each connection.
-    localparam DCID_LENGTH=8;
+    localparam unsigned DCID_LENGTH=8;
+    wire [7:0] dcid_length = 8'(DCID_LENGTH);
 
     // 1 byte for flags, 160 bit DCID, max 4 byte packet number
-    localparam MAX_QUIC_HEADERS_LEN=1+20+4;
-    localparam MAX_ALL_QUIC_HEADERS_LEN=
+    localparam unsigned MAX_QUIC_HEADERS_LEN=1+20+4;
+    localparam unsigned MAX_ALL_QUIC_HEADERS_LEN=
         MAX_QUIC_HEADERS_LEN+PRE_QUIC_HEADERS_LEN;
 
     // After Ether + IP + UDP headers, we get to QUIC headers.
 
     reg got_first_transfer_of_headers;
-    reg [MAX_ALL_QUIC_HEADERS_LEN-1:0] headers_buf;
-    reg [MAX_ALL_QUIC_HEADERS_LEN/8-1:0] headers_keep;
+    reg [MAX_ALL_QUIC_HEADERS_LEN*8-1:0] headers_buf;
+    reg [MAX_ALL_QUIC_HEADERS_LEN-1:0] headers_keep;
     wire [7:0] packet_type = {<<8{headers_buf[7:0]}};
     // RFC 9000. 17.3.1.
-    wire is_1rtt = (packet_type & 8'b11011000) == 8'b01000000;
-    wire [2:0] packet_number_length_bytes = (packet_type & 2'b11) + 1;
+    wire [2:0] packet_number_length_bytes = 3'((packet_type & 2'b11) + 1);
 
     localparam PACKET_NUMBER_POS = 8 + DCID_LENGTH*8;
     wire [31:0] packet_number_raw = headers_buf[PACKET_NUMBER_POS+31:PACKET_NUMBER_POS];
@@ -65,13 +66,13 @@ module quic_encrypt #(
         | (packet_number_length_bytes > 3 ? packet_number[31:24] : 0);
 
 
-    wire [7:0] true_header_len = PRE_QUIC_HEADERS_LEN
-        + 1 // flags
-        + packet_number_length_bytes
-        + DCID_LENGTH;
+    wire [7:0] true_header_len = 8'(PRE_QUIC_HEADERS_LEN)
+        + 8'b1 // flags
+        + 8'(packet_number_length_bytes)
+        + dcid_length;
 
 
-    wire [7:0] header_data_left = true_header_len - got_first_transfer_of_headers * C_AXIS_DATA_WIDTH/8;
+    wire [7:0] header_data_left = 8'(true_header_len - got_first_transfer_of_headers * C_AXIS_DATA_WIDTH/8);
     wire is_last_header_transfer = header_data_left < C_AXIS_DATA_WIDTH;
 
     // Leave enough space for an extra AES buffer's worth of data.
@@ -93,6 +94,12 @@ module quic_encrypt #(
     assign s_axis_tready = state == READING_HEADERS
         || (packet_buf_amt_valid <= 16);
     
+    // Take a block from the packet buffer if:
+    // - We are loading packet contents
+    // - (There is a whole block to take)
+    // - OR (We have received the whole packet data)
+    assign packet_buf_take_block = state == CONTENTS_LOAD &&
+        (packet_buf_amt_valid >= AES_BLOCK_SIZE/8 || got_last_transfer);
 
     // INPUT BUFFERING
     always_ff @(posedge axis_aclk) begin
@@ -104,7 +111,6 @@ module quic_encrypt #(
             packet_buf <= '0;
             packet_buf_amt_valid <= '0;
             packet_buf_keep <= '0;
-            state <= READING_HEADERS;
         end else begin
             if(s_axis_tready && s_axis_tvalid) begin
                 if(s_axis_tlast) begin
@@ -116,7 +122,8 @@ module quic_encrypt #(
                     if(is_last_header_transfer) begin
                         packet_buf <= s_axis_tdata >> header_data_left*8;
                         packet_buf_keep <= s_axis_tkeep >> header_data_left;
-                        packet_buf_amt_valid <= C_AXIS_DATA_WIDTH/8 - header_data_left;
+                        packet_buf_amt_valid <= 8'(C_AXIS_DATA_WIDTH/8) - header_data_left;
+                        headers_keep <= (1 << true_header_len) - 1;
                     end
 
                     headers_buf <= got_first_transfer_of_headers ?
@@ -132,15 +139,19 @@ module quic_encrypt #(
                         >> (packet_buf_take_block*AES_BLOCK_SIZE/8);
 
                     packet_buf_amt_valid <= packet_buf_amt_valid
-                        + $countones(s_axis_tkeep) - packet_buf_take_block*16;
+                        + 8'($countones(s_axis_tkeep)) - packet_buf_take_block*16;
                 end
-                // Shift out header data
-                if(state == ADATA_LOAD) begin
-                    headers_buf <= headers_buf >> AES_BLOCK_SIZE;
-                    headers_keep <= headers_keep >> AES_BLOCK_SIZE/8;
-                end
+            end else if(packet_buf_take_block) begin
+                // Still allow data to be taken from buffer if no more coming in.
+                packet_buf <= packet_buf >> AES_BLOCK_SIZE;
+                packet_buf_keep <= packet_buf_keep >> AES_BLOCK_SIZE/8;
             end
-           
+
+            // Shift out header data
+            if(state == ADATA_LOAD) begin
+                headers_buf <= headers_buf >> AES_BLOCK_SIZE;
+                headers_keep <= headers_keep >> AES_BLOCK_SIZE/8;
+            end
         end
     end
 
@@ -158,7 +169,6 @@ module quic_encrypt #(
             if(state == READING_HEADERS) begin
                 if(s_axis_tvalid) begin
                     if(is_last_header_transfer) begin
-                        headers_keep <= (1 << true_header_len) - 1;
                         state <= KEY_LOAD;
                     end else begin
                         state <= READING_HEADERS;
@@ -192,22 +202,24 @@ module quic_encrypt #(
     // AES authenticated data for QUIC 1-RTT packets is the unprotected 
     // (short) packet header (RFC 9001, 5.3)
 
+    wire [AES_BLOCK_SIZE/8-1:0] data_in_bval_tkeep = {<<1{packet_buf_keep[AES_BLOCK_SIZE/8-1:0]}};
+
     top_aes_gcm aes_gcm (
         .rst_i(!axis_resetn),
         .clk_i(axis_aclk),
         .aes_gcm_enc_dec_i(0), // Encryption mode
         .aes_gcm_pipe_reset_i(0), // Set in between packets.
-        .aes_gcm_key_word_val_i(key),
-        .aes_gcm_key_word_i(state == KEY_LOAD), /* TODO introduce state as to whether loading key currently */
-        .aes_gcm_iv_val_i(nonce),
-        .aes_gcm_iv_i(state == IV_LOAD), /* TODO: as above but for nonce */
+        .aes_gcm_key_word_val_i((state == KEY_LOAD) * 4'b1111),
+        .aes_gcm_key_word_i(256'(key)), /* TODO introduce state as to whether loading key currently */
+        .aes_gcm_iv_val_i(state == IV_LOAD),
+        .aes_gcm_iv_i(nonce), /* TODO: as above but for nonce */
         .aes_gcm_icb_start_cnt_i(state == POST_IV_LOAD),
         .aes_gcm_icb_stop_cnt_i(1'b0), // TODO: work out when need to assert this
         .aes_gcm_ghash_pkt_val_i(state == ADATA_LOAD || state == CONTENTS_LOAD),
         .aes_gcm_ghash_aad_bval_i({<<1{headers_keep[AES_BLOCK_SIZE/8-1:0]}}),
         .aes_gcm_ghash_aad_i({<<8{headers_buf[AES_BLOCK_SIZE-1:0]}}),
-        .aes_gcm_data_in_bval_i({<<8{packet_buf[AES_BLOCK_SIZE-1:0]}}),
-        .aes_gcm_data_in_i({<<1{packet_buf_keep[AES_BLOCK_SIZE-1:0]}}),
+        .aes_gcm_data_in_bval_i(data_in_bval_tkeep*packet_buf_take_block),
+        .aes_gcm_data_in_i({<<8{packet_buf[AES_BLOCK_SIZE-1:0]}}),
         .aes_gcm_ready_o(aes_gcm_ready),
         .aes_gcm_data_out_val_o(),
         .aes_gcm_data_out_bval_o(),
