@@ -70,7 +70,7 @@ nonce = 5
 key_bytes = key.to_bytes(key_size, 'big')
 
 def format_16_byte_chunks(b):
-    num_chunks = (len(b)+1)//16
+    num_chunks = (len(b)+15)//16
     result = ""
     for i in range(num_chunks):
         upper_limit = min((i+1)*16, len(b))
@@ -97,27 +97,41 @@ def protect_quic_payload(packet, packet_no):
     packet_nonce_bytes = packet_nonce.to_bytes(12, 'big')
     aead_payload = gcm.encrypt(packet_nonce_bytes, raw_payload, raw_headers)
 
-    print(f"Associated data:\n{format_64_byte_chunks(raw_headers)}")
+    print(f"Associated data:\n{format_16_byte_chunks(raw_headers)}")
     print(f"Nonce bytes: {packet_nonce_bytes.hex()}")
     print(f"Key bytes: {key_bytes.hex()}")
     print(f"Parent layers: {parent_layers}")
     print(f"QUIC headers: {quic_headers}")
 
-    print(f"Original payload:\n{format_64_byte_chunks(raw_payload)}")
-    print(f"AEAD payload:\n{format_64_byte_chunks(aead_payload)}, length: {len(aead_payload)}")
+    print(f"Original payload:\n{format_16_byte_chunks(raw_payload)}")
+    print(f"AEAD payload:\n{format_16_byte_chunks(aead_payload)}, length: {len(aead_payload)}")
     return parent_layers / quic_headers / Raw(aead_payload)
     
 print("Sending now: ")
 
 mtu = 1500
-for i in range(0, 1):
+# Some other edge-case payload lengths to try
+# NB -1 is interpreted as maximum payload length according to MTU
+# ETC for -2 which is (max payload length - 1)
+extra_lengths = [0, 1, 2, 3, 4, 5, -1, -2, -3, -4, -5]
+num_random_lengths = 800
+
+for i in range(0, num_random_lengths+len(extra_lengths)):
     random.seed(i)
     packet_no = random.randint(0, 2**32-1)
     pkt = Ether(src=SA, dst=DA)/IP(src=SRC_IP, dst=DST_IP, ttl=TTL, id=1)/UDP(sport=8080, dport=4040)
     pkt = pkt/QUIC_1RTT(DstConnID="ABCDEFGH", PacketNumber=packet_no)
     headers_len = len(bytes(pkt))
     max_payload_len = mtu - headers_len
-    payload_len = random.randint(1, max_payload_len)
+
+    if i >= num_random_lengths:
+        j = i - num_random_lengths
+        if extra_lengths[j] >= 0:
+            payload_len = extra_lengths[j]
+        else:
+            payload_len = max_payload_len + extra_lengths[j] + 1
+    else:
+        payload_len = random.randint(1, max_payload_len)
     payload = random.randbytes(payload_len)
     pkt = pkt/Raw(payload)
 

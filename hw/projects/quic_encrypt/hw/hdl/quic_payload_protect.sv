@@ -167,7 +167,8 @@ module quic_payload_protect #(
     reg [7:0] m_axis_tdata_data_amt;
     reg got_all_output_data;
     // True if the current clock cycle will empty the output queue.
-    wire end_of_packet = got_all_output_data;
+    // TODO just assign to m_axis_tlast
+    wire end_of_packet = got_all_output_data && (m_axis_tkeep_buf[C_AXIS_DATA_WIDTH/8] == 0);
 
     assign m_axis_tdata = m_axis_tdata_buf[C_AXIS_DATA_WIDTH-1:0];
     assign m_axis_tkeep = m_axis_tkeep_buf[C_AXIS_DATA_WIDTH/8-1:0];
