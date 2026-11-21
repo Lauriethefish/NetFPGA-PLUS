@@ -285,24 +285,25 @@ module nf_datapath #(
       .m_axis_tlast (s_axis_tobe_ip_checksummed_tlast)
     );
 
+
     ip_header_calc header_calc
     (
         .axis_aclk(axis_aclk),
         .axis_resetn(axis_resetn),
 
-        .m_axis_tdata (s_axis_tobe_ip_checksummed_tdata),
-        .m_axis_tkeep (s_axis_tobe_ip_checksummed_tkeep),
-        .m_axis_tuser (s_axis_tobe_ip_checksummed_tuser),
-        .m_axis_tvalid(s_axis_tobe_ip_checksummed_tvalid),
-        .m_axis_tready(s_axis_tobe_ip_checksummed_tready),
-        .m_axis_tlast (s_axis_tobe_ip_checksummed_tlast),
+        .m_axis_tdata (s_axis_tobe_udp_checksummed_tdata),
+        .m_axis_tkeep (s_axis_tobe_udp_checksummed_tkeep),
+        .m_axis_tuser (s_axis_tobe_udp_checksummed_tuser),
+        .m_axis_tvalid(s_axis_tobe_udp_checksummed_tvalid),
+        .m_axis_tready(s_axis_tobe_udp_checksummed_tready),
+        .m_axis_tlast (s_axis_tobe_udp_checksummed_tlast),
 
-        .s_axis_tdata (s_axis_tobe_udp_checksummed_tdata),
-        .s_axis_tkeep (s_axis_tobe_udp_checksummed_tkeep),
-        .s_axis_tuser (s_axis_tobe_udp_checksummed_tuser),
-        .s_axis_tvalid(s_axis_tobe_udp_checksummed_tvalid),
-        .s_axis_tready(s_axis_tobe_udp_checksummed_tready),
-        .s_axis_tlast (s_axis_tobe_udp_checksummed_tlast)
+        .s_axis_tdata (s_axis_tobe_ip_checksummed_tdata),
+        .s_axis_tkeep (s_axis_tobe_ip_checksummed_tkeep),
+        .s_axis_tuser (s_axis_tobe_ip_checksummed_tuser),
+        .s_axis_tvalid(s_axis_tobe_ip_checksummed_tvalid),
+        .s_axis_tready(s_axis_tobe_ip_checksummed_tready),
+        .s_axis_tlast (s_axis_tobe_ip_checksummed_tlast)
     );
     
     udp_checksum_setter_ip

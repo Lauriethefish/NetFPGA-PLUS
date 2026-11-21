@@ -95,7 +95,7 @@ def generate_testcases(pkts_sent, pkts_expected, checksum=False):
             pkt_protected[IP].chksum = 0
         print(f"Post protection: {pkt_protected}")
 
-        pkt.time = 1 * 0.00001
+        pkt.time = ((1*(1e-8)) + (1e-6))
         pkts_sent.append(pkt)
         # Until encryption is implemented, expect the same packet back.
         pkts_expected.append(pkt_protected)
