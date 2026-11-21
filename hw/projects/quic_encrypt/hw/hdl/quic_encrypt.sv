@@ -69,15 +69,18 @@ module quic_encrypt #(
     wire                           out_buf_tvalid;
 
     wire out_fifo_empty;
-    // TODO: Only allow input once our output is flushed.
 
     // Input buffer for one packet
 
     wire in_fifo_full;
     assign s_axis_tready = !in_fifo_full;
-    
+
+    reg is_new_packet_from_buf;
     wire in_fifo_empty;
-    assign in_buf_tvalid = ~in_fifo_empty;
+    // Don't write data from a new packet into the AES IP unless that output
+    // buffer from the last packet has been cleared. The output of this IP
+    // has no backpressure, so we must be careful not to overwhelm the buffer.
+    assign in_buf_tvalid = ~in_fifo_empty && (!is_new_packet_from_buf || out_fifo_empty);
 
     xpm_fifo_sync # (
        .FIFO_WRITE_DEPTH    (FIFO_DEPTH),
@@ -110,6 +113,17 @@ module quic_encrypt #(
        .sbiterr          (),
        .dbiterr          ()
     );
+
+    always_ff @(posedge axis_aclk) begin
+        if(!axis_resetn) begin
+            is_new_packet_from_buf <= 1'b1;
+        end else begin
+            if(in_buf_tready && in_buf_tvalid) begin
+                is_new_packet_from_buf <= in_buf_tlast;
+            end
+        end
+    end
+
 
     axis_clock_converter_high_to_low high_to_low(
         .s_axis_aclk   (axis_aclk),

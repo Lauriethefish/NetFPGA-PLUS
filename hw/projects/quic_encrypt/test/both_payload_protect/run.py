@@ -96,31 +96,22 @@ def protect_quic_payload(packet, packet_no):
     
 print("Sending now: ")
 
-packet_no = 25
-pkt = Ether(src=SA, dst=DA)/IP(src=SRC_IP, dst=DST_IP, ttl=TTL, id=1)/UDP(sport=8080, dport=4040)
-pkt = pkt/QUIC_1RTT(DstConnID="ABCDEFGH", PacketNumber=packet_no)/Raw("ENCRYPTION TEST")
-print(f"Pre protection: {pkt}")
+for _ in range(0, 100):
+    packet_no = 25
+    pkt = Ether(src=SA, dst=DA)/IP(src=SRC_IP, dst=DST_IP, ttl=TTL, id=1)/UDP(sport=8080, dport=4040)
+    pkt = pkt/QUIC_1RTT(DstConnID="ABCDEFGH", PacketNumber=packet_no)/Raw("ENCRYPTION TEST")
+    print(f"Pre protection: {pkt}")
 
-pkt_protected = protect_quic_payload(pkt, packet_no)
-pkt_protected[UDP].chksum = 0
-pkt_protected[IP].chksum = 0
-print(f"Post protection: {pkt_protected}")
+    pkt_protected = protect_quic_payload(pkt, packet_no)
+    pkt_protected[UDP].chksum = 0
+    pkt_protected[IP].chksum = 0
+    print(f"Post protection: {pkt_protected}")
 
-pkt.time = 1 * 0.00001
-pkts_sent.append(pkt)
-# Until encryption is implemented, expect the same packet back.
-pkts_expected.append(pkt_protected)
+    pkt.time = 1 * 0.00001
+    pkts_sent.append(pkt)
+    # Until encryption is implemented, expect the same packet back.
+    pkts_expected.append(pkt_protected)
 
-"""
-pkt = Ether(src=SA, dst=DA)/IP(src=SRC_IP, dst=DST_IP, ttl=TTL, id=1)/UDP(sport=8080, dport=4040)
-pkt = pkt/QUIC_1RTT(DstConnID="ABCDEFGH", PacketNumber=26)/Raw("ENCRYPTION TEST 2")
-print(pkt)
-
-pkt.time = 1 * 0.00001
-pkts_sent.append(pkt)
-# Until encryption is implemented, expect the same packet back.
-pkts_expected.append(pkt.copy())
-"""
 
 
 nftest_send_single(pkts_sent)
