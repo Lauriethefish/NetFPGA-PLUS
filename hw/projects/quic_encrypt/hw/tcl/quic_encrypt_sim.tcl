@@ -47,8 +47,8 @@ set test_name [lindex $argv 0]
 # Project Settings
 #####################################
 create_project -name ${design} -force -dir "./${proj_dir}" -part ${device}
-# Enable the xpm_fifo_sync simulation models.
-set_property XPM_LIBRARIES {XPM_FIFO} [current_project]
+# Enable FIFO and reset-synchronizer simulation models.
+set_property XPM_LIBRARIES {XPM_FIFO XPM_CDC} [current_project]
 set_property board_part ${board} [current_project]
 set_property source_mgmt_mode DisplayOnly [current_project]
 set_property top ${top} [current_fileset]
@@ -74,28 +74,22 @@ set_property -dict [list CONFIG.OUTPUT_FILE $::env(NF_DESIGN_DIR)/test/single_lo
 reset_target all [get_ips axis_sim_record_ip0]
 generate_target all [get_ips axis_sim_record_ip0]
 
-create_ip -name axis_clock_converter -vendor xilinx.com -library ip -version 1.1 -module_name axis_clock_converter_high_to_low
-set_property -dict [list \
-  CONFIG.HAS_TKEEP {1} \
-  CONFIG.HAS_TLAST {1} \
-  CONFIG.IS_ACLK_ASYNC {0} \
-  CONFIG.TDATA_NUM_BYTES {64} \
-  CONFIG.TUSER_WIDTH {128} \
-] [get_ips axis_clock_converter_high_to_low]
-set_property CONFIG.TDATA_NUM_BYTES ${datapath_width_byte} [get_ips axis_clock_converter_high_to_low]
-set_property CONFIG.ACLK_RATIO {2:1} [get_ips axis_clock_converter_high_to_low]
-
-create_ip -name axis_clock_converter -vendor xilinx.com -library ip -version 1.1 -module_name axis_clock_converter_low_to_high
-set_property -dict [list \
-  CONFIG.HAS_TKEEP {1} \
-  CONFIG.HAS_TLAST {1} \
-  CONFIG.IS_ACLK_ASYNC {0} \
-  CONFIG.TDATA_NUM_BYTES {64} \
-  CONFIG.TUSER_WIDTH {128} \
-] [get_ips axis_clock_converter_low_to_high]
-set_property CONFIG.TDATA_NUM_BYTES ${datapath_width_byte} [get_ips axis_clock_converter_low_to_high]
-set_property CONFIG.ACLK_RATIO {1:2} [get_ips axis_clock_converter_low_to_high]
-
+# Clock converters used by the quic_encrypt wrapper.
+foreach {clock_converter_name clock_converter_ratio} {
+    axis_clock_converter_high_to_low 2:1
+    axis_clock_converter_low_to_high 1:2
+} {
+    create_ip -name axis_clock_converter -vendor xilinx.com -library ip -version 1.1 -module_name ${clock_converter_name}
+    set_property -dict [list \
+        CONFIG.HAS_TKEEP {1} \
+        CONFIG.HAS_TLAST {1} \
+        CONFIG.IS_ACLK_ASYNC {0} \
+        CONFIG.TDATA_NUM_BYTES ${datapath_width_byte} \
+        CONFIG.TUSER_WIDTH {128} \
+        CONFIG.ACLK_RATIO ${clock_converter_ratio} \
+    ] [get_ips ${clock_converter_name}]
+    generate_target all [get_ips ${clock_converter_name}]
+}
 
 #####################################
 # Project Structure & IP Build

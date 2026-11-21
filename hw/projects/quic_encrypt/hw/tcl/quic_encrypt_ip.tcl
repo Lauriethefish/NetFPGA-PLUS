@@ -53,8 +53,8 @@ set test_name [lindex $argv 0]
 # Project Settings
 #####################################
 create_project -name ${ip_name} -force -dir "./${proj_dir}" -part ${device}
-# Enable xpm_fifo_sync for synthesis and IP packaging.
-set_property XPM_LIBRARIES {XPM_FIFO} [current_project]
+# Enable FIFO and reset-synchronizer macros for synthesis and IP packaging.
+set_property XPM_LIBRARIES {XPM_FIFO XPM_CDC} [current_project]
 set_property source_mgmt_mode DisplayOnly [current_project]
 set_property top ${top} [current_fileset]
 puts "Creating QUIC encryption setting IP"
@@ -68,7 +68,25 @@ set_property ip_repo_paths ${repo_dir} [current_fileset]
 # Design Parameters on NF_DATAPATH
 #####################################
 set datapath_width_bit    512
+set datapath_width_byte   [expr {${datapath_width_bit}/8}]
 update_ip_catalog
+
+# Clock converters used by the quic_encrypt wrapper.
+foreach {clock_converter_name clock_converter_ratio} {
+    axis_clock_converter_high_to_low 2:1
+    axis_clock_converter_low_to_high 1:2
+} {
+    create_ip -name axis_clock_converter -vendor xilinx.com -library ip -version 1.1 -module_name ${clock_converter_name}
+    set_property -dict [list \
+        CONFIG.HAS_TKEEP {1} \
+        CONFIG.HAS_TLAST {1} \
+        CONFIG.IS_ACLK_ASYNC {0} \
+        CONFIG.TDATA_NUM_BYTES ${datapath_width_byte} \
+        CONFIG.TUSER_WIDTH {128} \
+        CONFIG.ACLK_RATIO ${clock_converter_ratio} \
+    ] [get_ips ${clock_converter_name}]
+    generate_target all [get_ips ${clock_converter_name}]
+}
 
 #####################################
 # Project Structure & IP Build
@@ -95,13 +113,16 @@ read_vhdl [list \
 # Reference the existing package so standalone builds have the dependency too.
 read_verilog -sv "$::env(NFPLUS_FOLDER)/hw/projects/udp_checksum_calculator/hw/hdl/inter_structs.sv"
 read_verilog -sv "$::env(NFPLUS_FOLDER)/hw/projects/udp_segmentation/hw/hdl/ip_header_calc.sv"
+read_verilog -sv "./hdl/quic_payload_protect.sv"
 read_verilog -sv "./hdl/quic_encrypt.sv"
 
 update_compile_order -fileset sources_1
 update_compile_order -fileset sim_1
 
-ipx::package_project
-set_property xpm_libraries {XPM_FIFO} [ipx::current_core]
+# The sources span several directories; do not rely on root inference or copy
+# shared RTL into this package. Keep component.xml in this project's hw folder.
+ipx::package_project -root_dir [file normalize .] -set_current true
+set_property xpm_libraries {XPM_FIFO XPM_CDC} [ipx::current_core]
 
 set_property name 			${ip_name} [ipx::current_core]
 set_property library 			${lib_name} [ipx::current_core]
