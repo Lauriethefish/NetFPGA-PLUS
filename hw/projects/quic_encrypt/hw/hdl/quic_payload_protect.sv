@@ -96,17 +96,22 @@ module quic_payload_protect #(
     reg got_first_transfer_of_headers;
     reg [MAX_ALL_QUIC_HEADERS_LEN*8-1:0] headers_buf;
     reg [MAX_ALL_QUIC_HEADERS_LEN-1:0] headers_keep;
-    wire [7:0] packet_type = {<<8{headers_buf[7:0]}};
+
+    wire [7:0] first_quic_header_byte = got_first_transfer_of_headers ?
+        headers_buf[7:0] :
+        s_axis_tdata[PRE_QUIC_HEADERS_LEN*8+7:PRE_QUIC_HEADERS_LEN*8];
+    wire [7:0] packet_type = {<<8{first_quic_header_byte}};
+
     // RFC 9000. 17.3.1.
     wire [2:0] packet_number_length_bytes = 3'((packet_type & 2'b11) + 1);
 
     localparam PACKET_NUMBER_POS = 8 + DCID_LENGTH*8;
-    wire [31:0] packet_number_raw = headers_buf[PACKET_NUMBER_POS+31:PACKET_NUMBER_POS];
+    wire [31:0] packet_number_raw = {<<8{headers_buf[PACKET_NUMBER_POS+31:PACKET_NUMBER_POS]}};
     // Mask out the packet number depending on the length field
-    wire [31:0] packet_number = packet_number_raw[7:0]
-        | (packet_number_length_bytes > 1 ? packet_number[15:8] : 0)
-        | (packet_number_length_bytes > 2 ? packet_number[23:16] : 0)
-        | (packet_number_length_bytes > 3 ? packet_number[31:24] : 0);
+    wire [31:0] packet_number = packet_number_length_bytes == 1
+        ? packet_number_raw[31:24] : packet_number_length_bytes == 2
+        ? packet_number_raw[31:16] : packet_number_length_bytes == 3
+        ? packet_number_raw[31:8] : packet_number_raw;
 
 
     wire [7:0] true_header_len = 8'(PRE_QUIC_HEADERS_LEN)
@@ -274,12 +279,13 @@ module quic_payload_protect #(
                         >> (packet_buf_take_block*AES_BLOCK_SIZE/8);
 
                     packet_buf_amt_valid <= packet_buf_amt_valid
-                        + 8'($countones(s_axis_tkeep)) - packet_buf_take_block*16;
+                        + 8'($countones(s_axis_tkeep)) - packet_buf_take_block*(AES_BLOCK_SIZE/8);
                 end
             end else if(packet_buf_take_block) begin
                 // Still allow data to be taken from buffer if no more coming in.
                 packet_buf <= packet_buf >> AES_BLOCK_SIZE;
                 packet_buf_keep <= packet_buf_keep >> AES_BLOCK_SIZE/8;
+                packet_buf_amt_valid <= packet_buf_amt_valid - AES_BLOCK_SIZE/8;
             end
 
             // Shift out header data
