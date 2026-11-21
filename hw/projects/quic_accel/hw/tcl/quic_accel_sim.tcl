@@ -70,6 +70,12 @@ set_property generate_synth_checkpoint false [get_files udp_checksum_setter_ip.x
 reset_target all [get_ips udp_checksum_setter_ip]
 generate_target all [get_ips udp_checksum_setter_ip]
 
+# QUIC encryption
+create_ip -name quic_encrypt -vendor NetFPGA -library NetFPGA -module_name quic_encrypt_ip
+set_property generate_synth_checkpoint false [get_files quic_encrypt_ip.xci]
+reset_target all [get_ips quic_encrypt_ip]
+generate_target all [get_ips quic_encrypt_ip]
+
 create_ip -name udp_segmentation -vendor NetFPGA -library NetFPGA -module_name udp_segmentor_ip
 set_property generate_synth_checkpoint false [get_files udp_segmentor_ip.xci]
 reset_target all [get_ips udp_segmentor_ip]
@@ -254,6 +260,7 @@ set_property CONFIG.TDATA_NUM_BYTES ${datapath_width_byte} [get_ips axis_switch_
 
 
 #read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/inter_structs.sv"
+read_verilog -sv "$::env(NFPLUS_FOLDER)/hw/projects/udp_segmentation/hw/hdl/ip_header_calc.sv"
 read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/incoming_filter.sv"
 read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/axil_register_bank.sv"
 read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/nf_datapath.sv"

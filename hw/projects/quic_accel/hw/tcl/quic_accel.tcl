@@ -125,6 +125,12 @@ set_property generate_synth_checkpoint false [get_files udp_checksum_setter_ip.x
 reset_target all [get_ips udp_checksum_setter_ip]
 generate_target all [get_ips udp_checksum_setter_ip]
 
+# QUIC encryption
+create_ip -name quic_encrypt -vendor NetFPGA -library NetFPGA -module_name quic_encrypt_ip
+set_property generate_synth_checkpoint false [get_files quic_encrypt_ip.xci]
+reset_target all [get_ips quic_encrypt_ip]
+generate_target all [get_ips quic_encrypt_ip]
+
 create_ip -name xilinx_shell -vendor xilinx -library xilinx -module_name xilinx_shell_ip
 set_property CONFIG.MAX_PKT_LEN 1518 [get_ips xilinx_shell_ip]
 set_property CONFIG.NUM_QUEUE 2048 [get_ips xilinx_shell_ip]
@@ -460,6 +466,7 @@ set_property generate_synth_checkpoint false [get_files clk_wiz_1.xci]
 reset_target all [get_ips clk_wiz_1]
 generate_target all [get_ips clk_wiz_1]
 
+read_verilog -sv "$::env(NFPLUS_FOLDER)/hw/projects/udp_segmentation/hw/hdl/ip_header_calc.sv"
 read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/incoming_filter.sv"
 read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/axil_register_bank.sv"
 read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/top_wrapper.sv"
