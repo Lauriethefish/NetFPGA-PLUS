@@ -63,6 +63,13 @@ module quic_encrypt #(
     wire                           post_aead_tready;
     wire                           post_aead_tvalid;
 
+    wire [C_AXIS_DATA_WIDTH-1:0]   out_buf_tdata;
+    wire [C_AXIS_DATA_WIDTH/8-1:0] out_buf_tkeep;
+    wire [C_AXIS_TUSER_WIDTH-1:0]  out_buf_tuser;
+    wire                           out_buf_tlast;
+    wire                           out_buf_tready;
+    wire                           out_buf_tvalid;
+
     // Input buffer for one packet
 
     wire in_fifo_full;
@@ -78,7 +85,7 @@ module quic_encrypt #(
        .READ_MODE           ("FWFT"),
        .FIFO_READ_LATENCY   (0),
        .READ_DATA_WIDTH     (C_AXIS_DATA_WIDTH+C_AXIS_DATA_WIDTH/8+C_AXIS_TUSER_WIDTH+1)
-    ) output_fifo (
+    ) input_fifo (
        .sleep            (1'b0),
        .rst              (!axis_resetn),
        .wr_clk           (axis_aclk),
@@ -155,11 +162,46 @@ module quic_encrypt #(
 
         .m_axis_aclk   (axis_aclk),
         .m_axis_aresetn(axis_resetn),
-        .m_axis_tdata  (m_axis_tdata),
-        .m_axis_tready (m_axis_tready),
-        .m_axis_tkeep  (m_axis_tkeep),
-        .m_axis_tuser  (m_axis_tuser),
-        .m_axis_tvalid (m_axis_tvalid),
-        .m_axis_tlast  (m_axis_tlast)
+        .m_axis_tdata  (out_buf_tdata),
+        .m_axis_tready (out_buf_tready),
+        .m_axis_tkeep  (out_buf_tkeep),
+        .m_axis_tuser  (out_buf_tuser),
+        .m_axis_tvalid (out_buf_tvalid),
+        .m_axis_tlast  (out_buf_tlast)
+    );
+
+    wire out_fifo_full, out_fifo_empty;
+    assign out_buf_tready = ~out_fifo_full;
+    assign m_axis_tvalid = ~out_fifo_empty;
+    xpm_fifo_sync # (
+       .FIFO_WRITE_DEPTH    (FIFO_DEPTH),
+       .WRITE_DATA_WIDTH    (C_AXIS_DATA_WIDTH+C_AXIS_DATA_WIDTH/8+C_AXIS_TUSER_WIDTH+1),
+       .PROG_FULL_THRESH    (FIFO_DEPTH - 5),
+       .READ_MODE           ("FWFT"),
+       .FIFO_READ_LATENCY   (0),
+       .READ_DATA_WIDTH     (C_AXIS_DATA_WIDTH+C_AXIS_DATA_WIDTH/8+C_AXIS_TUSER_WIDTH+1)
+    ) output_fifo (
+       .sleep            (1'b0),
+       .rst              (!axis_resetn),
+       .wr_clk           (axis_aclk),
+       .wr_en            (out_buf_tvalid && out_buf_tvalid),
+       .din              ({out_buf_tdata, out_buf_tkeep, out_buf_tuser, out_buf_tlast}),
+       .full             (out_fifo_full), /* Should never happen, if it does happen, panic? */
+       .prog_full        (), // TODO: maybe track with an AXI-Lite register?
+       .wr_data_count    (),
+       .overflow         (),
+       .wr_rst_busy      (),
+       .rd_en            (m_axis_tvalid && m_axis_tready),
+       .dout             ({m_axis_tdata, m_axis_tkeep, m_axis_tuser, m_axis_tlast}),
+       .data_valid       (),
+       .empty            (out_fifo_empty),
+       .prog_empty       (),
+       .rd_data_count    (),
+       .underflow        (),
+       .rd_rst_busy      (),
+       .injectsbiterr    (1'b0),
+       .injectdbiterr    (1'b0),
+       .sbiterr          (),
+       .dbiterr          ()
     );
 endmodule
