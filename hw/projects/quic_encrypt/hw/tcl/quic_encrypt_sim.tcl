@@ -63,6 +63,7 @@ update_ip_catalog -verbose
 # Design Parameters on NF_DATAPATH
 #####################################
 set datapath_width_bit    512
+set datapath_width_byte   [expr {${datapath_width_bit}/8}]
 
 create_ip -name axis_sim_stim -vendor NetFPGA -library NetFPGA -module_name axis_sim_stim_ip0
 set_property -dict [list CONFIG.input_file $::env(NF_DESIGN_DIR)/test/single_stim.axi] [get_ips axis_sim_stim_ip0]
@@ -72,6 +73,29 @@ create_ip -name axis_sim_record -vendor NetFPGA -library NetFPGA -module_name ax
 set_property -dict [list CONFIG.OUTPUT_FILE $::env(NF_DESIGN_DIR)/test/single_log.axi] [get_ips axis_sim_record_ip0]
 reset_target all [get_ips axis_sim_record_ip0]
 generate_target all [get_ips axis_sim_record_ip0]
+
+create_ip -name axis_clock_converter -vendor xilinx.com -library ip -version 1.1 -module_name axis_clock_converter_high_to_low
+set_property -dict [list \
+  CONFIG.HAS_TKEEP {1} \
+  CONFIG.HAS_TLAST {1} \
+  CONFIG.IS_ACLK_ASYNC {0} \
+  CONFIG.TDATA_NUM_BYTES {64} \
+  CONFIG.TUSER_WIDTH {128} \
+] [get_ips axis_clock_converter_high_to_low]
+set_property CONFIG.TDATA_NUM_BYTES ${datapath_width_byte} [get_ips axis_clock_converter_high_to_low]
+set_property CONFIG.ACLK_RATIO {2:1} [get_ips axis_clock_converter_high_to_low]
+
+create_ip -name axis_clock_converter -vendor xilinx.com -library ip -version 1.1 -module_name axis_clock_converter_low_to_high
+set_property -dict [list \
+  CONFIG.HAS_TKEEP {1} \
+  CONFIG.HAS_TLAST {1} \
+  CONFIG.IS_ACLK_ASYNC {0} \
+  CONFIG.TDATA_NUM_BYTES {64} \
+  CONFIG.TUSER_WIDTH {128} \
+] [get_ips axis_clock_converter_low_to_high]
+set_property CONFIG.TDATA_NUM_BYTES ${datapath_width_byte} [get_ips axis_clock_converter_low_to_high]
+set_property CONFIG.ACLK_RATIO {1:2} [get_ips axis_clock_converter_low_to_high]
+
 
 #####################################
 # Project Structure & IP Build
@@ -97,6 +121,7 @@ read_vhdl [list \
 
 read_verilog -sv "$::env(NFPLUS_FOLDER)/hw/projects/udp_checksum_calculator/hw/hdl/inter_structs.sv"
 read_verilog -sv "$::env(NFPLUS_FOLDER)/hw/projects/udp_segmentation/hw/hdl/ip_header_calc.sv"
+read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/quic_payload_protect.sv"
 read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/quic_encrypt.sv"
 read_verilog "$::env(NF_DESIGN_DIR)/hw/hdl/top_sim.v"
 read_verilog "$::env(NF_DESIGN_DIR)/hw/hdl/top_tb.v"

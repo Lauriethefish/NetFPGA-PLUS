@@ -10,7 +10,7 @@ module top_tb #(
     always #(CORE_PERIOD / 2) axis_aclk = ~axis_aclk;
 
     initial begin
-        repeat (20) @(negedge axis_aclk);
+        repeat (100) @(negedge axis_aclk);
         axis_resetn = 1;
     end
 
