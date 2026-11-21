@@ -40,6 +40,8 @@ from scapy.layers.all import Ether, IP, UDP, Raw
 from scapy.layers.quic import *
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
+import random
+
 # Only simulation is supported here. This standalone IP must be integrated
 # into the QUIC pipeline before it can be tested on hardware.
 if isHW():
@@ -96,10 +98,18 @@ def protect_quic_payload(packet, packet_no):
     
 print("Sending now: ")
 
-for _ in range(0, 100):
-    packet_no = 25
+mtu = 1500
+for i in range(0, 10):
+    random.seed(i)
+    packet_no = random.randint(0, 2**32-1)
     pkt = Ether(src=SA, dst=DA)/IP(src=SRC_IP, dst=DST_IP, ttl=TTL, id=1)/UDP(sport=8080, dport=4040)
-    pkt = pkt/QUIC_1RTT(DstConnID="ABCDEFGH", PacketNumber=packet_no)/Raw("ENCRYPTION TEST")
+    pkt = pkt/QUIC_1RTT(DstConnID="ABCDEFGH", PacketNumber=packet_no)
+    headers_len = len(bytes(pkt))
+    max_payload_len = mtu - headers_len
+    payload_len = random.randint(1, max_payload_len)
+    payload = random.randbytes(payload_len)
+    pkt = pkt/Raw(payload)
+
     print(f"Pre protection: {pkt}")
 
     pkt_protected = protect_quic_payload(pkt, packet_no)
