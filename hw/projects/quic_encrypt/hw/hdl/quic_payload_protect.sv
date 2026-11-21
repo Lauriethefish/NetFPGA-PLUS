@@ -274,12 +274,13 @@ module quic_payload_protect #(
                         >> (packet_buf_take_block*AES_BLOCK_SIZE/8);
 
                     packet_buf_amt_valid <= packet_buf_amt_valid
-                        + 8'($countones(s_axis_tkeep)) - packet_buf_take_block*16;
+                        + 8'($countones(s_axis_tkeep)) - packet_buf_take_block*(AES_BLOCK_SIZE/8);
                 end
             end else if(packet_buf_take_block) begin
                 // Still allow data to be taken from buffer if no more coming in.
                 packet_buf <= packet_buf >> AES_BLOCK_SIZE;
                 packet_buf_keep <= packet_buf_keep >> AES_BLOCK_SIZE/8;
+                packet_buf_amt_valid <= packet_buf_amt_valid - AES_BLOCK_SIZE/8;
             end
 
             // Shift out header data
