@@ -60,15 +60,16 @@ module quic_encrypt #(
     wire [C_AXIS_DATA_WIDTH/8-1:0] post_aead_tkeep;
     wire [C_AXIS_TUSER_WIDTH-1:0]  post_aead_tuser;
     wire                           post_aead_tlast;
-    wire                           post_aead_tready;
     wire                           post_aead_tvalid;
 
     wire [C_AXIS_DATA_WIDTH-1:0]   out_buf_tdata;
     wire [C_AXIS_DATA_WIDTH/8-1:0] out_buf_tkeep;
     wire [C_AXIS_TUSER_WIDTH-1:0]  out_buf_tuser;
     wire                           out_buf_tlast;
-    wire                           out_buf_tready;
     wire                           out_buf_tvalid;
+
+    wire out_fifo_empty;
+    // TODO: Only allow input once our output is flushed.
 
     // Input buffer for one packet
 
@@ -146,7 +147,6 @@ module quic_encrypt #(
         .m_axis_tkeep      (post_aead_tkeep),
         .m_axis_tuser      (post_aead_tuser),
         .m_axis_tvalid     (post_aead_tvalid),
-        .m_axis_tready     (post_aead_tready),
         .m_axis_tlast      (post_aead_tlast)
     );
 
@@ -154,7 +154,7 @@ module quic_encrypt #(
         .s_axis_aclk    (aead_clk),
         .s_axis_aresetn (aead_resetn),
         .s_axis_tdata   (post_aead_tdata),
-        .s_axis_tready  (post_aead_tready),
+        .s_axis_tready  (),
         .s_axis_tkeep   (post_aead_tkeep),
         .s_axis_tuser   (post_aead_tuser),
         .s_axis_tvalid  (post_aead_tvalid),
@@ -163,15 +163,14 @@ module quic_encrypt #(
         .m_axis_aclk   (axis_aclk),
         .m_axis_aresetn(axis_resetn),
         .m_axis_tdata  (out_buf_tdata),
-        .m_axis_tready (out_buf_tready),
+        // Always must have space in the output buffer
+        .m_axis_tready ('1),
         .m_axis_tkeep  (out_buf_tkeep),
         .m_axis_tuser  (out_buf_tuser),
         .m_axis_tvalid (out_buf_tvalid),
         .m_axis_tlast  (out_buf_tlast)
     );
 
-    wire out_fifo_full, out_fifo_empty;
-    assign out_buf_tready = ~out_fifo_full;
     assign m_axis_tvalid = ~out_fifo_empty;
     xpm_fifo_sync # (
        .FIFO_WRITE_DEPTH    (FIFO_DEPTH),
@@ -186,7 +185,7 @@ module quic_encrypt #(
        .wr_clk           (axis_aclk),
        .wr_en            (out_buf_tvalid && out_buf_tvalid),
        .din              ({out_buf_tdata, out_buf_tkeep, out_buf_tuser, out_buf_tlast}),
-       .full             (out_fifo_full), /* Should never happen, if it does happen, panic? */
+       .full             (),
        .prog_full        (), // TODO: maybe track with an AXI-Lite register?
        .wr_data_count    (),
        .overflow         (),

@@ -21,13 +21,12 @@ module quic_payload_protect #(
     output [C_AXIS_DATA_WIDTH/8-1:0] m_axis_tkeep,
     output [C_AXIS_TUSER_WIDTH-1:0] m_axis_tuser,
     output m_axis_tvalid,
-    input m_axis_tready,
     output m_axis_tlast
+    // Note: This module does not support backpressure.
 );
     import inter_structs::*;
 
     localparam unsigned ETHER_MTU = 1500;
-    localparam unsigned FIFO_DEPTH = 1 << $clog2(ETHER_MTU/(C_AXIS_DATA_WIDTH/8) + 1);
     localparam unsigned AES_BLOCK_SIZE=128;
 
     // Lengths of crypto parameters in bytes.
@@ -127,9 +126,6 @@ module quic_payload_protect #(
     localparam PACKET_BUF_SIZE_BITS = C_AXIS_DATA_WIDTH + AES_BLOCK_SIZE;
     reg [PACKET_BUF_SIZE_BITS-1:0] packet_buf;
     reg [PACKET_BUF_SIZE_BITS/8-1:0] packet_buf_keep;
-
-    wire fifo_empty;
-    assign m_axis_tvalid = !fifo_empty;
     
     reg [7:0] packet_buf_amt_valid;
     typedef enum logic [3:0] {READING_HEADERS, KEY_LOAD, IV_LOAD, POST_IV_LOAD, PENDING, ADATA_LOAD,
@@ -166,20 +162,15 @@ module quic_payload_protect #(
     reg [7:0] m_axis_tdata_data_amt;
     reg got_all_output_data;
     // True if the current clock cycle will empty the output queue.
-    wire end_of_packet = got_all_output_data && fifo_empty;
+    wire end_of_packet = got_all_output_data;
 
-    wire [C_AXIS_DATA_WIDTH-1:0] m_axis_tdata_fifo_in;
-    wire [C_AXIS_DATA_WIDTH/8-1:0] m_axis_tkeep_fifo_in;
-    wire m_axis_tlast_fifo_in;
-    wire fifo_wr_en;
-
-    assign m_axis_tdata_fifo_in = m_axis_tdata_buf[C_AXIS_DATA_WIDTH-1:0];
-    assign m_axis_tkeep_fifo_in = m_axis_tkeep_buf[C_AXIS_DATA_WIDTH/8-1:0];
+    assign m_axis_tdata = m_axis_tdata_buf[C_AXIS_DATA_WIDTH-1:0];
+    assign m_axis_tkeep = m_axis_tkeep_buf[C_AXIS_DATA_WIDTH/8-1:0];
     // If got_all_output_data holds, then the final tag is buffered
     // Therefore if we also have *no more data after this transfer*, then it is last. 
-    assign m_axis_tlast_fifo_in = got_all_output_data && (m_axis_tkeep_buf[C_AXIS_DATA_WIDTH/8] == 0);
+    assign m_axis_tlast = got_all_output_data && (m_axis_tkeep_buf[C_AXIS_DATA_WIDTH/8] == 0);
 
-    assign fifo_wr_en = (m_axis_tdata_data_amt >= C_AXIS_DATA_WIDTH/8)
+    assign m_axis_tvalid = (m_axis_tdata_data_amt >= C_AXIS_DATA_WIDTH/8)
         || (got_all_output_data && m_axis_tdata_data_amt > 0);
 
     // Output from the AES GCM IP
@@ -198,7 +189,7 @@ module quic_payload_protect #(
             m_axis_tdata_data_amt <= '0;
             is_first_output_transfer <= 1'b1;
         end else begin
-            if(m_axis_tready && m_axis_tvalid) begin
+            if(m_axis_tvalid) begin
                 is_first_output_transfer <= 1'b0;
             end
 
@@ -222,9 +213,7 @@ module quic_payload_protect #(
                 end
             end
 
-            // TODO: no means of backpressure on the AES IP!
-            // Need to add an output buffer on this IP anyway (AES IP is slow), so this can provide the backpressure.
-            else if(fifo_wr_en) begin
+            else if(m_axis_tvalid) begin
                 // Shift out old data and insert new data, if there is any
                 m_axis_tdata_buf <= (m_axis_tdata_buf >> C_AXIS_DATA_WIDTH)
                     | (next_out_block_tdata_reordered << (m_axis_tdata_data_amt*8-C_AXIS_DATA_WIDTH));
@@ -404,42 +393,5 @@ module quic_payload_protect #(
         .aes_gcm_ghash_tag_val_o(gcm_tag_out_val),
         .aes_gcm_ghash_tag_o(gcm_tag_out),
         .aes_gcm_icb_cnt_overflow_o() // TODO: need to connect this? probably not.
-    );
-
-    // Buffer the output in a FIFO
-    // One of these modules only has (at most) 1/4 the throughput of the NFPlus
-    // datapath. Therefore buffer the output so we can provide a whole output
-    // packet in one rapid burst. The bursts from multiple of these modules
-    // will be interleaved to produce the output packet stream.
-    xpm_fifo_sync # (
-       .FIFO_WRITE_DEPTH    (FIFO_DEPTH),
-       .WRITE_DATA_WIDTH    (C_AXIS_DATA_WIDTH+C_AXIS_DATA_WIDTH/8+1),
-       .PROG_FULL_THRESH    (FIFO_DEPTH - 5),
-       .READ_MODE           ("FWFT"),
-       .FIFO_READ_LATENCY   (0),
-       .READ_DATA_WIDTH     (C_AXIS_DATA_WIDTH+C_AXIS_DATA_WIDTH/8+1)
-    ) output_fifo (
-       .sleep            (1'b0),
-       .rst              (!axis_resetn),
-       .wr_clk           (axis_aclk),
-       .wr_en            (fifo_wr_en),
-       .din              ({m_axis_tdata_fifo_in, m_axis_tkeep_fifo_in, m_axis_tlast_fifo_in}),
-       .full             (), /* Should never happen, if it does happen, panic? */
-       .prog_full        (), // TODO: maybe track with an AXI-Lite register?
-       .wr_data_count    (),
-       .overflow         (),
-       .wr_rst_busy      (),
-       .rd_en            (m_axis_tready),
-       .dout             ({m_axis_tdata, m_axis_tkeep, m_axis_tlast}),
-       .data_valid       (),
-       .empty            (fifo_empty),
-       .prog_empty       (),
-       .rd_data_count    (),
-       .underflow        (),
-       .rd_rst_busy      (),
-       .injectsbiterr    (1'b0),
-       .injectdbiterr    (1'b0),
-       .sbiterr          (),
-       .dbiterr          ()
     );
 endmodule
