@@ -459,16 +459,16 @@ module top #(
 
   // Output nothing on datapath 1
   assign axis_phy_o_1_tvalid = 1'b0;
-  assign axis_phy_o_1_tuser = '0;
-  assign axis_phy_o_1_tlast = '0;
-  assign axis_phy_o_1_tdata = '0;
-  assign axis_phy_o_1_tkeep = '0;
+  assign axis_phy_o_1_tuser = 0;
+  assign axis_phy_o_1_tlast = 0;
+  assign axis_phy_o_1_tdata = 0;
+  assign axis_phy_o_1_tkeep = 0;
 
   assign axis_dma_o_1_tvalid = 1'b0;
-  assign axis_dma_o_1_tuser = '0;
-  assign axis_dma_o_1_tlast = '0;
-  assign axis_dma_o_1_tdata = '0;
-  assign axis_dma_o_1_tkeep = '0;
+  assign axis_dma_o_1_tuser = 0;
+  assign axis_dma_o_1_tlast = 0;
+  assign axis_dma_o_1_tdata = 0;
+  assign axis_dma_o_1_tkeep = 0;
 
   // Void input data on datapath 1.
   assign axis_phy_i_1_tready = 1'b1;
