@@ -29,8 +29,8 @@ module padder #(
 
     reg is_new_packet;
 
-    wire [15:0] s_axis_tuser_length = s_axis_tdata[15:0];
-    wire need_to_pad = s_axis_tuser_length < MIN_FRAME_LEN && is_new_packet;
+    wire [15:0] s_axis_tuser_length = s_axis_tuser[15:0];
+    wire need_to_pad = (s_axis_tuser_length < MIN_FRAME_LEN) && is_new_packet;
 
     wire [C_AXIS_DATA_WIDTH/8-1:0] padded_tkeep = s_axis_tkeep | ((1 << MIN_FRAME_LEN) - 1);
     wire [C_AXIS_TUSER_WIDTH-1:0] padded_tuser = 
@@ -39,15 +39,20 @@ module padder #(
     always_ff @(posedge axis_aclk) begin
         if(!axis_resetn) begin
             is_new_packet <= 1'b1;
+            m_axis_tdata <= '0;
+            m_axis_tkeep <= '0;
+            m_axis_tuser <= '0;
+            m_axis_tlast <= '0;
+            m_axis_tvalid <= '0;
         end else begin
             if(s_axis_tready && s_axis_tvalid) begin
-                is_new_packet <= s_axis_tlast;
-
                 m_axis_tdata <= s_axis_tdata;
-                m_axis_tkeep <= need_to_pad ? s_axis_tkeep : padded_tkeep;
+                m_axis_tkeep <= need_to_pad ? padded_tkeep : s_axis_tkeep;
                 m_axis_tvalid <= s_axis_tvalid;
                 m_axis_tlast <= s_axis_tlast;
                 m_axis_tuser <= need_to_pad ? padded_tuser : s_axis_tuser;
+
+                is_new_packet <= s_axis_tlast;
             end else if(m_axis_tready) begin
                 m_axis_tvalid <= 1'b0;
             end
