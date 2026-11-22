@@ -63,11 +63,10 @@ mtu = 1500
 # NB -1 is interpreted as maximum payload length according to MTU
 # ETC for -2 which is (max payload length - 1)
 extra_lengths = [0, 1, 2, 3, 4, 5, -1, -2, -3, -4, -5]
-num_random_lengths = 800
 
 # Generates the testcases for QUIC packet encryption
 # Expected packets will have a checksum of 0 unless checksum is set.
-def generate_testcases(pkts_sent, pkts_expected, checksum=False):
+def generate_testcases(pkts_sent, pkts_expected, checksum=False, num_random_lengths=800):
     for i in range(0, num_random_lengths+len(extra_lengths)):
         random.seed(i)
         packet_no = random.randint(0, 2**32-1)
