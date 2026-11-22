@@ -36,7 +36,8 @@ resize_pblock [get_pblocks pblock_cmac_subsystem] -add {SLR2}
 
 create_pblock pblock_nf_datapath
 add_cells_to_pblock [get_pblocks pblock_nf_datapath] [get_cells -quiet [list datapath_0]]
-add_cells_to_pblock [get_pblocks pblock_nf_datapath] [get_cells -quiet [list datapath_1]]
+# Datapath 1 disabled, to save area.
+#add_cells_to_pblock [get_pblocks pblock_nf_datapath] [get_cells -quiet [list datapath_1]]
 add_cells_to_pblock [get_pblocks pblock_nf_datapath] [get_cells -quiet [list u_top_wrapper/u_clk_conv]]
 add_cells_to_pblock [get_pblocks pblock_nf_datapath] [get_cells -quiet [list u_clk_conv]]
 resize_pblock [get_pblocks pblock_nf_datapath] -add {SLR1}
