@@ -5,7 +5,7 @@
 module quic_encrypt #(
     parameter C_AXIS_DATA_WIDTH = 512,
     parameter C_AXIS_TUSER_WIDTH = 128,
-    parameter NUM_MODULES=8
+    parameter NUM_MODULES=4
 ) (
     input axis_aclk,
     input axis_resetn,
