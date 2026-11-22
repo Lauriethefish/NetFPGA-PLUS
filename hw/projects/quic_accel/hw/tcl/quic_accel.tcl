@@ -465,6 +465,7 @@ reset_target all [get_ips clk_wiz_1]
 generate_target all [get_ips clk_wiz_1]
 
 read_verilog -sv "$::env(NFPLUS_FOLDER)/hw/projects/udp_segmentation/hw/hdl/ip_header_calc.sv"
+read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/padder.sv"
 read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/incoming_filter.sv"
 read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/axil_register_bank.sv"
 read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/top_wrapper.sv"

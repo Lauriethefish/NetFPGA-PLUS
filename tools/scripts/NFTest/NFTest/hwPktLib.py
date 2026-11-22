@@ -211,11 +211,10 @@ def compare(exp, unexp):
     for i in range(numExp):
         print('Expected packet', str(i))
         for j in range(numUnexp):
-            # Remove padding added by network stack, so comparison succeeds.
-            if unexp[j].haslayer(Padding):
-                print("STRIPPING PADDING")
-                unexp[j][Padding].underlayer.remove_payload()
-
+            # Leave padding in place if present: our tests should add the padding
+            # to the expected packet in the case that it's meant to be added
+            # by the hardware.
+            
             if len(exp[i]) != len(unexp[j]):
                 print('   Unexpected packet ' + str(j), end=' ')
                 print(': Packet lengths do not match, expecting', end=' ')

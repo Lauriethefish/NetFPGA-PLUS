@@ -63,11 +63,20 @@ generate_testcases(pkts_send, pkts_expected, checksum=True, num_random_lengths=8
 nftest_start()
 
 for (pkt, expected) in zip(pkts_send, pkts_expected):
-   # Skip packets that would have padding.
-   if len(bytes(pkt)) < 60:
-      continue
-
    nftest_send_dma('nf0', pkt)
+
+   # NB this practically never fires because the minimum length QUIC header
+   # already brings the frame to 60 bytes.
+   # TODO: If we fix up the bypass datapath, actually check the padding IP
+   # works by replacing this with some UDP datagram that's too short,
+   # for example.
+   len_expected = len(bytes(expected))
+   if len_expected < 60:
+      print("Padding out expected packet")
+      pad = Padding()
+      pad.load = '\x00' * (60 - len_expected)
+      expected = expected / pad
+
    nftest_expect_phy('nf0', expected)
 
 nftest_barrier()

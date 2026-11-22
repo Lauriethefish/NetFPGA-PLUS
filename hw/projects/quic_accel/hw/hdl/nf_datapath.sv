@@ -127,6 +127,13 @@ module nf_datapath #(
     wire                                   s_axis_bypass_tready;
     wire                                   s_axis_bypass_tlast;
 
+    wire [C_AXIS_DATA_WIDTH - 1:0]         s_axis_tobe_padded_tdata;
+    wire [((C_AXIS_DATA_WIDTH / 8)) - 1:0] s_axis_tobe_padded_tkeep;
+    wire [C_AXIS_TUSER_WIDTH-1:0]          s_axis_tobe_padded_tuser;
+    wire                                   s_axis_tobe_padded_tvalid;
+    wire                                   s_axis_tobe_padded_tready;
+    wire                                   s_axis_tobe_padded_tlast;
+
     // Packets post segmentation which need their checksum (re) calculating.
     wire [C_AXIS_DATA_WIDTH - 1:0]         s_axis_tobe_ip_checksummed_tdata;
     wire [((C_AXIS_DATA_WIDTH / 8)) - 1:0] s_axis_tobe_ip_checksummed_tkeep;
@@ -277,14 +284,33 @@ module nf_datapath #(
       .s_axis_tvalid(s_axis_offload_tvalid),
       .s_axis_tready(s_axis_offload_tready), 
       .s_axis_tlast (s_axis_offload_tlast),
-      .m_axis_tdata (s_axis_tobe_ip_checksummed_tdata), 
-      .m_axis_tkeep (s_axis_tobe_ip_checksummed_tkeep), 
-      .m_axis_tuser (s_axis_tobe_ip_checksummed_tuser), 
-      .m_axis_tvalid(s_axis_tobe_ip_checksummed_tvalid), 
-      .m_axis_tready(s_axis_tobe_ip_checksummed_tready), 
-      .m_axis_tlast (s_axis_tobe_ip_checksummed_tlast)
+      .m_axis_tdata (s_axis_tobe_padded_tdata), 
+      .m_axis_tkeep (s_axis_tobe_padded_tkeep), 
+      .m_axis_tuser (s_axis_tobe_padded_tuser), 
+      .m_axis_tvalid(s_axis_tobe_padded_tvalid), 
+      .m_axis_tready(s_axis_tobe_padded_tready), 
+      .m_axis_tlast (s_axis_tobe_padded_tlast)
     );
 
+    padder #(
+        .C_AXIS_DATA_WIDTH (C_AXIS_DATA_WIDTH),
+        .C_AXIS_TUSER_WIDTH(C_AXIS_TUSER_WIDTH)
+     ) padder (
+        .axis_aclk    (axis_aclk),
+        .axis_resetn  (axis_resetn),
+        .s_axis_tdata (s_axis_tobe_padded_tdata),
+        .s_axis_tkeep (s_axis_tobe_padded_tkeep),
+        .s_axis_tuser (s_axis_tobe_padded_tuser),
+        .s_axis_tvalid(s_axis_tobe_padded_tvalid),
+        .s_axis_tready(s_axis_tobe_padded_tready),
+        .s_axis_tlast (s_axis_tobe_padded_tlast),
+        .m_axis_tdata (s_axis_tobe_ip_checksummed_tdata),
+        .m_axis_tkeep (s_axis_tobe_ip_checksummed_tkeep),
+        .m_axis_tuser (s_axis_tobe_ip_checksummed_tuser),
+        .m_axis_tvalid(s_axis_tobe_ip_checksummed_tvalid),
+        .m_axis_tready(s_axis_tobe_ip_checksummed_tready),
+        .m_axis_tlast (s_axis_tobe_ip_checksummed_tlast)
+    );
 
     ip_header_calc header_calc
     (

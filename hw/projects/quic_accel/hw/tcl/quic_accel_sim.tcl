@@ -261,6 +261,7 @@ set_property CONFIG.TDATA_NUM_BYTES ${datapath_width_byte} [get_ips axis_switch_
 
 #read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/inter_structs.sv"
 read_verilog -sv "$::env(NFPLUS_FOLDER)/hw/projects/udp_segmentation/hw/hdl/ip_header_calc.sv"
+read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/padder.sv"
 read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/incoming_filter.sv"
 read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/axil_register_bank.sv"
 read_verilog -sv "$::env(NF_DESIGN_DIR)/hw/hdl/nf_datapath.sv"
@@ -288,5 +289,5 @@ set output [exec $::env(PYTHON_BNRY) $::env(NF_DESIGN_DIR)/test/${test_name}/run
 puts $output
 
 launch_simulation -simset sim_1 -mode behavioral
-run 10000us
+run 200us
 
