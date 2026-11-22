@@ -388,6 +388,7 @@ module top #(
     .m_axis_phy_tlast_raw(axis_phy_o_0_tlast)
     );
 
+  /*
 	nf_datapath #(
 		.C_S_AXI_DATA_WIDTH(32),          
 		.C_S_AXI_ADDR_WIDTH(32),          
@@ -454,6 +455,24 @@ module top #(
 		.m_axis_phy_tready_raw(axis_phy_o_1_tready),
 		.m_axis_phy_tlast_raw(axis_phy_o_1_tlast)
     );
+  */
+
+  // Output nothing on datapath 1
+  assign axis_phy_o_1_tvalid = 1'b0;
+  assign axis_phy_o_1_tuser = '0;
+  assign axis_phy_o_1_tlast = '0;
+  assign axis_phy_o_1_tdata = '0;
+  assign axis_phy_o_1_tkeep = '0;
+
+  assign axis_dma_o_1_tvalid = 1'b0;
+  assign axis_dma_o_1_tuser = '0;
+  assign axis_dma_o_1_tlast = '0;
+  assign axis_dma_o_1_tdata = '0;
+  assign axis_dma_o_1_tkeep = '0;
+
+  // Void input data on datapath 1.
+  assign axis_phy_i_1_tready = 1'b1;
+  assign axis_dma_i_1_tready = 1'b1;
 
   axi_crossbar_0 u_interconnect(
 		.aclk          (core_clk),
@@ -477,25 +496,25 @@ module top #(
 		.s_axi_rresp   (s_axil_rresp   ),
 		.s_axi_rvalid  (s_axil_rvalid  ),
 		.s_axi_rready  (s_axil_rready  ),
-		.m_axi_awaddr  ({s_axil_dp1_awaddr[31:0] ,s_axil_dp0_awaddr[31:0]}),
+		.m_axi_awaddr  ({/*s_axil_dp1_awaddr[31:0] ,*/s_axil_dp0_awaddr[31:0]}),
 		.m_axi_awprot  (),
-		.m_axi_awvalid ({s_axil_dp1_awvalid,s_axil_dp0_awvalid}),
-		.m_axi_awready ({s_axil_dp1_awready,s_axil_dp0_awready}),
-		.m_axi_wdata   ({s_axil_dp1_wdata  ,s_axil_dp0_wdata  }),
-		.m_axi_wstrb   ({s_axil_dp1_wstrb  ,s_axil_dp0_wstrb  }),
-		.m_axi_wvalid  ({s_axil_dp1_wvalid ,s_axil_dp0_wvalid }),
-		.m_axi_wready  ({s_axil_dp1_wready ,s_axil_dp0_wready }),
-		.m_axi_bresp   ({s_axil_dp1_bresp  ,s_axil_dp0_bresp  }),
-		.m_axi_bvalid  ({s_axil_dp1_bvalid ,s_axil_dp0_bvalid }),
-		.m_axi_bready  ({s_axil_dp1_bready ,s_axil_dp0_bready }),
-		.m_axi_araddr  ({s_axil_dp1_araddr ,s_axil_dp0_araddr }),
+		.m_axi_awvalid ({/*s_axil_dp1_awvalid,*/s_axil_dp0_awvalid}),
+		.m_axi_awready ({/*s_axil_dp1_awready,*/s_axil_dp0_awready}),
+		.m_axi_wdata   ({/*s_axil_dp1_wdata  ,*/s_axil_dp0_wdata  }),
+		.m_axi_wstrb   ({/*s_axil_dp1_wstrb  ,*/s_axil_dp0_wstrb  }),
+		.m_axi_wvalid  ({/*s_axil_dp1_wvalid ,*/s_axil_dp0_wvalid }),
+		.m_axi_wready  ({/*s_axil_dp1_wready ,*/s_axil_dp0_wready }),
+		.m_axi_bresp   ({/*s_axil_dp1_bresp  ,*/s_axil_dp0_bresp  }),
+		.m_axi_bvalid  ({/*s_axil_dp1_bvalid ,*/s_axil_dp0_bvalid }),
+		.m_axi_bready  ({/*s_axil_dp1_bready ,*/s_axil_dp0_bready }),
+		.m_axi_araddr  ({/*s_axil_dp1_araddr ,*/s_axil_dp0_araddr }),
 		.m_axi_arprot  (),
-		.m_axi_arvalid ({s_axil_dp1_arvalid,s_axil_dp0_arvalid}),
-		.m_axi_arready ({s_axil_dp1_arready,s_axil_dp0_arready}),
-		.m_axi_rdata   ({s_axil_dp1_rdata  ,s_axil_dp0_rdata  }),
-		.m_axi_rresp   ({s_axil_dp1_rresp  ,s_axil_dp0_rresp  }),
-		.m_axi_rvalid  ({s_axil_dp1_rvalid ,s_axil_dp0_rvalid }),
-		.m_axi_rready  ({s_axil_dp1_rready ,s_axil_dp0_rready }) 
+		.m_axi_arvalid ({/*s_axil_dp1_arvalid,*/s_axil_dp0_arvalid}),
+		.m_axi_arready ({/*s_axil_dp1_arready,*/s_axil_dp0_arready}),
+		.m_axi_rdata   ({/*s_axil_dp1_rdata  ,*/s_axil_dp0_rdata  }),
+		.m_axi_rresp   ({/*s_axil_dp1_rresp  ,*/s_axil_dp0_rresp  }),
+		.m_axi_rvalid  ({/*s_axil_dp1_rvalid ,*/s_axil_dp0_rvalid }),
+		.m_axi_rready  ({/*s_axil_dp1_rready ,*/s_axil_dp0_rready }) 
 	);
 
   axi_clock_converter_0 u_clk_conv (
