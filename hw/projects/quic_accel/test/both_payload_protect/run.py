@@ -55,15 +55,20 @@ if isHW():
    pass
    # TODO: implement counter reset
 
-nftest_start()
-
 pkts_send = []
 pkts_expected = []
 
-generate_testcases(pkts_send, pkts_expected, checksum=True)
+generate_testcases(pkts_send, pkts_expected, checksum=True, num_random_lengths=800)
 
-nftest_send_dma('nf0', pkts_send)
-nftest_expect_phy('nf0', pkts_expected)
+nftest_start()
+
+for (pkt, expected) in zip(pkts_send, pkts_expected):
+   # Skip packets that would have padding.
+   if len(bytes(pkt)) < 60:
+      continue
+
+   nftest_send_dma('nf0', pkt)
+   nftest_expect_phy('nf0', expected)
 
 nftest_barrier()
 
