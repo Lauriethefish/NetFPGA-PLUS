@@ -1,0 +1,240 @@
+
+`timescale 1ns / 1ps
+
+module quic_encrypt_single #(
+    parameter C_AXIS_DATA_WIDTH = 512,
+    parameter C_AXIS_TUSER_WIDTH = 128
+) (
+    input axis_aclk,
+    input axis_resetn,
+
+    input [C_AXIS_DATA_WIDTH-1:0] s_axis_tdata,
+    input [C_AXIS_DATA_WIDTH/8-1:0] s_axis_tkeep,
+    input [C_AXIS_TUSER_WIDTH-1:0] s_axis_tuser,
+    input s_axis_tvalid,
+    output s_axis_tready,
+    input s_axis_tlast,
+
+    output [C_AXIS_DATA_WIDTH-1:0] m_axis_tdata,
+    output [C_AXIS_DATA_WIDTH/8-1:0] m_axis_tkeep,
+    output [C_AXIS_TUSER_WIDTH-1:0] m_axis_tuser,
+    output m_axis_tvalid,
+    input m_axis_tready,
+    output m_axis_tlast
+);
+    localparam ETHER_MTU=1500;
+    localparam unsigned FIFO_DEPTH = 1 << $clog2(ETHER_MTU/(C_AXIS_DATA_WIDTH/8) + 1);
+
+    // AEAD operations run at a lower clock speed as the AES GCM IP is only
+    // so fast.
+    wire aead_clk;
+    BUFGCE_DIV #(.BUFGCE_DIVIDE(2)) divider (
+        .I(axis_aclk),
+        .CE(1'b1),
+        .CLR(1'b0),
+        .O(aead_clk)
+    );
+    wire aead_resetp;
+    wire aead_resetn = ~aead_resetp;
+    xpm_cdc_sync_rst #(.DEST_SYNC_FF(4)) reset_slow_sync (
+        .src_rst(~axis_resetn),
+        .dest_clk(aead_clk),
+        .dest_rst(aead_resetp)
+    );
+
+    wire [C_AXIS_DATA_WIDTH-1:0]   in_buf_tdata;
+    wire [C_AXIS_DATA_WIDTH/8-1:0] in_buf_tkeep;
+    wire [C_AXIS_TUSER_WIDTH-1:0]  in_buf_tuser;
+    wire                           in_buf_tlast;
+    wire                           in_buf_tready;
+    wire                           in_buf_tvalid;
+
+    wire [C_AXIS_DATA_WIDTH-1:0]   aead_tdata;
+    wire [C_AXIS_DATA_WIDTH/8-1:0] aead_tkeep;
+    wire [C_AXIS_TUSER_WIDTH-1:0]  aead_tuser;
+    wire                           aead_tlast;
+    wire                           aead_tready;
+    wire                           aead_tvalid;
+
+    wire [C_AXIS_DATA_WIDTH-1:0]   post_aead_tdata;
+    wire [C_AXIS_DATA_WIDTH/8-1:0] post_aead_tkeep;
+    wire [C_AXIS_TUSER_WIDTH-1:0]  post_aead_tuser;
+    wire                           post_aead_tlast;
+    wire                           post_aead_tvalid;
+
+    wire [C_AXIS_DATA_WIDTH-1:0]   out_buf_tdata;
+    wire [C_AXIS_DATA_WIDTH/8-1:0] out_buf_tkeep;
+    wire [C_AXIS_TUSER_WIDTH-1:0]  out_buf_tuser;
+    wire                           out_buf_tlast;
+    wire                           out_buf_tvalid;
+
+    wire out_fifo_empty;
+
+    // Input buffer for one packet
+
+    reg input_is_new_packet;
+
+    wire in_fifo_full;
+    wire in_fifo_empty;
+
+    // Do not say we are ready for a new packet until the existing one has been
+    // cleared from the queue.
+    // TODO: In the future it might make sense to have a threshold for the queue
+    // instead of waiting for it to be completely empty.
+    assign s_axis_tready = !in_fifo_full && !(input_is_new_packet
+        && !in_fifo_empty);
+
+    reg is_new_packet_from_buf;
+    wire out_fifo_prog_full;
+    // Don't write data from a new packet into the AES IP unless that output
+    // buffer from the last packet has been cleared. The output of this IP
+    // has no backpressure, so we must be careful not to overwhelm the buffer.
+    assign in_buf_tvalid = ~in_fifo_empty && (!is_new_packet_from_buf || !out_fifo_prog_full);
+
+    xpm_fifo_sync # (
+       .FIFO_WRITE_DEPTH    (FIFO_DEPTH),
+       .WRITE_DATA_WIDTH    (C_AXIS_DATA_WIDTH+C_AXIS_DATA_WIDTH/8+C_AXIS_TUSER_WIDTH+1),
+       .PROG_FULL_THRESH    (FIFO_DEPTH - 5),
+       .READ_MODE           ("FWFT"),
+       .FIFO_READ_LATENCY   (0),
+       .READ_DATA_WIDTH     (C_AXIS_DATA_WIDTH+C_AXIS_DATA_WIDTH/8+C_AXIS_TUSER_WIDTH+1)
+    ) input_fifo (
+       .sleep            (1'b0),
+       .rst              (!axis_resetn),
+       .wr_clk           (axis_aclk),
+       .wr_en            (s_axis_tvalid && s_axis_tready),
+       .din              ({s_axis_tdata, s_axis_tkeep, s_axis_tuser, s_axis_tlast}),
+       .full             (in_fifo_full), /* Should never happen, if it does happen, panic? */
+       .prog_full        (), // TODO: maybe track with an AXI-Lite register?
+       .wr_data_count    (),
+       .overflow         (),
+       .wr_rst_busy      (),
+       .rd_en            (in_buf_tvalid && in_buf_tready),
+       .dout             ({in_buf_tdata, in_buf_tkeep, in_buf_tuser, in_buf_tlast}),
+       .data_valid       (),
+       .empty            (in_fifo_empty),
+       .prog_empty       (),
+       .rd_data_count    (),
+       .underflow        (),
+       .rd_rst_busy      (),
+       .injectsbiterr    (1'b0),
+       .injectdbiterr    (1'b0),
+       .sbiterr          (),
+       .dbiterr          ()
+    );
+
+    always_ff @(posedge axis_aclk) begin
+        if(!axis_resetn) begin
+            input_is_new_packet <= 1'b1;
+            is_new_packet_from_buf <= 1'b1;
+        end else begin
+            if(in_buf_tready && in_buf_tvalid) begin
+                is_new_packet_from_buf <= in_buf_tlast;
+            end
+
+            if(s_axis_tready && s_axis_tvalid) begin
+                input_is_new_packet <= s_axis_tlast;
+            end
+        end
+    end
+
+
+    axis_clock_converter_high_to_low high_to_low(
+        .s_axis_aclk   (axis_aclk),
+        .s_axis_aresetn(axis_resetn),
+        .s_axis_tdata  (in_buf_tdata),
+        .s_axis_tready (in_buf_tready),
+        .s_axis_tkeep  (in_buf_tkeep),
+        .s_axis_tuser  (in_buf_tuser),
+        .s_axis_tvalid (in_buf_tvalid),
+        .s_axis_tlast  (in_buf_tlast),
+
+        .m_axis_aclk(aead_clk),
+        .m_axis_aresetn(aead_resetn),
+        .m_axis_tdata(aead_tdata),
+        .m_axis_tready(aead_tready),
+        .m_axis_tkeep(aead_tkeep),
+        .m_axis_tuser(aead_tuser),
+        .m_axis_tvalid(aead_tvalid),
+        .m_axis_tlast(aead_tlast)
+    );
+
+    quic_payload_protect #(
+        .C_AXIS_DATA_WIDTH (C_AXIS_DATA_WIDTH),
+        .C_AXIS_TUSER_WIDTH(C_AXIS_TUSER_WIDTH)
+     ) quic_payload_protect (
+        .axis_aclk         (aead_clk),
+        .axis_resetn       (aead_resetn),
+        .s_axis_tdata      (aead_tdata),
+        .s_axis_tkeep      (aead_tkeep),
+        .s_axis_tuser      (aead_tuser),
+        .s_axis_tvalid     (aead_tvalid),
+        .s_axis_tready     (aead_tready),
+        .s_axis_tlast      (aead_tlast),
+        .m_axis_tdata      (post_aead_tdata),
+        .m_axis_tkeep      (post_aead_tkeep),
+        .m_axis_tuser      (post_aead_tuser),
+        .m_axis_tvalid     (post_aead_tvalid),
+        .m_axis_tlast      (post_aead_tlast)
+    );
+
+    axis_clock_converter_low_to_high low_to_high (
+        .s_axis_aclk    (aead_clk),
+        .s_axis_aresetn (aead_resetn),
+        .s_axis_tdata   (post_aead_tdata),
+        .s_axis_tready  (),
+        .s_axis_tkeep   (post_aead_tkeep),
+        .s_axis_tuser   (post_aead_tuser),
+        .s_axis_tvalid  (post_aead_tvalid),
+        .s_axis_tlast   (post_aead_tlast),
+
+        .m_axis_aclk   (axis_aclk),
+        .m_axis_aresetn(axis_resetn),
+        .m_axis_tdata  (out_buf_tdata),
+        // Always must have space in the output buffer
+        .m_axis_tready ('1),
+        .m_axis_tkeep  (out_buf_tkeep),
+        .m_axis_tuser  (out_buf_tuser),
+        .m_axis_tvalid (out_buf_tvalid),
+        .m_axis_tlast  (out_buf_tlast)
+    );
+
+    assign m_axis_tvalid = ~out_fifo_empty;
+    // Output buffer is twice as long, to incorporate one packet and the next
+    // packet which is currently being AES encrypted.
+    // If we only have space for one packet, we can't empty the input buffer
+    // until the output buffer is completely empty (because the AES has no
+    // backpressure), and the output buffer may not be emptied for a while,
+    // because packets are read strictly in order from each encryption IP.
+    xpm_fifo_sync # (
+       .FIFO_WRITE_DEPTH    (FIFO_DEPTH*2),
+       .WRITE_DATA_WIDTH    (C_AXIS_DATA_WIDTH+C_AXIS_DATA_WIDTH/8+C_AXIS_TUSER_WIDTH+1),
+       .PROG_FULL_THRESH    (FIFO_DEPTH),
+       .READ_MODE           ("FWFT"),
+       .FIFO_READ_LATENCY   (0),
+       .READ_DATA_WIDTH     (C_AXIS_DATA_WIDTH+C_AXIS_DATA_WIDTH/8+C_AXIS_TUSER_WIDTH+1)
+    ) output_fifo (
+       .sleep            (1'b0),
+       .rst              (!axis_resetn),
+       .wr_clk           (axis_aclk),
+       .wr_en            (out_buf_tvalid && out_buf_tvalid),
+       .din              ({out_buf_tdata, out_buf_tkeep, out_buf_tuser, out_buf_tlast}),
+       .full             (),
+       .prog_full        (out_fifo_prog_full),
+       .wr_data_count    (),
+       .overflow         (),
+       .wr_rst_busy      (),
+       .rd_en            (m_axis_tvalid && m_axis_tready),
+       .dout             ({m_axis_tdata, m_axis_tkeep, m_axis_tuser, m_axis_tlast}),
+       .data_valid       (),
+       .empty            (out_fifo_empty),
+       .prog_empty       (),
+       .rd_data_count    (),
+       .underflow        (),
+       .rd_rst_busy      (),
+       .injectsbiterr    (1'b0),
+       .injectdbiterr    (1'b0),
+       .sbiterr          (),
+       .dbiterr          ()
+    );
+endmodule

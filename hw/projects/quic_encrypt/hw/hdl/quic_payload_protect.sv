@@ -89,9 +89,10 @@ module quic_payload_protect #(
 
 
     reg [15:0] tuser_packet_size;
+    reg [7:0] tuser_packet_number;
     reg is_first_output_transfer;
 
-    assign m_axis_tuser = is_first_output_transfer ? tuser_packet_size : '0;
+    assign m_axis_tuser = is_first_output_transfer ? {tuser_packet_number, tuser_packet_size} : '0;
 
     reg got_first_transfer_of_headers;
     reg [MAX_ALL_QUIC_HEADERS_LEN*8-1:0] headers_buf;
@@ -137,9 +138,13 @@ module quic_payload_protect #(
     CONTENTS_LOAD, WAIT_OUTPUT_TAG, RESETTING} e_state;
     e_state state;
 
-    // TODO: Double check this condition is always correct!
+    // Ready for more data if:
+    // - In early header read state
+    // - Enough room for a whole transfer in the buffer
+    // - Enough room for a whole transfer after 16 bytes is taken out this cycle
+    // by the AES IP.
     assign s_axis_tready = (state == READING_HEADERS
-        || (packet_buf_amt_valid <= 16))
+        || (packet_buf_amt_valid <= 16 || (packet_buf_amt_valid <= 32 && packet_buf_take_block)))
         && !got_last_transfer; // prevent next packet from entering until reset.
     
     // Take a block from the packet buffer if:
@@ -167,14 +172,13 @@ module quic_payload_protect #(
     reg [7:0] m_axis_tdata_data_amt;
     reg got_all_output_data;
     // True if the current clock cycle will empty the output queue.
-    // TODO just assign to m_axis_tlast
     wire end_of_packet = got_all_output_data && (m_axis_tkeep_buf[C_AXIS_DATA_WIDTH/8] == 0);
 
     assign m_axis_tdata = m_axis_tdata_buf[C_AXIS_DATA_WIDTH-1:0];
     assign m_axis_tkeep = m_axis_tkeep_buf[C_AXIS_DATA_WIDTH/8-1:0];
     // If got_all_output_data holds, then the final tag is buffered
     // Therefore if we also have *no more data after this transfer*, then it is last. 
-    assign m_axis_tlast = got_all_output_data && (m_axis_tkeep_buf[C_AXIS_DATA_WIDTH/8] == 0);
+    assign m_axis_tlast = end_of_packet;
 
     assign m_axis_tvalid = (m_axis_tdata_data_amt >= C_AXIS_DATA_WIDTH/8)
         || (got_all_output_data && m_axis_tdata_data_amt > 0);
@@ -246,6 +250,7 @@ module quic_payload_protect #(
             packet_buf_amt_valid <= '0;
             packet_buf_keep <= '0;
             tuser_packet_size <= '0;
+            tuser_packet_number <= '0;
         end else begin
             if(s_axis_tready && s_axis_tvalid) begin
                 if(s_axis_tlast) begin
@@ -263,6 +268,7 @@ module quic_payload_protect #(
                     // Extract packet size from tuser.
                     if(!got_first_transfer_of_headers) begin
                         tuser_packet_size <= s_axis_tuser[15:0] + AES_BLOCK_SIZE/8;
+                        tuser_packet_number <= s_axis_tuser[23:16];
                     end
 
                     // Erase non-QUIC headers: these aren't used in the associated data.
@@ -274,10 +280,13 @@ module quic_payload_protect #(
                 end else begin
                     // Buffer new data and shift out old data
                     // TODO: These ORs aren't really correct
-                    packet_buf <= (packet_buf | (s_axis_tdata << packet_buf_amt_valid*8)) >>
-                        (packet_buf_take_block*AES_BLOCK_SIZE);
-                    packet_buf_keep <= (packet_buf_keep | (s_axis_tkeep << packet_buf_amt_valid))
-                        >> (packet_buf_take_block*AES_BLOCK_SIZE/8);
+                    packet_buf <=
+                        (packet_buf >> (packet_buf_take_block*AES_BLOCK_SIZE))
+                        | (s_axis_tdata << (packet_buf_amt_valid*8 - (packet_buf_take_block*AES_BLOCK_SIZE)));
+
+                    packet_buf_keep <= (packet_buf_keep
+                        >> (packet_buf_take_block*(AES_BLOCK_SIZE/8)))
+                        | (s_axis_tkeep << (packet_buf_amt_valid - (packet_buf_take_block*(AES_BLOCK_SIZE/8))));
 
                     packet_buf_amt_valid <= packet_buf_amt_valid
                         + 8'($countones(s_axis_tkeep)) - packet_buf_take_block*(AES_BLOCK_SIZE/8);

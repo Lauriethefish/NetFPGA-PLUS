@@ -114,6 +114,7 @@ read_vhdl [list \
 read_verilog -sv "$::env(NFPLUS_FOLDER)/hw/projects/udp_checksum_calculator/hw/hdl/inter_structs.sv"
 read_verilog -sv "$::env(NFPLUS_FOLDER)/hw/projects/udp_segmentation/hw/hdl/ip_header_calc.sv"
 read_verilog -sv "./hdl/quic_payload_protect.sv"
+read_verilog -sv "./hdl/quic_encrypt_single.sv"
 read_verilog -sv "./hdl/quic_encrypt.sv"
 
 update_compile_order -fileset sources_1
