@@ -135,7 +135,7 @@ class pktExpect(Thread):
     ############################
     def expectPkt(self, pkt, mask = None):
         self.lock.acquire()
-        print(f"Expecting {pkt}, checksum: {pkt.getlayer(2)[UDP].chksum} on self.device")
+        print(f"Expecting {pkt} on self.device")
         self.exp_pkts.append((pkt, mask))
         self.barrierEvent.clear()
         self.lock.release()
@@ -178,19 +178,14 @@ class pktExpect(Thread):
             i = 0
             numPkts = len(self.pkts)
             while i < numPkts:
-                strpkt = str(self.pkts[i])
+                pktbytes = bytes(self.pkts[i])
                 for (exp, mask) in self.exp_pkts:
-                    strexp = str(exp)
+                    expbytes = bytes(exp)
                     strmask = None
                     if mask:
                         strmask = str(mask)
-                    matches = self.comparePkts(strexp, strpkt, strmask)
-                    if not matches and len(exp) < 60 and self.pkts[i].haslayer(Padding):
-                        withpadding = ' / '.join([strexp,str(self.pkts[i][Padding])])
-                        #print(f"Comparing with {withpadding} as expected instead. strpkt: {strpkt}")
-                        matches = self.comparePkts(
-                                withpadding,
-                                strpkt, strmask)
+                    matches = self.comparePkts(expbytes, pktbytes, strmask)
+
                     if matches:
                         #print("MATCHED")
                         self.matched.append(self.pkts[i])

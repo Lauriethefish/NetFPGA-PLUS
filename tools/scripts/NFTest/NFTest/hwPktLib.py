@@ -32,13 +32,8 @@ import os
 
 import time
 
-try:
-    import scapy.all as scapy
-except:
-    try:
-        import scapy as scapy
-    except:
-        sys.exit("Error: need to install scapy for packet handling")
+import scapy.all as scapy
+from scapy.layers.all import Ether, IP, TCP, UDP, Padding
 
 ifaceArray = []
 captureThreads = {}
@@ -216,26 +211,29 @@ def compare(exp, unexp):
     for i in range(numExp):
         print('Expected packet', str(i))
         for j in range(numUnexp):
+            # Remove padding added by network stack, so comparison succeeds.
+            if unexp[j].haslayer(Padding):
+                print("STRIPPING PADDING")
+                unexp[j][Padding].underlayer.remove_payload()
+
             if len(exp[i]) != len(unexp[j]):
                 print('   Unexpected packet ' + str(j), end=' ')
                 print(': Packet lengths do not match, expecting', end=' ')
                 print(str(len(exp[i])), 'but saw', str(len(unexp[j])))
+                print(str(exp[i]), 'but saw', str(unexp[j]))
             else:
-                str_exp_pkt = ''
-                str_unexp_pkt = ''
-                # generate a hex string
-                for x in str(exp[i]):
-                   str_exp_pkt += "%02X"%ord(x)
-                for x in str(unexp[j]):
-                    str_unexp_pkt += "%02X"%ord(x)
-                for k in range(len(str_exp_pkt)):
-                    if str_unexp_pkt[k] != str_exp_pkt[k]:
-                        print('   Unexpected packet ' + str(j) + ': byte', end=' ')
-                        print(str(k/2), end=' ')
-                        print('(starting from 0) not equivalent (EXP:', end=' ')
-                        print(str_exp_pkt[i:i+2] + ', ACTUAL:', end=' ')
-                        print(str_unexp_pkt[k:k+2] + ')')
-                        break
+                # Generate a bytearray for both packets and compare
+                exp_bytes = bytes(exp[i])
+                unexp_bytes = bytes(unexp[j])
+                if exp_bytes != unexp_bytes:
+                    print(f"Unexpected packet {j}")
+                    print(f"EXPECTED: {exp_bytes.hex()}")
+                    print(f"LOGGED__: {unexp_bytes.hex()}")
+                    print(f"EXPECTED: {exp[i]}")
+                    print(f"LOGGED__: {unexp[j]}")
+                    break
+                else:
+                    print("(ACTUALLY MATCHES??)")
 
     return numExp + numUnexp
 
