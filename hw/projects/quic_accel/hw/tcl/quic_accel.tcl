@@ -44,7 +44,7 @@ set_param board.repoPaths $::env(BOARD_FILE_PATH)
 #####################################
 set datapath_width_bit    512
 set datapath_width_byte   [expr {${datapath_width_bit}/8}]
-set datapath_freq_mhz     250
+set datapath_freq_mhz     320
 #####################################
 # Project Settings
 #####################################
